@@ -8,6 +8,9 @@
   "packages": {
     "packages/index": {
       "release-type": "node"
+    },
+    "packages/cli": {
+      "release-type": "node"
     }
   },
   "monorepo-tags": true

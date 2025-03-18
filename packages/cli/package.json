@@ -1,0 +1,81 @@
+{
+  "name": "@hash-stream/cli",
+  "version": "0.0.0",
+  "description": "The CLI to use hash-stream building blocks",
+  "bin": {
+    "hash-stream": "src/bin.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vasco-santos/hash-stream.git",
+    "directory": "packages/cli"
+  },
+  "author": "Vasco Santos",
+  "license": "Apache-2.0 OR MIT",
+  "type": "module",
+  "types": "dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "types": [
+        "dist/src/types"
+      ]
+    }
+  },
+  "scripts": {
+    "lint": "eslint '**/*.{js,ts}' && prettier --check '**/*.{js,ts,yml,json}' --ignore-path ../../.gitignore",
+    "build": "tsc --build",
+    "test": "npm run test:all",
+    "test:all": "npm run test:node",
+    "test:node": "mocha 'test/**/!(*.browser).test.js' -n experimental-vm-modules -n no-warnings",
+    "rc": "npm version prerelease --preid rc"
+  },
+  "devDependencies": {
+    "@types/assert": "^1.5.6",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^22.13.10",
+    "assert": "^2.0.0",
+    "c8": "^7.13.0",
+    "mocha": "^10.2.0"
+  },
+  "dependencies": {
+    "@hash-stream/index": "workspace:^",
+    "@ipld/car": "^5.4.0",
+    "conf": "^11.0.2",
+    "multiformats": "^13.3.2",
+    "sade": "^1.8.1"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@hash-stream/eslint-config"
+    ],
+    "globals": {
+      "process": "readonly",
+      "console": "readonly"
+    },
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
+    "env": {
+      "mocha": true
+    },
+    "ignorePatterns": [
+      "dist",
+      "coverage",
+      "src/types.js"
+    ]
+  },
+  "depcheck": {
+    "specials": [
+      "bin"
+    ],
+    "ignores": [
+      "@types/*",
+      "assert",
+      "c8",
+      "@hash-stream/eslint-config"
+    ]
+  },
+  "engines": {
+    "node": ">=16.15"
+  }
+}
