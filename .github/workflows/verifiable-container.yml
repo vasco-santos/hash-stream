@@ -1,0 +1,39 @@
+name: Verifiable Container Client
+env:
+  CI: true
+  FORCE_COLOR: 1
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/verifiable-container/**'
+      - 'packages/eslint-config/**'
+      - '.github/workflows/verifiable-container.yml'
+      - 'pnpm-lock.yaml'
+  pull_request:
+    paths:
+      - 'packages/verifiable-container/**'
+      - 'packages/eslint-config/**'
+      - '.github/workflows/verifiable-container.yml'
+      - 'pnpm-lock.yaml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version:
+          - 18
+          - 20
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm run build
+      - run: pnpm -r --filter @hash-stream/verifiable-container run lint
+      - run: pnpm -r --filter @hash-stream/verifiable-container run attw
+      - run: pnpm -r --filter @hash-stream/verifiable-container test

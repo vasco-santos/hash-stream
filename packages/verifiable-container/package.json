@@ -1,0 +1,97 @@
+{
+  "name": "@hash-stream/verifiable-container",
+  "version": "0.0.0",
+  "description": "The verifiable-container client to use hash-stream",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vasco-santos/hash-stream.git",
+    "directory": "packages/verifiable-container"
+  },
+  "author": "Vasco Santos",
+  "license": "Apache-2.0 OR MIT",
+  "type": "module",
+  "types": "dist/src/index.d.ts",
+  "main": "src/index.js",
+  "scripts": {
+    "attw": "attw --pack .",
+    "lint": "eslint '**/*.{js,ts}' && prettier --check '**/*.{js,ts,yml,json}' --ignore-path ../../.gitignore",
+    "build": "tsc --build",
+    "dev": "tsc --build --watch",
+    "test": "npm run test:all",
+    "test:all": "run-s test:browser test:node",
+    "test:node": "hundreds -r html -r text mocha 'test/**/!(*.browser).test.js' -n experimental-vm-modules -n no-warnings",
+    "test:browser": "playwright-test 'test/**/!(*.node).test.js'",
+    "rc": "npm version prerelease --preid rc"
+  },
+  "exports": {
+    ".": "./dist/src/index.js",
+    "./store/fs": "./dist/src/store/fs.js",
+    "./types": "./dist/src/api.js"
+  },
+  "typesVersions": {
+    "*": {
+      "types": [
+        "dist/src/api"
+      ],
+      "store/fs": [
+        "dist/src/store/fs.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist/src/**/*.js",
+    "dist/src/**/*.js.map",
+    "dist/src/**/*.d.ts",
+    "dist/src/**/*.d.ts.map"
+  ],
+  "dependencies": {
+    "@web3-storage/upload-client": "^17.1.4",
+    "multiformats": "^13.3.2"
+  },
+  "devDependencies": {
+    "@hash-stream/eslint-config": "workspace:^",
+    "@ipld/unixfs": "^3.0.0",
+    "@storacha/one-webcrypto": "^1.0.1",
+    "@types/assert": "^1.5.6",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^22.13.10",
+    "assert": "^2.0.0",
+    "c8": "^7.13.0",
+    "hundreds": "^0.0.9",
+    "mocha": "^10.2.0",
+    "npm-run-all": "^4.1.5",
+    "playwright-test": "^12.3.4",
+    "typescript": "5.2.2",
+    "uint8arrays": "^5.1.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@hash-stream/eslint-config"
+    ],
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
+    "env": {
+      "mocha": true
+    },
+    "ignorePatterns": [
+      "dist",
+      "coverage",
+      "src/types.js"
+    ]
+  },
+  "depcheck": {
+    "specials": [
+      "bin"
+    ],
+    "ignores": [
+      "@types/*",
+      "assert",
+      "c8",
+      "@hash-stream/eslint-config"
+    ]
+  },
+  "engines": {
+    "node": ">=16.15"
+  }
+}
