@@ -25,14 +25,14 @@
   },
   "exports": {
     ".": "./dist/src/index.js",
-    "./block-level-index": "./dist/src/block-level-index.js",
+    "./single-level-index": "./dist/src/single-level-index.js",
     "./multiple-level-index": "./dist/src/multiple-level-index.js",
-    "./record/block": "./dist/src/record/block.js",
-    "./record/sharded-dag": "./dist/src/record/sharded-dag.js",
-    "./store/memory-block": "./dist/src/store/memory-block.js",
-    "./store/memory-sharded-dag": "./dist/src/store/memory-sharded-dag.js",
-    "./store/fs-block": "./dist/src/store/fs-block.js",
-    "./store/fs-sharded-dag": "./dist/src/store/fs-sharded-dag.js",
+    "./record": "./dist/src/record.js",
+    "./utils": "./dist/src/utils.js",
+    "./store/memory-blob": "./dist/src/store/memory-blob.js",
+    "./store/memory-containing": "./dist/src/store/memory-containing.js",
+    "./store/fs-blob": "./dist/src/store/fs-blob.js",
+    "./store/fs-containing": "./dist/src/store/fs-containing.js",
     "./types": "./dist/src/api.js"
   },
   "typesVersions": {
@@ -40,29 +40,29 @@
       "types": [
         "dist/src/api"
       ],
-      "block-level-index": [
-        "dist/src/block-level-index.d.ts"
+      "single-level-index": [
+        "dist/src/single-level-index.d.ts"
       ],
       "multiple-level-index": [
         "dist/src/multiple-level-index.d.ts"
       ],
-      "record/block": [
-        "dist/src/record/block.d.ts"
+      "record": [
+        "dist/src/record.d.ts"
       ],
-      "record/sharded-dag": [
-        "dist/src/record/sharded-dag.d.ts"
+      "utils": [
+        "dist/src/utils.d.ts"
       ],
-      "store/memory-block": [
-        "dist/src/store/memory-block.d.ts"
+      "store/memory-blob": [
+        "dist/src/store/memory-blob.d.ts"
       ],
-      "store/memory-sharded-dag": [
-        "dist/src/store/memory-sharded-dag.d.ts"
+      "store/memory-containing": [
+        "dist/src/store/memory-containing.d.ts"
       ],
-      "store/fs-block": [
-        "dist/src/store/fs-block.d.ts"
+      "store/fs-blob": [
+        "dist/src/store/fs-blob.d.ts"
       ],
-      "store/fs-sharded-dag": [
-        "dist/src/store/fs-sharded-dag.d.ts"
+      "store/fs-containing": [
+        "dist/src/store/fs-containing.d.ts"
       ]
     }
   },
@@ -91,6 +91,7 @@
     "c8": "^7.13.0",
     "hundreds": "^0.0.9",
     "ipfs-car": "^2.0.0",
+    "it-all": "^3.0.7",
     "mocha": "^10.2.0",
     "npm-run-all": "^4.1.5",
     "playwright-test": "^12.3.4",

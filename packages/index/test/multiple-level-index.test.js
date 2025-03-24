@@ -2,256 +2,493 @@ import assert from 'assert'
 import { CarIndexer, CarBlockIterator } from '@ipld/car'
 import { fromShardArchives } from '@web3-storage/blob-index/util'
 import { equals } from 'uint8arrays'
+import all from 'it-all'
 
-import * as API from '../src/api.js'
-import { MemoryShardedDAGIndexStore } from '../src/store/memory-sharded-dag.js'
+import { MemoryContainingIndexStore } from '../src/store/memory-containing.js'
 import { MultipleLevelIndex } from '../src/multiple-level-index.js'
-import { ShardedDAGIndexRecord } from '../src/record/sharded-dag.js'
+import { Type } from '../src/record.js'
+import { carBlockIndexToBlobIndexRecordIterable } from '../src/utils.js'
 
 import { randomCID, randomCAR } from './helpers/random.js'
 
 describe('MultipleLevelIndex', () => {
-  /** @type {MemoryShardedDAGIndexStore} */
+  /** @type {MemoryContainingIndexStore} */
   let store
   /** @type {MultipleLevelIndex} */
   let multipleLevelIndex
-
   beforeEach(() => {
-    store = new MemoryShardedDAGIndexStore()
+    store = new MemoryContainingIndexStore()
     multipleLevelIndex = new MultipleLevelIndex(store)
   })
 
-  it('returns null when content CID is not provided', async () => {
+  it('returns null when records for multihash are not known', async () => {
     const multihash = (await randomCID()).multihash
-    const location = await multipleLevelIndex.findBlockLocation(multihash)
-    assert.strictEqual(location, null)
+    const records = await multipleLevelIndex.findRecords(multihash)
+    assert.strictEqual(records, null)
   })
 
-  it('returns null for non-existent entries', async () => {
+  it('returns null when records for containing multihash are not known', async () => {
     const multihash = (await randomCID()).multihash
-    const contentCid = await randomCID()
-    const location = await multipleLevelIndex.findBlockLocation(multihash, {
-      contextCid: contentCid,
+    const containingMultihash = (await randomCID()).multihash
+    const records = await multipleLevelIndex.findRecords(multihash, {
+      containingMultihash,
     })
-    assert.strictEqual(location, null)
+    assert.strictEqual(records, null)
   })
 
-  it('finds block location for existing entries', async () => {
-    const content = /** @type {API.UnknownLink} */ (await randomCID())
-    const record = new ShardedDAGIndexRecord(content)
-    const shardCid = await randomCID()
-    const shardDigest = shardCid.multihash
-    const sliceCid = await randomCID()
-    const sliceDigest = sliceCid.multihash
-    const pos = /** @type {API.Position} */ ([0, 200])
-
-    record.setSlice(shardDigest, sliceDigest, pos)
-    await store.set(content.multihash, record)
-
-    const location = await multipleLevelIndex.findBlockLocation(sliceDigest, {
-      contextCid: content,
-    })
-    assert(location)
-    assert(equals(location.container.digest, shardDigest.digest))
-    assert.strictEqual(location.offset, pos[0])
-    assert.strictEqual(location.length, pos[1])
-  })
-
-  it('finds containers for existing entries', async () => {
-    const content = /** @type {API.UnknownLink} */ (await randomCID())
-    const record = new ShardedDAGIndexRecord(content)
-    const shardCid1 = await randomCID()
-    const shardCid2 = await randomCID()
-    const shardDigest1 = shardCid1.multihash
-    const shardDigest2 = shardCid2.multihash
-
-    record.setSlice(shardDigest1, (await randomCID()).multihash, [0, 200])
-    record.setSlice(shardDigest2, (await randomCID()).multihash, [210, 300])
-    await store.set(content.multihash, record)
-
-    const containers = await multipleLevelIndex.findContainers(
-      content.multihash
+  it('adds blobs packed and associated with a containing record', async () => {
+    const containing = await randomCID()
+    const blobLength = 4
+    const packCid = await randomCID()
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
     )
-    assert(containers)
-    assert.strictEqual(containers.contentCID.equals(content), true)
-    assert.deepStrictEqual(containers.shards, [shardDigest1, shardDigest2])
+
+    await multipleLevelIndex.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: packCid.multihash,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })(),
+      { containingMultihash: containing.multihash }
+    )
+
+    const entries = await store.get(containing.multihash)
+    assert(entries)
   })
 
-  it('returns null for non-existent containers', async () => {
-    const multihash = (await randomCID()).multihash
-    const containers = await multipleLevelIndex.findContainers(multihash)
-    assert.strictEqual(containers, null)
+  it('adds blobs not packed and associated with a containing record', async () => {
+    const containing = await randomCID()
+    const blobLength = 4
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+
+    await multipleLevelIndex.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: blobCid.multihash,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })(),
+      { containingMultihash: containing.multihash }
+    )
+
+    const entries = await store.get(containing.multihash)
+    assert(entries)
   })
 
-  it('returns null when no matching slice is found', async () => {
-    const content = /** @type {API.UnknownLink} */ (await randomCID())
-    const record = new ShardedDAGIndexRecord(content)
-    const shardCid = await randomCID()
-    const shardDigest = shardCid.multihash
-    const sliceCid = await randomCID()
-    const sliceDigest = sliceCid.multihash
-    const pos = /** @type {API.Position} */ ([0, 200])
+  it('adds blobs non packed and not associated with a containing record', async () => {
+    const blobLength = 4
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
 
-    record.setSlice(shardDigest, sliceDigest, pos)
-    await store.set(content.multihash, record)
+    await multipleLevelIndex.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: blobCid.multihash,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })()
+    )
 
-    const nonMatchingMultihash = (await randomCID()).multihash
-    const location = await multipleLevelIndex.findBlockLocation(
-      nonMatchingMultihash,
-      {
-        contextCid: content,
+    for (const blobCid of blobCids) {
+      const entriesStream = await store.get(blobCid.multihash)
+
+      assert(entriesStream)
+      const records = await all(entriesStream)
+      assert(records.length === 1)
+    }
+  })
+
+  it('adds blobs packed and not associated with a containing record', async () => {
+    const blobLength = 4
+    const packCid = await randomCID()
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+
+    await multipleLevelIndex.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: packCid.multihash,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })()
+    )
+
+    const packEntriesStream = await store.get(packCid.multihash)
+    assert(packEntriesStream)
+    const packRecords = await all(packEntriesStream)
+    assert(packRecords.length === 1)
+    assert(equals(packRecords[0].multihash.bytes, packCid.multihash.bytes))
+    assert(equals(packRecords[0].location.bytes, packCid.multihash.bytes))
+    assert(!packRecords[0].offset)
+    assert(!packRecords[0].length)
+    assert.strictEqual(packRecords[0].type, Type.PACK)
+    assert.strictEqual(packRecords[0].subRecords.length, blobLength)
+  })
+
+  it('finds records for existing containing record', async () => {
+    const containing = await randomCID()
+    const blobLength = 4
+    const packCid = await randomCID()
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+
+    await multipleLevelIndex.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: packCid.multihash,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })(),
+      { containingMultihash: containing.multihash }
+    )
+
+    const containingStream = await multipleLevelIndex.findRecords(
+      containing.multihash
+    )
+
+    assert(containingStream)
+    const records = await all(containingStream)
+    assert(records.length === 1)
+    assert(equals(records[0].multihash.bytes, containing.multihash.bytes))
+    assert(equals(records[0].location.bytes, containing.multihash.bytes))
+    assert(!records[0].offset)
+    assert(!records[0].length)
+    assert.strictEqual(records[0].type, Type.CONTAINING)
+
+    const packRecord = records[0].subRecords.find((record) =>
+      equals(record.multihash.bytes, packCid.multihash.bytes)
+    )
+    assert(packRecord)
+    assert.strictEqual(packRecord.type, Type.PACK)
+    assert.strictEqual(packRecord.subRecords.length, blobLength)
+    for (const blobCid of blobCids) {
+      // @ts-ignore type not inferred
+      const blobRecord = packRecord.subRecords.find((record) =>
+        equals(record.multihash.bytes, blobCid.multihash.bytes)
+      )
+      assert(blobRecord)
+      assert.strictEqual(blobRecord.type, Type.BLOB)
+    }
+  })
+
+  it('finds records for existing blob record when containing is provided', async () => {
+    const containing = await randomCID()
+    const blobLength = 4
+    const packCid = await randomCID()
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+
+    await multipleLevelIndex.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: packCid.multihash,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })(),
+      { containingMultihash: containing.multihash }
+    )
+
+    for (const blobCid of blobCids) {
+      const blobStreamWithoutContaining = await multipleLevelIndex.findRecords(
+        blobCid.multihash
+      )
+      assert.strictEqual(blobStreamWithoutContaining, null)
+
+      const blobStreamWithContaining = await multipleLevelIndex.findRecords(
+        blobCid.multihash,
+        { containingMultihash: containing.multihash }
+      )
+      assert(blobStreamWithContaining)
+      const records = await all(blobStreamWithContaining)
+      assert(records.length === 1)
+      assert(equals(records[0].multihash.bytes, blobCid.multihash.bytes))
+      assert(equals(records[0].location.bytes, packCid.multihash.bytes))
+      assert.strictEqual(records[0].offset, 0)
+      assert.strictEqual(records[0].length, 100)
+      assert.strictEqual(records[0].type, Type.BLOB)
+    }
+  })
+
+  it('finds records for existing pack record when containing is provided', async () => {
+    const containing = await randomCID()
+    const blobLength = 4
+    const packCid = await randomCID()
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+
+    await multipleLevelIndex.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: packCid.multihash,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })(),
+      { containingMultihash: containing.multihash }
+    )
+
+    const packStreamWithoutContaining = await multipleLevelIndex.findRecords(
+      packCid.multihash
+    )
+    assert.strictEqual(packStreamWithoutContaining, null)
+
+    const packStreamWithContaining = await multipleLevelIndex.findRecords(
+      packCid.multihash,
+      { containingMultihash: containing.multihash }
+    )
+    assert(packStreamWithContaining)
+    const records = await all(packStreamWithContaining)
+    assert(records.length === 1)
+
+    assert(records[0])
+    assert(equals(records[0].multihash.bytes, packCid.multihash.bytes))
+    assert(equals(records[0].location.bytes, packCid.multihash.bytes))
+    assert.strictEqual(records[0].type, Type.PACK)
+    assert.strictEqual(records[0].subRecords.length, blobLength)
+    for (const blobCid of blobCids) {
+      // @ts-ignore type not inferred
+      const blobRecord = records[0].subRecords.find((record) =>
+        equals(record.multihash.bytes, blobCid.multihash.bytes)
+      )
+      assert(blobRecord)
+      assert.strictEqual(blobRecord.type, Type.BLOB)
+    }
+  })
+
+  it('finds records for existing non packed blob record when containing is provided', async () => {
+    const containing = await randomCID()
+    const blobLength = 4
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+
+    await multipleLevelIndex.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: blobCid.multihash,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })(),
+      { containingMultihash: containing.multihash }
+    )
+
+    const containingStream = await multipleLevelIndex.findRecords(
+      containing.multihash
+    )
+
+    assert(containingStream)
+    const records = await all(containingStream)
+    assert(records.length === 1)
+    assert(equals(records[0].multihash.bytes, containing.multihash.bytes))
+    assert(equals(records[0].location.bytes, containing.multihash.bytes))
+    assert(!records[0].offset)
+    assert(!records[0].length)
+    assert.strictEqual(records[0].type, Type.CONTAINING)
+    assert.strictEqual(records[0].subRecords.length, blobLength)
+
+    for (const blobCid of blobCids) {
+      const blobStreamWithoutContaining = await multipleLevelIndex.findRecords(
+        blobCid.multihash
+      )
+      assert.strictEqual(blobStreamWithoutContaining, null)
+
+      const blobStreamWithContaining = await multipleLevelIndex.findRecords(
+        blobCid.multihash,
+        { containingMultihash: containing.multihash }
+      )
+      assert(blobStreamWithContaining)
+      const records = await all(blobStreamWithContaining)
+      assert(records.length === 1)
+      assert(equals(records[0].multihash.bytes, blobCid.multihash.bytes))
+      assert(equals(records[0].location.bytes, blobCid.multihash.bytes))
+      assert.strictEqual(records[0].offset, 0)
+      assert.strictEqual(records[0].length, 100)
+      assert.strictEqual(records[0].type, Type.BLOB)
+    }
+  })
+
+  it('adds multiple packs under the same containing multihash and find records', async () => {
+    const cars = await Promise.all([
+      randomCAR(4100, { chunkSize: 2000 }),
+      randomCAR(1000),
+    ])
+
+    const containingCid = cars[0].roots[0]
+    if (!containingCid) throw new Error('No root CID found')
+
+    // Add blobs from CARs to the index under the same containing multihash
+    await Promise.all(
+      cars.map(async (car) => {
+        const carBytes = new Uint8Array(await car.arrayBuffer())
+        const blockIterable = await CarIndexer.fromBytes(carBytes)
+        await multipleLevelIndex.addBlobs(
+          carBlockIndexToBlobIndexRecordIterable(blockIterable, car.cid),
+          {
+            containingMultihash: containingCid.multihash,
+          }
+        )
+      })
+    )
+
+    // Get packs for the containing CID
+    const containingStream = await multipleLevelIndex.findRecords(
+      containingCid.multihash
+    )
+
+    assert(containingStream)
+    const records = await all(containingStream)
+    assert(records.length === 1)
+
+    assert(equals(records[0].multihash.bytes, containingCid.multihash.bytes))
+    assert(equals(records[0].location.bytes, containingCid.multihash.bytes))
+    assert(!records[0].offset)
+    assert(!records[0].length)
+    assert.strictEqual(records[0].type, Type.CONTAINING)
+
+    assert.strictEqual(records[0].subRecords.length, cars.length)
+    for (const car of cars) {
+      const packRecord = records[0].subRecords.find((record) =>
+        equals(record.multihash.bytes, car.cid.multihash.bytes)
+      )
+      assert(packRecord)
+      assert.strictEqual(packRecord.type, Type.PACK)
+
+      const carBytes = new Uint8Array(await car.arrayBuffer())
+      const blockIterator = await CarBlockIterator.fromBytes(carBytes)
+      for await (const block of blockIterator) {
+        // @ts-ignore type not inferred
+        const blobRecord = packRecord.subRecords.find((record) =>
+          equals(record.multihash.bytes, block.cid.multihash.bytes)
+        )
+        assert(blobRecord)
+        assert.strictEqual(blobRecord.type, Type.BLOB)
       }
-    )
-    assert.strictEqual(location, null)
+    }
   })
 
-  it('can index a container and find block locations', async () => {
+  it('finds blobs not associated with a containing record as fallback when containing is still given', async () => {
+    const containing = await randomCID()
+    const blobLength = 4
+    // Add some blobs containing by a multihash
+    const containingBlobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+    await multipleLevelIndex.addBlobs(
+      (async function* () {
+        for (const blobCid of containingBlobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: blobCid.multihash,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })(),
+      { containingMultihash: containing.multihash }
+    )
+
+    // Add some flat blobs not containing by a CID
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+    await multipleLevelIndex.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: blobCid.multihash,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })()
+    )
+
+    for (const blobCid of blobCids) {
+      const entriesStream = await multipleLevelIndex.findRecords(
+        blobCid.multihash,
+        {
+          containingMultihash: containing.multihash,
+        }
+      )
+
+      assert(entriesStream)
+      const records = await all(entriesStream)
+      assert(records.length === 1)
+    }
+  })
+
+  it('can create valid indexes for blobs', async () => {
     const car = await randomCAR(4100, { chunkSize: 2000 })
-    const root = car.roots[0]
+    const root = await randomCID()
     if (!root) throw new Error('No root CID found')
 
     const carBytes = new Uint8Array(await car.arrayBuffer())
-    const carIndexer = await CarIndexer.fromBytes(carBytes)
+    const blockIterable = await CarIndexer.fromBytes(carBytes)
 
-    // Index the container
-    await multipleLevelIndex.indexContainer(carIndexer, car.cid.multihash, {
-      contextCid: root,
-    })
-
-    // Get containers for the context CID
-    const containers = await multipleLevelIndex.findContainers(root.multihash)
-    assert(containers)
-    assert.strictEqual(containers.contentCID.equals(root), true)
-    assert.strictEqual(containers.shards.length, 1)
-    assert(equals(containers.shards[0].digest, car.cid.multihash.digest))
-
-    // Create block iterator and verify all blocks were indexed
-    const blockIterator = await CarBlockIterator.fromBytes(carBytes)
-    let blockCount = 0
-    for await (const block of blockIterator) {
-      const location = await multipleLevelIndex.findBlockLocation(
-        block.cid.multihash,
-        {
-          contextCid: root,
-        }
-      )
-      assert(location)
-      assert(equals(location.container.digest, car.cid.multihash.digest))
-      assert(location.offset)
-      assert(location.length)
-
-      blockCount++
-    }
+    await multipleLevelIndex.addBlobs(
+      carBlockIndexToBlobIndexRecordIterable(blockIterable, car.cid),
+      {
+        containingMultihash: root.multihash,
+      }
+    )
 
     // Create an index with other library to compare results
     const index = await fromShardArchives(root, [carBytes])
     for (const [shardDigest, slices] of index.shards.entries()) {
-      assert.strictEqual(slices.size, blockCount)
-      assert(equals(shardDigest.digest, car.cid.multihash.digest))
+      for (const [blobDigest, position] of slices.entries()) {
+        const recordsStream = await multipleLevelIndex.findRecords(blobDigest, {
+          containingMultihash: root.multihash,
+        })
 
-      for (const [blockDigest, position] of slices.entries()) {
-        const location = await multipleLevelIndex.findBlockLocation(
-          blockDigest,
-          {
-            contextCid: root,
-          }
-        )
-
-        assert(location)
-        assert(equals(location.container.digest, car.cid.multihash.digest))
-        assert.strictEqual(location.offset, position[0])
-        assert.strictEqual(location.length, position[1])
+        assert(recordsStream)
+        const records = await all(recordsStream)
+        assert(records.length === 1)
+        assert(equals(records[0].location.digest, shardDigest.digest))
+        assert.strictEqual(records[0].offset, position[0])
+        assert.strictEqual(records[0].length, position[1])
+        assert(records[0].type === Type.BLOB)
       }
     }
-  })
-
-  it('can index two containers under same context and find block locations', async () => {
-    const car = await randomCAR(4100, { chunkSize: 2000 })
-    const car2 = await randomCAR(1000)
-    const root = car.roots[0]
-    if (!root) throw new Error('No root CID found')
-
-    const carBytes = new Uint8Array(await car.arrayBuffer())
-    const car2Bytes = new Uint8Array(await car2.arrayBuffer())
-    const carIndexer = await CarIndexer.fromBytes(carBytes)
-    const car2Indexer = await CarIndexer.fromBytes(car2Bytes)
-
-    // Index CARs with same root
-    await multipleLevelIndex.indexContainer(carIndexer, car.cid.multihash, {
-      contextCid: root,
-    })
-    await multipleLevelIndex.indexContainer(car2Indexer, car2.cid.multihash, {
-      contextCid: root,
-    })
-
-    // Get containers for the context CID
-    const containers = await multipleLevelIndex.findContainers(root.multihash)
-    assert(containers)
-    assert.strictEqual(containers.contentCID.equals(root), true)
-    assert.strictEqual(containers.shards.length, 2)
-    assert(equals(containers.shards[0].digest, car.cid.multihash.digest))
-    assert(equals(containers.shards[1].digest, car2.cid.multihash.digest))
-
-    // Create block iterator and verify all blocks were indexed for each car
-    await Promise.all(
-      [
-        { carBytes, car: car },
-        { carBytes: car2Bytes, car: car2 },
-      ].map(async ({ carBytes, car }) => {
-        const blockIterator = await CarBlockIterator.fromBytes(carBytes)
-        for await (const block of blockIterator) {
-          const location = await multipleLevelIndex.findBlockLocation(
-            block.cid.multihash,
-            {
-              contextCid: root,
-            }
-          )
-          assert(location)
-          assert(equals(location.container.digest, car.cid.multihash.digest))
-          assert(location.offset)
-          assert(location.length)
-        }
-      })
-    )
-
-    // Create an index with other library to compare results
-    await Promise.all(
-      [
-        { carBytes, car: car },
-        { carBytes: car2Bytes, car: car2 },
-      ].map(async ({ carBytes, car }) => {
-        const index = await fromShardArchives(root, [carBytes])
-        for (const [shardDigest, slices] of index.shards.entries()) {
-          assert(equals(shardDigest.digest, car.cid.multihash.digest))
-
-          for (const [blockDigest, position] of slices.entries()) {
-            const location = await multipleLevelIndex.findBlockLocation(
-              blockDigest,
-              {
-                contextCid: root,
-              }
-            )
-
-            assert(location)
-            assert(equals(location.container.digest, car.cid.multihash.digest))
-            assert.strictEqual(location.offset, position[0])
-            assert.strictEqual(location.length, position[1])
-          }
-        }
-      })
-    )
-  })
-
-  it('throws an error when context CID is not provided during indexing', async () => {
-    const car = await randomCAR(4100, { chunkSize: 2000 })
-    const carBytes = new Uint8Array(await car.arrayBuffer())
-    const carIndexer = await CarIndexer.fromBytes(carBytes)
-
-    await assert.rejects(
-      multipleLevelIndex.indexContainer(carIndexer, car.cid.multihash),
-      {
-        message: 'Context CID is required',
-      }
-    )
   })
 })
