@@ -150,8 +150,14 @@ importers:
         specifier: 5.2.2
         version: 5.2.2
 
-  packages/verifiable-container:
+  packages/verifiable-pack:
     dependencies:
+      '@hash-stream/index':
+        specifier: workspace:^
+        version: link:../index
+      '@ipld/car':
+        specifier: ^5.4.0
+        version: 5.4.0
       '@web3-storage/upload-client':
         specifier: ^17.1.4
         version: 17.1.4(encoding@0.1.13)
@@ -186,6 +192,9 @@ importers:
       hundreds:
         specifier: ^0.0.9
         version: 0.0.9
+      it-all:
+        specifier: ^3.0.7
+        version: 3.0.7
       mocha:
         specifier: ^10.2.0
         version: 10.2.0

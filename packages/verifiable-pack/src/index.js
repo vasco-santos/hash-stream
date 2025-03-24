@@ -5,41 +5,7 @@ import { ShardingStream } from '@web3-storage/upload-client'
 import { createFileEncoderStream } from '@web3-storage/upload-client/unixfs'
 
 /**
- * Create a set of verifiable container from a blob and store them.
- *
- * @param {import('@web3-storage/upload-client/types').BlobLike} blob
- * @param {API.ContainerStore} store
- * @param {API.CreateOptions} [options]
- */
-export function createAndStore(blob, store, options) {
-  if (options?.type === 'car') {
-    return createAndStoreCars(blob, store, options)
-  }
-  throw new Error('only CAR containers are supported')
-}
-
-/**
- * Create a set of verifiable container CARs from a blob and store them.
- *
- * @param {import('@web3-storage/upload-client/types').BlobLike} blob
- * @param {API.ContainerStore} store
- * @param {API.CreateOptions} [options]
- */
-async function createAndStoreCars(blob, store, options) {
-  const { stream, root } = createCars(blob, options)
-
-  const containersMultihash = []
-  for await (const container of stream) {
-    containersMultihash.push(container.multihash)
-    await store.put(container.multihash, container.bytes)
-  }
-
-  const rootCid = await root
-  return { rootCid, containersMultihash }
-}
-
-/**
- * Create a set of verifiable container from a blob.
+ * Create a set of verifiable pack from a blob.
  *
  * @param {import('@web3-storage/upload-client/types').BlobLike} blob
  * @param {API.CreateOptions} [options]
@@ -48,48 +14,51 @@ export function create(blob, options) {
   if (options?.type === 'car') {
     return createCars(blob, options)
   }
-  throw new Error('only CAR containers are supported')
+  throw new Error('only CAR packs are supported')
 }
 
 /**
- * Creates a generator that yields CAR containers asynchronously and provides a promise for the root CID.
+ * Creates a generator that yields CAR packs asynchronously and provides a promise for the root CID.
  *
  * @param {import('./api.js').BlobLike} blob - The input file-like object containing a ReadableStream.
- * @param {import('./api.js').CreateCarContainerOptions} [options] - Optional settings.
+ * @param {import('./api.js').CreateCarPackOptions} [options] - Optional settings.
  * @returns {{
- *   stream: AsyncGenerator<import('./api.js').VerifiableCarContainer, void, void>,
- *   root: Promise<import('./api.js').UnknownLink>
+ *   packStream: AsyncGenerator<API.VerifiableCarPack, void, void>,
+ *   containingPromise: Promise<API.MultihashDigest>
  * }} - An object containing the generator and a promise for the root CID.
  */
 function createCars(blob, options) {
   const hasher = options?.hasher || sha256
 
-  /** @type {(cid: import('./api.js').UnknownLink) => void} */
-  let resolveRoot
-  const rootPromise = Object.assign(
+  /** @type {(containingPromise: API.MultihashDigest) => void} */
+  let resolveContaining
+  const containingPromise = Object.assign(
     new Promise((resolve) => {
-      resolveRoot = resolve
+      resolveContaining = resolve
     }),
     { _resolved: false }
   )
 
-  async function* carContainerGenerator() {
+  async function* carPackGenerator() {
     for await (const car of generateIndexedCars(blob, options)) {
       const bytes = new Uint8Array(await car.arrayBuffer())
       const multihash = await hasher.digest(bytes)
-      const container = { car, bytes, multihash }
+      const pack = { car, bytes, multihash }
 
       // Capture root CID when found
-      if (!rootPromise._resolved && car.roots.length > 0) {
-        resolveRoot(car.roots[0])
-        rootPromise._resolved = true // Prevent multiple resolutions
+      if (!containingPromise._resolved && car.roots.length > 0) {
+        resolveContaining(car.roots[0].multihash)
+        containingPromise._resolved = true // Prevent multiple resolutions
       }
 
-      yield container
+      yield pack
     }
   }
 
-  return { stream: carContainerGenerator(), root: rootPromise }
+  return {
+    packStream: carPackGenerator(),
+    containingPromise,
+  }
 }
 
 /**

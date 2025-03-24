@@ -6,13 +6,13 @@ import { promises as fs } from 'fs'
 import path from 'path'
 
 /**
- * File system implementation of ContainerStore
+ * File system implementation of PackStore
  *
- * @implements {API.ContainerStore}
+ * @implements {API.PackStore}
  */
-export class FSContainerStore {
+export class FSPackStore {
   /**
-   * @param {string} directory - Directory to store containers files.
+   * @param {string} directory - Directory to store packs files.
    */
   constructor(directory) {
     this.directory = directory
@@ -35,14 +35,14 @@ export class FSContainerStore {
    * @returns {string}
    */
   _getFilePath(hash) {
-    return path.join(this.directory, FSContainerStore.encodeKey(hash))
+    return path.join(this.directory, FSPackStore.encodeKey(hash))
   }
 
   /**
-   * Put a container file.
+   * Put a pack file.
    *
-   * @param {API.MultihashDigest} hash - The Multihash digest of the container.
-   * @param {Uint8Array} data - The container file bytes.
+   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @param {Uint8Array} data - The pack file bytes.
    */
   async put(hash, data) {
     const filePath = this._getFilePath(hash)
@@ -50,9 +50,9 @@ export class FSContainerStore {
   }
 
   /**
-   * Retrieves bytes of a container file by its multihash digest.
+   * Retrieves bytes of a pack file by its multihash digest.
    *
-   * @param {API.MultihashDigest} hash - The Multihash digest of the container.
+   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
    * @returns {Promise<Uint8Array | null>}
    */
   async get(hash) {

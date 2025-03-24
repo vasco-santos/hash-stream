@@ -1,11 +1,11 @@
 {
-  "name": "@hash-stream/verifiable-container",
+  "name": "@hash-stream/verifiable-pack",
   "version": "0.0.0",
-  "description": "The verifiable-container client to use hash-stream",
+  "description": "The verifiable-pack client to use hash-stream",
   "repository": {
     "type": "git",
     "url": "https://github.com/vasco-santos/hash-stream.git",
-    "directory": "packages/verifiable-container"
+    "directory": "packages/verifiable-pack"
   },
   "author": "Vasco Santos",
   "license": "Apache-2.0 OR MIT",
@@ -33,6 +33,9 @@
       "types": [
         "dist/src/api"
       ],
+      "writer": [
+        "dist/src/writer.d.ts"
+      ],
       "store/fs": [
         "dist/src/store/fs.d.ts"
       ]
@@ -45,6 +48,8 @@
     "dist/src/**/*.d.ts.map"
   ],
   "dependencies": {
+    "@hash-stream/index": "workspace:^",
+    "@ipld/car": "^5.4.0",
     "@web3-storage/upload-client": "^17.1.4",
     "multiformats": "^13.3.2"
   },
@@ -58,6 +63,7 @@
     "assert": "^2.0.0",
     "c8": "^7.13.0",
     "hundreds": "^0.0.9",
+    "it-all": "^3.0.7",
     "mocha": "^10.2.0",
     "npm-run-all": "^4.1.5",
     "playwright-test": "^12.3.4",
