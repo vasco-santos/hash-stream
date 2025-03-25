@@ -6,20 +6,20 @@ import os from 'os'
 import { equals } from 'uint8arrays'
 import all from 'it-all'
 
-import { FSBlobStore } from '../../src/store/fs-blob.js'
+import { FSBlobIndexStore } from '../../src/store/fs-blob.js'
 import { Type, createFromBlob } from '../../src/record.js'
 
 import { randomCID } from '../helpers/random.js'
 
-describe('FSBlobStore', () => {
-  /** @type {FSBlobStore} */
+describe('FSBlobIndexStore', () => {
+  /** @type {FSBlobIndexStore} */
   let store
   /** @type {string} */
   let tempDir
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-blob-test-'))
-    store = new FSBlobStore(tempDir)
+    store = new FSBlobIndexStore(tempDir)
   })
 
   afterEach(() => {

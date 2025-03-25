@@ -9,13 +9,14 @@ import {
   encode as indexRecordEncode,
   decode as indexRecordDecode,
 } from '../record.js'
+import { removeUndefinedRecursively } from './utils.js'
 
 /**
  * File system implementation of BlobIndexStore
  *
  * @implements {API.IndexStore}
  */
-export class FSBlobStore {
+export class FSBlobIndexStore {
   /**
    * @param {string} directory
    */
@@ -40,7 +41,7 @@ export class FSBlobStore {
    * @returns {string}
    */
   _getFilePath(hash) {
-    return path.join(this.directory, FSBlobStore.encodeKey(hash))
+    return path.join(this.directory, FSBlobIndexStore.encodeKey(hash))
   }
 
   /**
@@ -50,7 +51,7 @@ export class FSBlobStore {
     /** @type {{ type: 'index/blob@0.1'; data: API.IndexRecordEncoded }} */
     const encodableEntry = {
       type,
-      data: indexRecordEncode(data),
+      data: removeUndefinedRecursively(indexRecordEncode(data)),
     }
     return encode(encodableEntry)
   }
@@ -102,6 +103,6 @@ export class FSBlobStore {
   }
 }
 
-export default FSBlobStore
+export default FSBlobIndexStore
 
 export const type = 'index/blob@0.1'
