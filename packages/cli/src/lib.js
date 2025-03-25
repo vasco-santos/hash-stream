@@ -2,9 +2,9 @@ import os from 'os'
 import fs from 'fs'
 import path from 'path'
 
-import { FSBlockStore } from '@hash-stream/index/store/fs-block'
-import { FSShardedDAG } from '@hash-stream/index/store/fs-sharded-dag'
-import { BlockLevelIndex, MultipleLevelIndex } from '@hash-stream/index'
+import { FSBlobIndexStore } from '@hash-stream/index/store/fs-blob'
+import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
+import { SingleLevelIndex, MultipleLevelIndex } from '@hash-stream/index'
 
 import { ConfDriver as StoreConf } from './conf/driver.js'
 import { AgentData } from './conf/agent-data.js'
@@ -33,8 +33,8 @@ export async function getClient() {
     const hashStreamDir = path.join(os.homedir(), `.${getProfile()}`)
     raw = {
       index: {
-        blockIndex: {
-          storeDir: path.join(hashStreamDir, 'block-index'),
+        singleLevelIndex: {
+          storeDir: path.join(hashStreamDir, 'single-level-index'),
         },
         multipleLevelIndex: {
           storeDir: path.join(hashStreamDir, 'multiple-level-index'),
@@ -42,27 +42,27 @@ export async function getClient() {
       },
     }
     // Create directories
-    fs.mkdirSync(raw.index.blockIndex.storeDir, { recursive: true })
+    fs.mkdirSync(raw.index.singleLevelIndex.storeDir, { recursive: true })
     fs.mkdirSync(raw.index.multipleLevelIndex.storeDir, { recursive: true })
 
     agentData = new AgentData(raw)
     await store.save(agentData.export())
   }
 
-  const blockIndexStore = new FSBlockStore(
-    agentData.data.index.blockIndex.storeDir
+  const singleLevelIndexStore = new FSBlobIndexStore(
+    agentData.data.index.singleLevelIndex.storeDir
   )
-  const multipleLevelIndexStore = new FSShardedDAG(
+  const multipleLevelIndexStore = new FSContainingIndexStore(
     agentData.data.index.multipleLevelIndex.storeDir
   )
-  const blockLevelIndex = new BlockLevelIndex(blockIndexStore)
+  const singleLevelIndex = new SingleLevelIndex(singleLevelIndexStore)
   const multipleLevelIndex = new MultipleLevelIndex(multipleLevelIndexStore)
 
   return {
     index: {
-      blockIndexStore,
+      singleLevelIndexStore,
       multipleLevelIndexStore,
-      blockLevelIndex,
+      singleLevelIndex,
       multipleLevelIndex,
     },
   }

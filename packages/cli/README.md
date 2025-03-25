@@ -16,59 +16,45 @@ Basic usage with CAR files generated with [`ipfs-car`](https://github.com/storac
 
 ## Commands
 
-## Commands
-
 - Index Management
-  - [`index create`](#index-create-containercid-filepath-contextcid)
-  - [`index find block`](#index-find-block-blockcid-contextcid)
-  - [`index find containers`](#index-find-containers-contentcid)
+  - [`index add`](#index-add-packcid-filepath-containingcid)
+  - [`index find records`](#index-find-records-blockcid-containingcid)
   - [`index clear`](#index-clear)
 
 ---
 
-### `index create <containerCid> <filePath> [contextCid]`
+### `index add <packCid> <filePath> [containingCid]`
 
-Create an index for the given verifiable container (CAR file) using the specified strategy.
+Add Index record for the given verifiable pack (CAR file) using the specified strategy.
 
 #### Examples:
 
 ```sh
-index create bag... container.car bafy... -s multiple-level
-index create bag... container.car -s block-level
+index add bag... pack.car bafy... -s multiple-level
+index add bag... pack.car -s single-level
 ```
 
 #### Options:
 
-- `-s, --strategy` Indexing strategy: "block-level" or "multiple-level" (default: `multiple-level`)
+- `-s, --strategy` Indexing strategy: "single-level" or "multiple-level" (default: `multiple-level`)
 
 ---
 
-### `index find block <blockCid> [contextCid]`
+### `index find records <targetCid> [containingCid]`
 
-Find the location of a given block by its CID, using a specified strategy.
+Find index records of a given blob/pack/containing by its CID, using a specified strategy.
 
 #### Examples:
 
 ```sh
-index find block bafk... -s block-level
-index find block bafk... bafy... -s multiple-level
+index find records bafk... -s single-level
+index find records bafy... -s multiple-level
+index find records bafk... bafy... -s multiple-level
 ```
 
 #### Options:
 
-- `-s, --strategy` Indexing strategy: "block-level" or "multiple-level" (default: `block-level`)
-
----
-
-### `index find containers <contentCid>`
-
-Find all containers that hold the given content CID, using the "multiple-level" strategy.
-
-#### Examples:
-
-```sh
-index find containers bafy... -s multiple-level
-```
+- `-s, --strategy` Indexing strategy: "single-level" or "multiple-level" (default: `single-level`)
 
 ---
 
@@ -80,12 +66,12 @@ Clear all indexes within a strategy.
 
 ```sh
 index clear -s multiple-level
-index clear -s block-level
+index clear -s single-level
 ```
 
 #### Options:
 
-- `-s, --strategy` Indexing strategy: "block-level" or "multiple-level" (default: `multiple-level`)
+- `-s, --strategy` Indexing strategy: "single-level" or "multiple-level" (default: `multiple-level`)
 
 ## FAQ
 

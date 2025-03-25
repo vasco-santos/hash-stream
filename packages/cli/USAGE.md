@@ -1,5 +1,7 @@
 # `hash-stream` CLI usage with `ipfs-car`
 
+In this Usage document, we rely on CAR Files as Packs to transport a set of Blobs.
+
 ## Getting started
 
 Install the CLI from npm (**requires Node 20 or higher**):
@@ -31,158 +33,233 @@ bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
 
 ## Examples
 
-### Block level indexing for CAR file
+### Blob level indexing for Pack (CAR file)
 
 ```sh
-# create block-level index associating blocks to the CAR file
-# index create <containerCid> <filePath> -s block-level
-$ hash-stream index create bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra file.car -s block-level
+# Add single-level index entries associating blobs to the pack (CAR file)
+# index add <packCid> <filePath> -s single-level
+$ hash-stream index add bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra file.car -s single-level
 
-Container CID:
+Pack CID:
     bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
     base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
 
-Indexing (block-level)...
-Indexed block:
+Indexing (single-level)...
+Indexed blob:
     bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm
     base58btc(zQmRFEnQEBhu3Vi4Zfw82D57vzFa9vQTQP1wTH2PzspYRLW)
     offset: 96 length: 26
-Indexed block:
+Indexed blob:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
     offset: 159 length: 67
 
-# find blocks location using the index
-# index find block <blockCid> -s block-level
-$ hash-stream index find block bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm -s block-level
+# find target index records stored in the index
+# index find records <targetCid> -s single-level
+$ hash-stream index find records bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm -s single-level
 
-Block CID:
+Target CID:
     bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm
     base58btc(zQmRFEnQEBhu3Vi4Zfw82D57vzFa9vQTQP1wTH2PzspYRLW)
 
-Finding block (block-level)...
+Finding target (single-level)...
     bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm
     base58btc(zQmRFEnQEBhu3Vi4Zfw82D57vzFa9vQTQP1wTH2PzspYRLW)
 
-Location:
+Index Records:
     base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
-    offset: 96 length: 26
+    type: BLOB, offset: 96, length: 26
 
-$ hash-stream index find block bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s block-level
+$ hash-stream index find records bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s single-level
 
-Block CID:
+Target CID:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
-Finding block (block-level)...
+Finding target (single-level)...
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
-Location:
+Index Records:
     base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
-    offset: 159 length: 67
+    type: BLOB, offset: 159, length: 67
+
+$ hash-stream index find records bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra -s single-level
+
+Target CID:
+    bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
+    base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+
+Finding target (single-level)...
+    bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
+    base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+
+Index Records:
+    base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+    type: PACK, offset: N/A, length: N/A
 ```
 
-### Multiple level indexing for CAR file
+### Multiple level indexing for Pack (CAR file)
 
 ```sh
-# create multiple-level index associating a root CID and its blocks to a set of CAR(s) file(s)
-# index create <containerCid> <filePath> [contextCid] -s multiple-level
-$ hash-stream index create bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra file.car bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
+# add multiple-level index associating a containing CID and its blobs to a set of Packs (CAR files)
+# index add <packCid> <filePath> [containingCid] -s multiple-level
+$ hash-stream index add bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra file.car bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
 
-Container CID:
+Pack CID:
     bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
     base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
-Context CID:
+Containing CID:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
 Indexing (multiple-level)...
-Indexed block:
+Indexed blob:
     bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm
     base58btc(zQmRFEnQEBhu3Vi4Zfw82D57vzFa9vQTQP1wTH2PzspYRLW)
     offset: 96 length: 26
-Indexed block:
+Indexed blob:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
     offset: 159 length: 67
 
-# find blocks location using the index and hinting context root CID
-# index find block <blockCid> [contextCid] -s multiple-level
-$ hash-stream index find block bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
+# find index records of a given blob/pack/containing stored in the index
+# index find records <targetCid> [containingCid] -s multiple-level
+$ hash-stream index find records bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
 
-Block CID:
+Target CID:
     bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm
     base58btc(zQmRFEnQEBhu3Vi4Zfw82D57vzFa9vQTQP1wTH2PzspYRLW)
-Context CID:
+Containing CID:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
-Finding block (block-level)...
+Finding target (multiple-level)...
     bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm
     base58btc(zQmRFEnQEBhu3Vi4Zfw82D57vzFa9vQTQP1wTH2PzspYRLW)
 
-Location:
+Index Records:
     base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
-    offset: 96 length: 26
+    type: BLOB, offset: 96, length: 26
 
-$ hash-stream index find block bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
+$ hash-stream index find records bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
 
-Block CID:
-    bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
-    base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
-Context CID:
-    bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
-    base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
-
-Finding block (block-level)...
-    bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
-    base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
-
-Location:
+Target CID:
+    bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
     base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
-    offset: 159 length: 67
+Containing CID:
+    bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
+    base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
-# find containers that have the blocks for a given root CID
-# index find containers <contentCid>
-$ hash-stream index find containers bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
+Finding target (multiple-level)...
+    bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
+    base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
 
-Location:
-    content CID: bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
-    base58btc(zdj7Wm1Ci3o6jQszsYEMXDgZQKmJHLUE2FUmv8RATvZeZA5AF)
-    shards:
+Index Records:
+    base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+    type: PACK, offset: N/A, length: N/A
+    Sub-Records:
         base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+        type: BLOB, offset: 96, length: 26
+        base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+        type: BLOB, offset: 159, length: 67
 
-# but a root CID MAY be sharded across multiple CAR files
-# considering there are also blocks for it in a file2.car
+$ hash-stream index find records bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
+
+Target CID:
+    bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
+    base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
+
+Finding target (multiple-level)...
+    bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
+    base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
+
+Index Records:
+    base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
+    type: CONTAINING, offset: N/A, length: N/A
+    Sub-Records:
+        base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+        type: PACK, offset: N/A, length: N/A
+        Sub-Records:
+            base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+            type: BLOB, offset: 96, length: 26
+            base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+            type: BLOB, offset: 159, length: 67
+
+# but a containing CID MAY be split across Packs
+# considering there are also blobs for it in a file2.car
 $ ipfs-car hash file2.car
-bagbaierafxbbjjrhght7yzsg4e2hi2kb53uhhcu7ishekq6jdu3udarm5tba
+bagbaierasjalv5zwihm24bgtnjwepcte2hwh76355olccz4el5pd6vj7zafq
 
-$ hash-stream index create bagbaierafxbbjjrhght7yzsg4e2hi2kb53uhhcu7ishekq6jdu3udarm5tba file2.car bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
+$ hash-stream index add bagbaierasjalv5zwihm24bgtnjwepcte2hwh76355olccz4el5pd6vj7zafq file2.car bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
 
-Container CID:
-    bagbaierafxbbjjrhght7yzsg4e2hi2kb53uhhcu7ishekq6jdu3udarm5tba
+Pack CID:
+    bagbaierasjalv5zwihm24bgtnjwepcte2hwh76355olccz4el5pd6vj7zafq
     base58btc(zQmRRGhfJMXQ7iNDTKiFFGiCL93jnFDcnd6vqgnizA2vmDb)
-Context CID:
+Containing CID:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
 Indexing (multiple-level)...
-Indexed block:
-    bafkreigj55bm7linlocmeg2getwzaivj3h566vr2t2nkl2rfnjrtjma34i
-    base58btc(zQmbvvG4HHa3aUCRZTtZBpTGBs44ca8nTeDdueQFZatmEnm)
-    offset: 98 length: 176020
-Indexed block:
-    bafybeicuyqc7lu3cjiybw532fqzxizjmo27mliei5ow2xjkwtwcn55wzpm
-    base58btc(zQmU3YKXBhCgSfij6RsfTan8x6Lm1g22xYTqH6g5imbB4Rp)
-    offset: 176155 length: 64
+Indexed blob:
+    bafkreickbxw2ugu5rov6bvjbayhgqehhm3t3vpdoam7wih7c44mm3kps6y
+    base58btc(zQmTKjCQe7rSuAxeajoiaciC1JhMwtYageDGj8qu3LDuQeR)
+    offset: 98 length: 176643
+Indexed blob:
+    bafybeicbpa7wm56qbotxrtdoofuofg2hcasouttzw57xyrizd4n72lwjd4
+    base58btc(zQmSkDZHnSVBawRdmjo2ivzZpdSSHkJBrWb3EYnfQiAz9rE)
+    offset: 176778 length: 64
 
-$ hash-stream index find containers bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
+# Find index records for new pack
+$ hash-stream index find records bagbaierasjalv5zwihm24bgtnjwepcte2hwh76355olccz4el5pd6vj7zafq bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
 
-Location:
-    content CID: bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
-    base58btc(zdj7Wm1Ci3o6jQszsYEMXDgZQKmJHLUE2FUmv8RATvZeZA5AF)
-    shards:
-        base58btc(zQmRRGhfJMXQ7iNDTKiFFGiCL93jnFDcnd6vqgnizA2vmDb),
+Target CID:
+    bagbaierasjalv5zwihm24bgtnjwepcte2hwh76355olccz4el5pd6vj7zafq
+    base58btc(zQmYBZUsAjCMW4yvAEW2r1K4qMd9voXuaeF9RHLgukLKiq8)
+Containing CID:
+    bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
+    base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
+
+Finding target (multiple-level)...
+    bagbaierasjalv5zwihm24bgtnjwepcte2hwh76355olccz4el5pd6vj7zafq
+    base58btc(zQmYBZUsAjCMW4yvAEW2r1K4qMd9voXuaeF9RHLgukLKiq8)
+
+Index Records:
+    base58btc(zQmYBZUsAjCMW4yvAEW2r1K4qMd9voXuaeF9RHLgukLKiq8)
+    type: PACK, offset: N/A, length: N/A
+    Sub-Records:
+        base58btc(zQmYBZUsAjCMW4yvAEW2r1K4qMd9voXuaeF9RHLgukLKiq8)
+        type: BLOB, offset: 98, length: 176643
+        base58btc(zQmYBZUsAjCMW4yvAEW2r1K4qMd9voXuaeF9RHLgukLKiq8)
+        type: BLOB, offset: 176778, length: 64
+
+# Find index records for containing
+$ hash-stream index find records bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa -s multiple-level
+
+Target CID:
+    bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
+    base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
+
+Finding target (multiple-level)...
+    bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
+    base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
+
+Index Records:
+    base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
+    type: CONTAINING, offset: N/A, length: N/A
+    Sub-Records:
         base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+        type: PACK, offset: N/A, length: N/A
+        Sub-Records:
+            base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+            type: BLOB, offset: 96, length: 26
+            base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
+            type: BLOB, offset: 159, length: 67
+        base58btc(zQmYBZUsAjCMW4yvAEW2r1K4qMd9voXuaeF9RHLgukLKiq8)
+        type: PACK, offset: N/A, length: N/A
+        Sub-Records:
+            base58btc(zQmYBZUsAjCMW4yvAEW2r1K4qMd9voXuaeF9RHLgukLKiq8)
+            type: BLOB, offset: 98, length: 176643
+            base58btc(zQmYBZUsAjCMW4yvAEW2r1K4qMd9voXuaeF9RHLgukLKiq8)
+            type: BLOB, offset: 176778, length: 64
 ```

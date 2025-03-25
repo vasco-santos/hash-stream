@@ -1,35 +1,37 @@
 import path from 'path'
 import fs from 'fs'
+import all from 'it-all'
 
 import { CarIndexer } from '@ipld/car'
 import { CID } from 'multiformats/cid'
-
-import { getClient } from './lib.js'
 import { base58btc } from 'multiformats/bases/base58'
 
+import { getClient } from './lib.js'
+
 /**
- * @param {string} containerCid
+ * @param {string} packCid
  * @param {string} filePath
- * @param {string} [contextCid]
+ * @param {string} [containingCid]
  * @param {{
  *   _: string[],
- *   strategy: 'block-level' | 'multiple-level'
+ *   strategy: 'single-level' | 'multiple-level'
  * }} [opts]
  */
-export const indexCreate = async (
-  containerCid,
+export const indexAdd = async (
+  packCid,
   filePath,
-  contextCid,
+  containingCid,
   opts = { strategy: 'multiple-level', _: [] }
 ) => {
   const strategy = validateStrategy(opts.strategy)
   const client = await getClient()
 
-  let containerMultihash
+  /** @type {import('multiformats').MultihashDigest} */
+  let packMultihash
   try {
-    containerMultihash = CID.parse(containerCid).multihash
+    packMultihash = CID.parse(packCid).multihash
   } catch (err) {
-    console.error('Error parsing container CID:', err)
+    console.error('Error parsing pack CID:', err)
     process.exit(1)
   }
 
@@ -50,182 +52,142 @@ export const indexCreate = async (
     process.exit(1)
   })
 
-  const blockIndexIterable = await CarIndexer.fromIterable(fileStream)
-  // Wrap block index iterable to log indexed blocks
-  const wrappedBlockIndexIterable = {
+  const blobIndexIterable = await CarIndexer.fromIterable(fileStream)
+  // Wrap blob index iterable to log indexed blobs
+  const wrappedBlobIndexIterable = {
     [Symbol.asyncIterator]: async function* () {
-      for await (const blockIndex of blockIndexIterable) {
+      for await (const blobIndex of blobIndexIterable) {
         console.info(
-          `Indexed block: 
-    ${blockIndex.cid.toString()}
-    base58btc(${base58btc.encode(blockIndex.cid.multihash.bytes)})
-    offset: ${blockIndex.blockOffset} length: ${blockIndex.blockLength}`
+          `Indexed blob: 
+    ${blobIndex.cid.toString()}
+    base58btc(${base58btc.encode(blobIndex.cid.multihash.bytes)})
+    offset: ${blobIndex.blockOffset} length: ${blobIndex.blockLength}`
         )
-        yield blockIndex
+        yield {
+          multihash: blobIndex.cid.multihash,
+          location: packMultihash,
+          offset: blobIndex.blockOffset,
+          length: blobIndex.blockLength,
+        }
       }
     },
   }
 
   console.info(
-    `\n\nContainer CID:
-    ${containerCid}
-    base58btc(${base58btc.encode(containerMultihash.bytes)})`
+    `\n\nPack CID:
+    ${packCid}
+    base58btc(${base58btc.encode(packMultihash.bytes)})`
   )
 
-  let contextCidLink
-  if (contextCid) {
+  let containingCidLink
+  if (containingCid) {
     try {
-      contextCidLink = CID.parse(contextCid).link()
+      containingCidLink = CID.parse(containingCid).link()
     } catch (err) {
-      console.error('Error parsing context CID:', err)
+      console.error('Error parsing containing CID:', err)
       process.exit(1)
     }
     console.log(
-      `Context CID:
-    ${contextCidLink.toString()}
-    base58btc(${base58btc.encode(contextCidLink.multihash.bytes)})`
+      `Containing CID:
+    ${containingCidLink.toString()}
+    base58btc(${base58btc.encode(containingCidLink.multihash.bytes)})`
     )
   }
 
   console.log(`\nIndexing (${strategy})...`)
-  if (strategy === 'block-level') {
-    await client.index.blockLevelIndex.indexContainer(
-      wrappedBlockIndexIterable,
-      containerMultihash
-    )
+  if (strategy === 'single-level') {
+    await client.index.singleLevelIndex.addBlobs(wrappedBlobIndexIterable)
   } else if (strategy === 'multiple-level') {
-    if (!contextCidLink) {
-      console.error(
-        'Error: Context CID is required for multiple-level indexing.'
-      )
-      process.exit(1)
-    }
-    await client.index.multipleLevelIndex.indexContainer(
-      wrappedBlockIndexIterable,
-      containerMultihash,
-      { contextCid: contextCidLink }
-    )
+    await client.index.multipleLevelIndex.addBlobs(wrappedBlobIndexIterable, {
+      containingMultihash: containingCidLink?.multihash,
+    })
   }
 }
 
 /**
- * @param {string} blockCid
- * @param {string} [contextCid]
+ * @param {string} targetCid
+ * @param {string} [containingCid]
  * @param {{
  *   _: string[],
- *   strategy?: 'block-level' | 'multiple-level'
+ *   strategy?: 'single-level' | 'multiple-level'
  * }} [opts]
  */
-export const indexFindBlock = async (
-  blockCid,
-  contextCid,
+export const indexFindRecords = async (
+  targetCid,
+  containingCid,
   opts = { strategy: 'multiple-level', _: [] }
 ) => {
   const strategy = validateStrategy(opts.strategy)
   const client = await getClient()
 
-  let blockMultihash
+  let targetMultihash
   try {
-    blockMultihash = CID.parse(blockCid).multihash
+    targetMultihash = CID.parse(targetCid).multihash
   } catch (err) {
-    console.error('Error parsing block CID:', err)
+    console.error('Error parsing target CID:', err)
     process.exit(1)
   }
 
   console.info(
-    `\n\nBlock CID:
-    ${blockCid}
-    base58btc(${base58btc.encode(blockMultihash.bytes)})`
+    `\n\nTarget CID:
+    ${targetCid}
+    base58btc(${base58btc.encode(targetMultihash.bytes)})`
   )
 
-  let contextCidLink
-  if (contextCid) {
+  let containingCidLink
+  if (containingCid) {
     try {
-      contextCidLink = CID.parse(contextCid).link()
+      containingCidLink = CID.parse(containingCid).link()
     } catch (err) {
-      console.error('Error parsing context CID:', err)
+      console.error('Error parsing containing CID:', err)
       process.exit(1)
     }
     console.info(
-      `Context CID:
-    ${contextCidLink.toString()}
-    base58btc(${base58btc.encode(contextCidLink.multihash.bytes)})`
+      `Containing CID:
+    ${containingCidLink.toString()}
+    base58btc(${base58btc.encode(containingCidLink.multihash.bytes)})`
     )
   }
 
-  console.log(`\nFinding block (${strategy})...
-    ${blockCid}
-    base58btc(${base58btc.encode(blockMultihash.bytes)})`)
+  console.log(`\nFinding target (${strategy})...
+    ${targetCid}
+    base58btc(${base58btc.encode(targetMultihash.bytes)})`)
 
-  if (strategy === 'block-level') {
-    const location = await client.index.blockLevelIndex.findBlockLocation(
-      blockMultihash
+  if (strategy === 'single-level') {
+    const recordsStream = await client.index.singleLevelIndex.findRecords(
+      targetMultihash
     )
-    if (!location) {
-      console.info(`\nLocation:
-    Block not found.`)
+    if (!recordsStream) {
+      console.info(`\nIndex Records:
+    Not found.`)
       return
     }
-    console.info(`\nLocation:
-    base58btc(${base58btc.encode(location.container.bytes || new Uint8Array())})
-    offset: ${location.offset} length: ${location.length}`)
+    const records = await all(recordsStream)
+    console.info(`\nIndex Records:`)
+    logRecords(records)
   } else if (strategy === 'multiple-level') {
-    const location = await client.index.multipleLevelIndex.findBlockLocation(
-      blockMultihash,
+    const recordsStream = await client.index.multipleLevelIndex.findRecords(
+      targetMultihash,
       {
-        contextCid: contextCidLink,
+        containingMultihash: containingCidLink?.multihash,
       }
     )
-    if (!location) {
-      console.info(`\nLocation:
-    Block not found.`)
+    if (!recordsStream) {
+      console.info(`\nIndex Records:
+    Not found.`)
       return
     }
-    console.log(`\nLocation:
-    base58btc(${base58btc.encode(location.container.bytes || new Uint8Array())})
-    offset: ${location.offset} length: ${location.length}`)
-  }
-}
 
-/**
- * @param {string} contentCid
- */
-export const indexFindContainers = async (contentCid) => {
-  const client = await getClient()
-
-  let contentMultihash
-  try {
-    contentMultihash = CID.parse(contentCid).multihash
-  } catch (err) {
-    console.error('Error parsing content CID:', err)
-    process.exit(1)
+    const records = await all(recordsStream)
+    console.info(`\nIndex Records:`)
+    logRecords(records)
   }
-
-  const location = await client.index.multipleLevelIndex.findContainers(
-    contentMultihash
-  )
-  if (!location) {
-    console.info(`\nLocation:
-    Content not found.`)
-    return
-  }
-  console.log(`\nLocation:
-    content CID: ${contentCid}
-    base58btc(${base58btc.encode(
-      location.contentCID.bytes || new Uint8Array()
-    )})
-    shards: ${location?.shards
-      .map((shard) => {
-        return `
-        base58btc(${base58btc.encode(shard.bytes)})`
-      })
-      .concat('\n')}`)
 }
 
 /**
  * @param {{
  *   _: string[],
- *   strategy?: 'block-level' | 'multiple-level'
+ *   strategy?: 'single-level' | 'multiple-level'
  * }} [opts]
  */
 export const indexClear = async (
@@ -235,8 +197,8 @@ export const indexClear = async (
   const client = await getClient()
 
   let directoryPath
-  if (strategy === 'block-level') {
-    directoryPath = client.index.blockIndexStore.directory
+  if (strategy === 'single-level') {
+    directoryPath = client.index.singleLevelIndexStore.directory
   } else if (strategy === 'multiple-level') {
     directoryPath = client.index.multipleLevelIndexStore.directory
   } else {
@@ -248,7 +210,15 @@ export const indexClear = async (
     const files = await fs.promises.readdir(directoryPath)
     for (const file of files) {
       const filePath = path.join(directoryPath, file)
-      await fs.promises.unlink(filePath)
+      const stats = await fs.promises.stat(filePath)
+
+      if (stats.isDirectory()) {
+        // If it's a directory, delete it recursively
+        await fs.promises.rm(filePath, { recursive: true, force: true })
+      } else {
+        // If it's a file, remove it normally
+        await fs.promises.rm(filePath, { force: true })
+      }
     }
     console.log(`Cleared all files in directory: ${directoryPath}`)
   } catch (err) {
@@ -258,7 +228,7 @@ export const indexClear = async (
 }
 
 // Allowed strategies
-const VALID_STRATEGIES = ['block-level', 'multiple-level']
+const VALID_STRATEGIES = ['single-level', 'multiple-level']
 
 /**
  * Validates the given strategy.
@@ -272,10 +242,45 @@ function validateStrategy(strategy) {
 
   if (!VALID_STRATEGIES.includes(strategy)) {
     console.error(
-      `Error: Invalid strategy "${strategy}". Use "block-level" or "multiple-level".`
+      `Error: Invalid strategy "${strategy}". Use "single-level" or "multiple-level".`
     )
     process.exit(1)
   }
 
   return strategy
 }
+
+/**
+ * @param {import('@hash-stream/index/types').IndexRecord[]} records
+ * @param {number} indentLevel
+ */
+function logRecords(records, indentLevel = 1) {
+  if (!records || records.length === 0) {
+    console.info('    Not found.')
+    return
+  }
+
+  const indent = '    '.repeat(indentLevel)
+
+  for (const record of records) {
+    console.info(
+      `${indent}base58btc(${base58btc.encode(
+        record.location.bytes || new Uint8Array()
+      )})
+${indent}type: ${TypeStr[record.type]}, offset: ${
+        record.offset || 'N/A'
+      }, length: ${record.length || 'N/A'}`
+    )
+
+    if (record.subRecords && record.subRecords.length > 0) {
+      console.info(`${indent}Sub-Records:`)
+      logRecords(record.subRecords, indentLevel + 1)
+    }
+  }
+}
+
+export const TypeStr = Object.freeze({
+  0: 'BLOB',
+  1: 'PACK',
+  2: 'CONTAINING',
+})

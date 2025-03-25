@@ -32,7 +32,7 @@ export interface AgentDataModel {
 }
 
 interface IndexDataModel {
-  blockIndex: IndexStrategyDataModel
+  singleLevelIndex: IndexStrategyDataModel
   multipleLevelIndex: IndexStrategyDataModel
 }
 

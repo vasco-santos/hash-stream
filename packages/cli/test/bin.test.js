@@ -28,21 +28,21 @@ describe('CLI', () => {
     assert.match(output, /@hash-stream\/cli, \d+\.\d+\.\d+/)
   })
 
-  it('fails index create if invalid container CID provided', async () => {
+  it('fails index add if invalid pack CID provided', async () => {
     const fail = await hashStreamCmd
-      .args(['index', 'create', 'bagbaieraquzn', 'test/fixture.car'])
+      .args(['index', 'add', 'bagbaieraquzn', 'test/fixture.car'])
       .env(env)
       .join()
       .catch()
 
-    assert.match(fail.error, /Error parsing container CID/)
+    assert.match(fail.error, /Error parsing pack CID/)
   })
 
-  it('fails index create if invalid context CID provided', async () => {
+  it('fails index add if invalid containing CID provided', async () => {
     const fail = await hashStreamCmd
       .args([
         'index',
-        'create',
+        'add',
         'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
         'test/fixture.car',
         'bafynononon',
@@ -51,14 +51,14 @@ describe('CLI', () => {
       .join()
       .catch()
 
-    assert.match(fail.error, /Error parsing context CID/)
+    assert.match(fail.error, /Error parsing containing CID/)
   })
 
-  it('fails index create if it does not find the CAR file', async () => {
+  it('fails index add if it does not find the CAR file', async () => {
     const fail = await hashStreamCmd
       .args([
         'index',
-        'create',
+        'add',
         'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
         'test/no.car',
       ])
@@ -69,31 +69,31 @@ describe('CLI', () => {
     assert.match(fail.error, /File does not exist at path/)
   })
 
-  it('can index create with block strategy', async () => {
-    const create = await hashStreamCmd
+  it('can index add with single strategy', async () => {
+    const add = await hashStreamCmd
       .args([
         'index',
-        'create',
+        'add',
         'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
         'test/fixture.car',
         '--strategy',
-        'block-level',
+        'single-level',
       ])
       .env(env)
       .join()
 
-    assert.equal(create.status.code, 0)
+    assert.equal(add.status.code, 0)
     assert.match(
-      create.output,
-      /\n*Container CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing \(block-level\)\.\.\.\n+(?:Indexed block:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
+      add.output,
+      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing \(single-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
-  it('can index create with multiple strategy', async () => {
-    const create = await hashStreamCmd
+  it('can index add with multiple strategy', async () => {
+    const add = await hashStreamCmd
       .args([
         'index',
-        'create',
+        'add',
         'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
         'test/fixture.car',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
@@ -103,18 +103,18 @@ describe('CLI', () => {
       .env(env)
       .join()
 
-    assert.equal(create.status.code, 0)
+    assert.equal(add.status.code, 0)
     assert.match(
-      create.output,
-      /\n*Container CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Context CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing \(multiple-level\)\.\.\.\n+(?:Indexed block:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
+      add.output,
+      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing \(multiple-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
-  it('fails index create if it does not have context CID for multiple strategy', async () => {
-    const fail = await hashStreamCmd
+  it('can index add without containing CID for multiple strategy', async () => {
+    const add = await hashStreamCmd
       .args([
         'index',
-        'create',
+        'add',
         'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
         'test/fixture.car',
         '--strategy',
@@ -122,30 +122,30 @@ describe('CLI', () => {
       ])
       .env(env)
       .join()
-      .catch()
 
+    assert.equal(add.status.code, 0)
     assert.match(
-      fail.error,
-      /Error: Context CID is required for multiple-level indexing/
+      add.output,
+      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*(?:Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)?Indexing \(multiple-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
-  it('fails index find block if invalid block CID provided', async () => {
+  it('fails index find records if invalid target CID provided', async () => {
     const fail = await hashStreamCmd
-      .args(['index', 'find', 'block', 'bagbaieraquzn'])
+      .args(['index', 'find', 'records', 'bagbaieraquzn'])
       .env(env)
       .join()
       .catch()
 
-    assert.match(fail.error, /Error parsing block CID/)
+    assert.match(fail.error, /Error parsing target CID/)
   })
 
-  it('fails index find block if invalid context CID provided', async () => {
+  it('fails index find records if invalid containing CID provided', async () => {
     const fail = await hashStreamCmd
       .args([
         'index',
         'find',
-        'block',
+        'records',
         'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
         'bafynononon',
       ])
@@ -153,18 +153,18 @@ describe('CLI', () => {
       .join()
       .catch()
 
-    assert.match(fail.error, /Error parsing context CID/)
+    assert.match(fail.error, /Error parsing containing CID/)
   })
 
-  it('can index find block with block strategy', async () => {
+  it('can index find records with single strategy', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
         'find',
-        'block',
+        'records',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
         '--strategy',
-        'block-level',
+        'single-level',
       ])
       .env(env)
       .join()
@@ -172,19 +172,19 @@ describe('CLI', () => {
     assert.equal(find.status.code, 0)
     assert.match(
       find.output,
-      /\n*Block CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding block \(block-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Location:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*/
+      /\n*Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target \(single-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+\n*/
     )
   })
 
-  it('can not find block with index find block with block strategy for unknown block', async () => {
+  it('can not find records with index find records with single strategy for unknown target', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
         'find',
-        'block',
+        'records',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ncm',
         '--strategy',
-        'block-level',
+        'single-level',
       ])
       .env(env)
       .join()
@@ -192,16 +192,16 @@ describe('CLI', () => {
     assert.equal(find.status.code, 0)
     assert.match(
       find.output,
-      /\n*Block CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding block \(block-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Location:\n\s+Block not found\.\n*/
+      /\n*Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target \(single-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+Not found\.\n*/
     )
   })
 
-  it('can index find block with multiple strategy', async () => {
+  it('can index find records with multiple strategy for a blob', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
         'find',
-        'block',
+        'records',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
         '--strategy',
@@ -211,18 +211,125 @@ describe('CLI', () => {
       .join()
 
     assert.equal(find.status.code, 0)
+    // Match Target CID
     assert.match(
       find.output,
-      /\n*Block CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+(\s*Context CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)?\s*Finding block \((?:block|multiple)-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Location:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*/
+      /Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
+
+    // Match Containing CID
+    assert.match(
+      find.output,
+      /Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Finding target (multiple-level)
+    assert.match(
+      find.output,
+      /Finding target \(multiple-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Index Records section
+    assert.match(find.output, /Index Records:/)
+
+    // Match type: BLOB, offset, length
+    assert.match(find.output, /type: BLOB,.*offset: \d+,.*length: \d+/)
   })
 
-  it('can not find block with index find block with multiple strategy for unknown block', async () => {
+  it('can index find records with multiple strategy for a pack', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
         'find',
-        'block',
+        'records',
+        'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
+        'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
+        '--strategy',
+        'multiple-level',
+      ])
+      .env(env)
+      .join()
+
+    assert.equal(find.status.code, 0)
+    // Match Target CID
+    assert.match(
+      find.output,
+      /Target CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Containing CID
+    assert.match(
+      find.output,
+      /Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Finding target (multiple-level)
+    assert.match(
+      find.output,
+      /Finding target \(multiple-level\)\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Index Records section
+    assert.match(find.output, /Index Records:/)
+
+    // Match type: PACK, offset, length
+    assert.match(find.output, /type: PACK, offset: N\/A, length: N\/A/)
+
+    // Match Sub-Records section (allow multiple sub-records)
+    assert.match(
+      find.output,
+      /Sub-Records:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+type: BLOB, offset: \d+, length: \d+/,
+      'Sub-Records not found or not matching the expected pattern'
+    )
+  })
+
+  it('can index find records with multiple strategy for a containing', async () => {
+    const find = await hashStreamCmd
+      .args([
+        'index',
+        'find',
+        'records',
+        'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
+        '--strategy',
+        'multiple-level',
+      ])
+      .env(env)
+      .join()
+
+    assert.equal(find.status.code, 0)
+
+    // Match Target CID
+    assert.match(
+      find.output,
+      /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Finding target (multiple-level)
+    assert.match(
+      find.output,
+      /Finding target \(multiple-level\)\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Index Records section
+    assert.match(find.output, /Index Records:/)
+
+    // Match type: CONTAINING, offset, length
+    assert.match(find.output, /type: CONTAINING, offset: N\/A, length: N\/A/)
+
+    // Match Sub-Records section (allow multiple sub-records, including nested)
+    assert.match(
+      find.output,
+      /Sub-Records:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+type: PACK, offset: N\/A, length: N\/A\n\s+Sub-Records:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+type: BLOB, offset: \d+, length: \d+/,
+      'Sub-Records not found or not matching the expected pattern'
+    )
+  })
+
+  it('can not find records with multiple strategy for unknown target', async () => {
+    const find = await hashStreamCmd
+      .args([
+        'index',
+        'find',
+        'records',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
         '--strategy',
@@ -232,56 +339,24 @@ describe('CLI', () => {
       .join()
 
     assert.equal(find.status.code, 0)
+    // Adjusting the regex to be more flexible with newlines and spacing
     assert.match(
       find.output,
-      /\n*Block CID:\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Context CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding block \(multiple-level\)\.\.\.\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Location:\n\s+Block not found\.\n*/
+      /\s*Target CID:\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target \(multiple-level\)\.\.\.\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+Not found\.\n*/,
+      'Output did not match expected pattern for unknown target'
     )
-  })
-
-  it('can index find containers', async () => {
-    const find = await hashStreamCmd
-      .args([
-        'index',
-        'find',
-        'containers',
-        'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
-      ])
-      .env(env)
-      .join()
-    assert.equal(find.status.code, 0)
-    assert.match(
-      find.output,
-      /\n*Location:\n\s*content CID:\s+bafy[a-z0-9]+\n\s+base58btc\(z[a-zA-Z0-9]+\)\n\s*shards:\s*\n\s*(?:base58btc\(zQm[a-zA-Z0-9]+\),?\n\s*)+/
-    )
-  })
-
-  it('fails index find containers if invalid content CID provided', async () => {
-    const fail = await hashStreamCmd
-      .args(['index', 'find', 'containers', 'bagbaieraquzn'])
-      .env(env)
-      .join()
-      .catch()
-
-    assert.match(fail.error, /Error parsing content CID/)
-  })
-
-  it('can not find index find containers for unknown content', async () => {
-    const find = await hashStreamCmd
-      .args([
-        'index',
-        'find',
-        'containers',
-        'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
-      ])
-      .env(env)
-      .join()
-
-    assert.equal(find.status.code, 0)
-    assert.match(find.output, /\n*Location:\n\s*Content not found\.\n/)
   })
 
   it('can index clear', async () => {
     const clear = await hashStreamCmd.args(['index', 'clear']).env(env).join()
+    assert.match(clear.output, /\n*Cleared all files in directory:\s*\/[\S]+\n/)
+  })
+
+  it('can index clear for single-level strategt', async () => {
+    const clear = await hashStreamCmd
+      .args(['index', 'clear', '--strategy', 'multiple-level'])
+      .env(env)
+      .join()
     assert.match(clear.output, /\n*Cleared all files in directory:\s*\/[\S]+\n/)
   })
 })

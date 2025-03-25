@@ -3,12 +3,7 @@
 import sade from 'sade'
 import fs from 'fs'
 
-import {
-  indexCreate,
-  indexFindBlock,
-  indexFindContainers,
-  indexClear,
-} from './index.js'
+import { indexAdd, indexFindRecords, indexClear } from './index.js'
 
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url)).toString()
@@ -17,54 +12,45 @@ const cli = sade(pkg.name)
 
 cli.version(pkg.version)
 
-// Command: Create an Index
+// Command: Add Records to the Index
 cli
-  .command('index create <containerCid> <filePath> [contextCid]')
+  .command('index add <packCid> <filePath> [containingCid]')
   .describe(
-    'Create an index for the given verifiable container (CAR file) using the specified strategy.'
+    'Adds an index for a given verifiable pack (CAR file) using the specified strategy.'
   )
-  .example('index create bag... container.car bafy... -s multiple-level')
-  .example('index create bag... container.car -s block-level')
+  .example('index add bag... pack.car bafy... -s multiple-level')
+  .example('index add bag... pack.car -s single-level')
   .option(
     '-s, --strategy',
-    'Indexing strategy: "block-level" or "multiple-level"',
+    'Indexing strategy: "single-level" or "multiple-level"',
     'multiple-level'
   )
-  .action(indexCreate)
+  .action(indexAdd)
 
-// Command: Find a Block's Location
+// Command: Find index records for a given target
 cli
-  .command('index find block <blockCid> [contextCid]')
+  .command('index find records <targetCid> [containingCid]')
   .describe(
-    'Find the location of a given block by its CID, using a specified strategy.'
+    'Find index records of a given blob/pack/containing by its CID, using a specified strategy.'
   )
-  .example('index find block bafk... -s block-level')
-  .example('index find block bafk... bafy... -s multiple-level')
+  .example('index find records bafk... -s single-level')
+  .example('index find records bafk... bafy... -s multiple-level')
   .option(
     '-s, --strategy',
-    'Indexing strategy: "block-level" or "multiple-level"',
-    'block-level'
+    'Indexing strategy: "single-level" or "multiple-level"',
+    'multiple-level'
   )
-  .action(indexFindBlock)
-
-// Command: Find Containers Holding a Content Multihash
-cli
-  .command('index find containers <contentCid>')
-  .describe(
-    'Find all containers that hold the given content CID, using "multiple-level" strategy.'
-  )
-  .example('index find containers bafy... -s multiple-level')
-  .action(indexFindContainers)
+  .action(indexFindRecords)
 
 // Command: Clear Index
 cli
   .command('index clear')
   .describe('Clear all indexes within a stratehy.')
   .example('index clear -s multiple-level')
-  .example('index clear -s block-level')
+  .example('index clear -s single-level')
   .option(
     '-s, --strategy',
-    'Indexing strategy: "block-level" or "multiple-level"',
+    'Indexing strategy: "single-level" or "multiple-level"',
     'multiple-level'
   )
   .action(indexClear)
