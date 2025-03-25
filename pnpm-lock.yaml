@@ -94,6 +94,9 @@ importers:
       ipfs-car:
         specifier: ^2.0.0
         version: 2.0.0
+      it-all:
+        specifier: ^3.0.7
+        version: 3.0.7
       mocha:
         specifier: ^10.2.0
         version: 10.2.0
@@ -1557,6 +1560,9 @@ packages:
   istanbul-reports@3.1.7:
     resolution: {integrity: sha512-BewmUXImeuRk2YY0PVbxgKAysvhRPUQE0h5QRM++nVWyubKGV0l8qQ5op8+B2DOmwSe63Jivj0BjkPQVf8fP5g==}
     engines: {node: '>=8'}
+
+  it-all@3.0.7:
+    resolution: {integrity: sha512-PkuYtu6XhJzuPTKXImd6y0qE6H91MUPV/b9xotXMAI6GjmD2v3NoHj2g5L0lS2qZ0EzyGWZU1kp0UxW8POvNBQ==}
 
   it-filter@3.1.2:
     resolution: {integrity: sha512-2AozaGjIvBBiB7t7MpVNug9kwofqmKSpvgW7zhuyvCs6xxDd6FrfvqyfYtlQTKLNP+Io1WeXko1UQhdlK4M0gg==}
@@ -4317,6 +4323,8 @@ snapshots:
     dependencies:
       html-escaper: 2.0.2
       istanbul-lib-report: 3.0.1
+
+  it-all@3.0.7: {}
 
   it-filter@3.1.2:
     dependencies:

@@ -1,130 +1,98 @@
-import {
-  ByteView,
-  MultihashDigest,
-  UnknownLink,
-  Block as IPLDBlock,
-  Phantom,
-} from 'multiformats'
-import { CarReader } from '@ipld/car'
-import type { BlockIndex } from '@ipld/car/indexer'
+import { MultihashDigest } from 'multiformats'
 
-export type { MultihashDigest, UnknownLink, CarReader, IPLDBlock, ByteView }
+export type { MultihashDigest }
+
+export interface Index extends IndexReader, IndexWriter {}
+
+export interface IndexWriter {
+  // Stores indexed entries
+  store: IndexStore
+
+  // Adds blob indexes associated with a pack, optionally with a containing Multihash that has a relationship with the Blobs.
+  addBlobs(
+    blobIndexIterable: AsyncIterable<BlobIndexRecord>,
+    // in a multi-level-index this can be used with the contaning Multihash from where this pack belongs
+    // similar to https://github.com/ipfs/specs/pull/462
+    options?: { containingMultihash?: MultihashDigest }
+  ): Promise<void>
+}
+
+// The index reader MUST support finding locations where given
+// multihashes are stored
+export interface IndexReader {
+  // Stores indexed entries
+  store: IndexStore
+
+  // Find the index records related to the requested multihash
+  findRecords(
+    multihash: MultihashDigest,
+    // in a multiple-level-index this can be used with the containing Multihash
+    // similar to https://github.com/ipfs/specs/pull/462
+    options?: { containingMultihash?: MultihashDigest }
+  ): Promise<AsyncIterable<IndexRecord> | null>
+}
+
+export interface IndexStore extends IndexStoreReader, IndexStoreWriter {}
+
+export interface IndexStoreWriter {
+  add(entries: AsyncIterable<IndexRecord>): Promise<void>
+}
+
+// Index records can be read from a given store based on the
+// following Reader interface.
+export interface IndexStoreReader {
+  get(hash: MultihashDigest): Promise<AsyncIterable<IndexRecord> | null>
+}
+
+// An index record has the necessary metadata to find the location
+// where the bytes behind a given `MultihashDigest` rest.
+export interface IndexRecord {
+  // MultihashDigest identifiying the record
+  multihash: MultihashDigest
+  // Type of the record
+  type: IndexRecordType
+  // hash digest of the location or Path
+  location: MultihashDigest
+  // length of the data
+  length?: number
+  // offset of the data in the location byte stream
+  offset?: number
+  // associated records
+  subRecords: Array<IndexRecord>
+}
+
+export interface IndexRecordEncoded {
+  // MultihashDigest identifiying the record
+  multihash: Uint8Array
+  // Type of the record
+  type: IndexRecordType
+  // hash digest of the location or Path
+  location: Uint8Array
+  // length of the data
+  length?: number
+  // offset of the data in the location byte stream
+  offset?: number
+  // associated records
+  subRecords: Array<IndexRecordEncoded>
+}
 
 // Represents an entry in the index, supporting multiple index types
-export type IndexRecordEntry =
-  | { type: 'index/block@0.1'; data: BlockIndexRecord }
-  | { type: 'index/sharded/dag@0.1'; data: ShardedDAGIndexRecord }
+export type IndexRecordEntry = { type: string; data: IndexRecordEncoded }
 
-export type IndexRecord = BlockIndexRecord | ShardedDAGIndexRecord
+// Record Type Enum
+export type IndexRecordType = BLOB | PACK | CONTAINING
+type BLOB = 0
+type PACK = 1
+type CONTAINING = 2
 
-// Index Store: Responsible for storing and retrieving indexed content
-export interface IndexStore<IndexRecordEntry> {
-  get(hash: MultihashDigest): Promise<IndexRecordEntry | null>
-  set(hash: MultihashDigest, entry: IndexRecordEntry): Promise<void>
-}
-
-// Index: Defines how content is queried for retrieval
-export interface Index<IndexEntry> {
-  store: IndexStore<IndexEntry>
-
-  /**
-   * Indexes a given block iterable.
-   *
-   * @param {AsyncIterable<BlockIndex>} blockIterable - The block iterable reader.
-   * @param {MultihashDigest} containerMultihash - The container multihash.
-   * @param {object} [options]
-   * @param {UnknownLink} [options.contextCid] - The context where this CID belongs to.
-   * @returns {Promise<void>}
-   */
-  indexContainer(
-    blockIterable: AsyncIterable<BlockIndex>,
-    containerMultihash: MultihashDigest,
-    options?: { contextCid?: UnknownLink }
-  ): Promise<void>
-
-  /**
-   * Find the location of a given block by its multihash.
-   *
-   * @param {MultihashDigest} multihash - The hash of the block to find.
-   * @param {object} [options]
-   * @param {UnknownLink} [options.contextCid] - The context where this CID belongs to.
-   * @returns {Promise<BlockLocation | null>}
-   */
-  findBlockLocation(
-    multihash: MultihashDigest,
-    options?: { contextCid?: UnknownLink }
-  ): Promise<BlockLocation | null>
-
-  /**
-   * Find all containers that hold a given hash of content
-   *
-   * @param {MultihashDigest} multihash - The hash of the content to search for.
-   * @returns {Promise<ContentLocation | null>}
-   */
-  findContainers(multihash: MultihashDigest): Promise<ContentLocation | null>
-}
-
-// Content Resolver: Resolves structured lookups for content locations
-export interface ContentResolver {
-  resolveContent(contentCID: UnknownLink): Promise<ContentLocation | null>
-  resolveBlock(
-    blockCID: UnknownLink,
-    contentCID?: UnknownLink
-  ): Promise<BlockLocation | null>
-}
-
-// Location details for a single block
-export type BlockLocation = {
-  container: MultihashDigest
-  offset: number
-  length: number
-}
-
-// Location details for content stored across multiple containers
-export type ContentLocation = {
-  contentCID: UnknownLink
-  shards: MultihashDigest[]
-}
-
-export type BlockIndexRecord = {
-  // hash digest of the block
+// Index record of where blob is
+export interface BlobIndexRecord {
+  // MultihashDigest identifiying the Blob
   multihash: MultihashDigest
-  // hash digest of the container containing the block
-  container: MultihashDigest
-  // Slice offset
-  offset: number
-  // Slice size in bytes
+  // hash digest of the location where the Blob is (Pack or Blob itself)
+  location: MultihashDigest
+  // length of the data
   length: number
+  // offset of the data in the location byte stream
+  offset: number
 }
-
-export interface BlockIndexRecordView extends BlockIndexRecord {
-  toIndexRecordEntry(): IndexRecordEntry
-}
-
-export type ShardDigest = MultihashDigest
-export type SliceDigest = MultihashDigest
-export type Position = [offset: number, length: number]
-
-export interface ShardedDAGIndexRecord {
-  /** DAG root CID that the index pertains to. */
-  content: UnknownLink
-  /** Index information for shards the DAG is split across. */
-  shards: Map<ShardDigest, Map<SliceDigest, Position>>
-}
-
-export interface ShardedDAGIndexRecordView extends ShardedDAGIndexRecord {
-  /** Set the offset/length information for the slice a shard. */
-  setSlice(shard: ShardDigest, slice: SliceDigest, pos: Position): void
-  toIndexRecordEntry(): IndexRecordEntry
-}
-
-/**
- * [Multicodec code] usually used to tag [multiformat].
- *
- * [multiformat]:https://multiformats.io/
- * [multicodec code]:https://github.com/multiformats/multicodec/blob/master/table.csv
- */
-export type MulticodecCode<
-  Code extends number = number,
-  Name extends string = string
-> = Code & Phantom<Name>

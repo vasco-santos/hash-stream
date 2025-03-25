@@ -1,99 +1,135 @@
 import * as API from './api.js'
-import { equals } from 'uint8arrays/equals'
 
-import { ShardedDAGIndexRecord } from './record/sharded-dag.js'
+import { equals } from 'uint8arrays'
+import { base58btc } from 'multiformats/bases/base58'
 
-/**
- * @typedef {import('@ipld/car/indexer').BlockIndex} BlockIndex
- */
+import {
+  createFromBlob,
+  createFromPack,
+  createFromContaining,
+} from './record.js'
 
 /**
  * MultipleLevelIndex implements the Index interface
- * and provides methods to locate blocks and containers in a sharded DAG.
+ * and provides find records to locate blobs, packs nad containigns.
  *
- * @implements {API.Index<API.ShardedDAGIndexRecordView>}
+ * @implements {API.Index}
  */
 export class MultipleLevelIndex {
   /**
-   * @param {API.IndexStore<API.ShardedDAGIndexRecordView>} store - The store where the index is maintained.
+   * @param {API.IndexStore} store - The store where the index is maintained.
    */
   constructor(store) {
     this.store = store
   }
 
   /**
-   * Indexes a given container (CAR File).
+   * Indexes a given pack of blocks and optionally associates them with a containing multihash.
    *
-   * @param {AsyncIterable<BlockIndex>} blockIterable
-   * @param {API.MultihashDigest} containerMultihash - The container multihash.
+   * @param {AsyncIterable<API.BlobIndexRecord>} blobIndexIterable
    * @param {object} [options]
-   * @param {API.UnknownLink} [options.contextCid] - The context where this CID belongs to.
+   * @param {API.MultihashDigest} [options.containingMultihash]
    * @returns {Promise<void>}
    */
-  async indexContainer(blockIterable, containerMultihash, { contextCid } = {}) {
-    if (!contextCid) {
-      throw new Error('Context CID is required')
+  async addBlobs(blobIndexIterable, { containingMultihash } = {}) {
+    /** @type {Map<string, API.IndexRecord>} */
+    const subRecords = new Map()
+
+    // Collect all blobs
+    for await (const {
+      multihash,
+      location,
+      offset,
+      length,
+    } of blobIndexIterable) {
+      // Create Blob Index record
+      const blob = createFromBlob(multihash, location, offset, length)
+
+      // Block packed in a location
+      if (!equals(multihash.bytes, location.bytes)) {
+        const encodedLocation = base58btc.encode(location.bytes)
+        let packIndexRecord = subRecords.get(encodedLocation)
+        if (!packIndexRecord) {
+          packIndexRecord = createFromPack(location, [blob])
+          subRecords.set(encodedLocation, packIndexRecord)
+        } else {
+          packIndexRecord.subRecords.push(blob)
+        }
+      }
+      // Blob is located inline
+      else {
+        const encodedLocation = base58btc.encode(location.bytes)
+        subRecords.set(encodedLocation, blob)
+      }
     }
 
-    let record = await this.store.get(contextCid.multihash)
-    if (!record) {
-      record = new ShardedDAGIndexRecord(contextCid)
-    }
-
-    for await (const { cid, blockOffset, blockLength } of blockIterable) {
-      record.setSlice(containerMultihash, cid.multihash, [
-        blockOffset,
-        blockLength,
+    // Create final IndexRecord with containing multihash
+    if (containingMultihash) {
+      const containing = createFromContaining(containingMultihash, [
+        ...subRecords.values(),
       ])
+      await this.store.add(
+        (async function* () {
+          yield containing
+        })()
+      )
     }
-
-    await this.store.set(contextCid.multihash, record)
+    // If there is no containing multihash, add all subRecords individually
+    else {
+      await this.store.add(
+        (async function* () {
+          for (const record of subRecords.values()) {
+            yield record
+          }
+        })()
+      )
+    }
   }
 
   /**
-   * Find the location of a given block by its multihash.
+   * Find the index records of a given multihash.
    *
    * @param {API.MultihashDigest} multihash
    * @param {object} [options]
-   * @param {API.UnknownLink} [options.contextCid] - The context where this CID belongs to.
-   * @returns {Promise<API.BlockLocation | null>}
+   * @param {API.MultihashDigest} [options.containingMultihash]
+   * @returns {Promise<AsyncIterable<API.IndexRecord> | null>}
    */
-  async findBlockLocation(multihash, { contextCid } = {}) {
-    if (!contextCid) {
-      return null
-    }
+  async findRecords(multihash, { containingMultihash } = {}) {
+    if (containingMultihash) {
+      const entries = await this.store.get(containingMultihash)
+      if (entries === null) {
+        return null
+      }
 
-    const entry = await this.store.get(contextCid.multihash)
-    if (entry) {
-      for (const [shardDigest, slices] of entry.shards.entries()) {
-        for (const [sliceDigest, position] of slices.entries()) {
-          if (equals(sliceDigest.bytes, multihash.bytes)) {
-            return {
-              container: shardDigest,
-              offset: position[0],
-              length: position[1],
-            }
-          }
+      for await (const entry of entries) {
+        for await (const subRecord of findInSubRecords(
+          entry.subRecords,
+          multihash
+        )) {
+          return (async function* () {
+            yield subRecord
+          })()
         }
       }
     }
-    return null
-  }
 
-  /**
-   * Find all containers that hold a given content multihash.
-   *
-   * @param {API.MultihashDigest} multihash
-   * @returns {Promise<API.ContentLocation | null>}
-   */
-  async findContainers(multihash) {
-    const entry = await this.store.get(multihash)
-    if (!entry) {
-      return null
+    return this.store.get(multihash)
+  }
+}
+
+/**
+ * @param {API.IndexRecord[]} subRecords
+ * @param {API.MultihashDigest} multihash
+ * @returns {AsyncIterable<API.IndexRecord>}
+ */
+async function* findInSubRecords(subRecords, multihash) {
+  for (const subRecord of subRecords) {
+    if (equals(subRecord.multihash.bytes, multihash.bytes)) {
+      yield subRecord
+      // /* c8 ignore next 1 */
     }
-    return {
-      contentCID: entry.content,
-      shards: Array.from(entry.shards.keys()),
+    if (subRecord.subRecords) {
+      yield* findInSubRecords(subRecord.subRecords, multihash)
     }
   }
 }
