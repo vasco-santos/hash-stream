@@ -10,49 +10,85 @@ npm install @hash-stream/verifiable-pack
 
 ## Usage
 
-### Creating and Storing Verifiable Packs
+### Creating Packs
 
-You can create and store verifiable CAR packs using the createAndStore function. This function processes a BlobLike input, generates CAR packs, and stores them using a PackStore implementation.
+When aiming to create packs (as CAR files) from a given Blob like (object with a [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)), one can use `createPacks` function. It returns an object with a `packStream` Async Generator that yields verifiable CAR packs and a `containingPromise` Promise that resolves to a `containingMultihash` representing the blob.
 
 ```js
-import { createAndStore } from 'verifiable-pack'
-import { FsStore } from 'verifiable-pack/store/fs' // Example file system store
-
-const store = new FsStore('/path/to/store') // Initialize the store
+import { PackWriter } from '@hash-stream/verifiable-pack'
+import { base58btc } from 'multiformats/bases/base58'
 
 async function main() {
-  const blob = new Blob(['Hello, world!']) // Example BlobLike object
+  const blob = new Blob(['Hello, world!'])
 
-  const { rootCid, packsMultihash } = await createAndStore(blob, store, {
-    type: 'car',
-  })
+  const { packStream, containingPromise } = createPacks(blob, { type: 'car' })
 
-  console.log('Root CID:', rootCid)
-  console.log('Stored packs:', packsMultihash)
+  const packs = []
+  for await (const pack of packStream) {
+    packs.push(pack)
+    console.log(
+      'Generated pack multihash (base58btc):',
+      base58btc.encode(pack.multihash.bytes)
+    )
+    console.log('Generated pack bytes', pack.bytes)
+  }
+
+  const containingMultihash = await containingPromise
+  console.log(
+    'Containing multihash (base58btc):',
+    base58btc.encode(containingMultihash.bytes)
+  )
 }
 
 main().catch(console.error)
 ```
 
-### Creating Packs Without Storing
+### Writing Packs
 
-If you only need to generate CAR packs without storing them, use the create function. It returns an async generator (stream) that yields verifiable CAR packs and a promise (root) that resolves with the root CID.
+Created packs from a given Blob like (object with a [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)), can be stored into a given Pack Store, as well as optionally indexed if an index writer is provided.
 
 ```js
-import { create } from 'verifiable-pack'
+import { MultipleLevelIndex } from '@hash-stream/index'
+import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
+import { PackWriter } from 'verifiable-pack'
+import { FSPackStore } from 'verifiable-pack/store/fs' // Example file system store
 
 async function main() {
-  const blob = new Blob(['Hello, world!'])
+  // Initialize the stores
+  const indexStore = new FSContainingIndexStore('/path/to/index-store')
+  const packStore = new FsStore('/path/to/pack-store')
 
-  const { stream, root } = create(blob, { type: 'car' })
+  // Initialize the index
+  const index = new MultipleLevelIndex(indexStore)
+  const packWriter = new PackWriter(packStore, {
+    indexWriter: index,
+  })
 
-  const packs = []
-  for await (const pack of stream) {
-    packs.push(pack)
-    console.log('Generated CAR multihash:', pack.multihash)
+  // Get Blob
+  const blob = new Blob(['Hello, world!']) // Example BlobLike object
+
+  // Write Blob as packs
+  const { containingMultihash, packsMultihashes } = await packWriter.write(
+    blob,
+    {
+      type: 'car',
+      // example number of bytes blob can be sharded in different packs
+      shardSize: 10_000_000,
+    }
+  )
+
+  for (const packMultihash of packsMultihashes) {
+    console.log(
+      'Pack multihash (base58btc):',
+      base58btc.encode(packMultihash.bytes)
+    )
   }
 
-  console.log('Root CID:', await root)
+  const containingMultihash = await containingPromise
+  console.log(
+    'Containing multihash (base58btc):',
+    base58btc.encode(containingMultihash.bytes)
+  )
 }
 
 main().catch(console.error)
@@ -60,11 +96,16 @@ main().catch(console.error)
 
 ### Using a Custom Store
 
-The store parameter in createAndStore must implement the packStore interface. A store must define the following methods:
+The Pack Store must implement the PackStore interface. A store must define the following methods:
 
 ```ts
-interface PackStore {
+export interface PackStore extends PackStoreWriter, PackStoreReader {}
+
+export interface PackStoreWriter {
   put(hash: MultihashDigest, data: Uint8Array): Promise<void>
+}
+
+export interface PackStoreReader {
   get(hash: MultihashDigest): Promise<Uint8Array | null>
 }
 ```

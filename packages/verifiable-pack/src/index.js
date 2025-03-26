@@ -4,13 +4,17 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { ShardingStream } from '@web3-storage/upload-client'
 import { createFileEncoderStream } from '@web3-storage/upload-client/unixfs'
 
+import { PackWriter } from './writer.js'
+
+export { PackWriter }
+
 /**
  * Create a set of verifiable pack from a blob.
  *
  * @param {import('@web3-storage/upload-client/types').BlobLike} blob
  * @param {API.CreateOptions} [options]
  */
-export function create(blob, options) {
+export function createPacks(blob, options) {
   if (options?.type === 'car') {
     return createCars(blob, options)
   }
@@ -23,7 +27,7 @@ export function create(blob, options) {
  * @param {import('./api.js').BlobLike} blob - The input file-like object containing a ReadableStream.
  * @param {import('./api.js').CreateCarPackOptions} [options] - Optional settings.
  * @returns {{
- *   packStream: AsyncGenerator<API.VerifiableCarPack, void, void>,
+ *   packStream: AsyncGenerator<API.VerifiablePack, void, void>,
  *   containingPromise: Promise<API.MultihashDigest>
  * }} - An object containing the generator and a promise for the root CID.
  */
@@ -40,18 +44,18 @@ function createCars(blob, options) {
   )
 
   async function* carPackGenerator() {
-    for await (const car of generateIndexedCars(blob, options)) {
-      const bytes = new Uint8Array(await car.arrayBuffer())
+    for await (const pack of generateIndexedCars(blob, options)) {
+      const bytes = new Uint8Array(await pack.arrayBuffer())
       const multihash = await hasher.digest(bytes)
-      const pack = { car, bytes, multihash }
+      const verifiablePack = { bytes, multihash }
 
       // Capture root CID when found
-      if (!containingPromise._resolved && car.roots.length > 0) {
-        resolveContaining(car.roots[0].multihash)
+      if (!containingPromise._resolved && pack.roots.length > 0) {
+        resolveContaining(pack.roots[0].multihash)
         containingPromise._resolved = true // Prevent multiple resolutions
       }
 
-      yield pack
+      yield verifiablePack
     }
   }
 

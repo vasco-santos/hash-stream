@@ -3,7 +3,7 @@ import * as API from '../src/api.js'
 import assert from 'assert'
 import { sha256, sha512 } from 'multiformats/hashes/sha2'
 
-import { create } from '../src/index.js'
+import { createPacks } from '../src/index.js'
 
 import { randomBytes } from './helpers/random.js'
 
@@ -20,13 +20,13 @@ describe('generate verifiable packs', () => {
     }
 
     const carPacks = []
-    const { packStream, containingPromise } = create(
+    const { packStream, containingPromise } = createPacks(
       blob,
       verifiablePackOptions
     )
     for await (const pack of packStream) {
       carPacks.push(pack)
-      assert(pack.car)
+      assert(pack.bytes)
       assert(pack.multihash)
       assert(pack.multihash.code === sha256.code)
     }
@@ -47,16 +47,16 @@ describe('generate verifiable packs', () => {
     }
 
     const carPacks = []
-    const { packStream, containingPromise } = create(
+    const { packStream, containingPromise } = createPacks(
       blob,
       verifiablePackOptions
     )
     for await (const pack of packStream) {
       carPacks.push(pack)
-      assert(pack.car)
+      assert(pack.bytes)
       assert(pack.multihash)
       assert(pack.multihash.code === sha256.code)
-      assert(pack.car.size < shardSize)
+      assert(pack.bytes.byteLength < shardSize)
     }
 
     assert(carPacks.length > 1)
@@ -74,7 +74,7 @@ describe('generate verifiable packs', () => {
 
     try {
       // @ts-expect-error type is wrong
-      create(blob, verifiablePackOptions)
+      createPacks(blob, verifiablePackOptions)
       assert.fail('should have thrown')
     } catch (/** @type {any} */ err) {
       assert.strictEqual(err.message, 'only CAR packs are supported')
@@ -94,13 +94,13 @@ describe('generate verifiable packs', () => {
     }
 
     const carPacks = []
-    const { packStream, containingPromise } = create(
+    const { packStream, containingPromise } = createPacks(
       blob,
       verifiablePackOptions
     )
     for await (const pack of packStream) {
       carPacks.push(pack)
-      assert(pack.car)
+      assert(pack.bytes)
       assert(pack.multihash)
       assert(pack.multihash.code === sha512.code)
     }

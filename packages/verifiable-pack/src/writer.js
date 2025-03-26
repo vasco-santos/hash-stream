@@ -2,7 +2,7 @@ import * as API from './api.js'
 
 import { CarIndexer } from '@ipld/car'
 
-import { create } from './index.js'
+import { createPacks } from './index.js'
 
 /**
  * PackWriter is responsible for creating and storing verifiable packs
@@ -14,12 +14,12 @@ export class PackWriter {
   /**
    * Constructs a PackWriter instance to handle pack storage and indexing.
    *
-   * @param {API.PackStore} store
+   * @param {API.PackStore} storeWriter
    * @param {object} [options]
    * @param {API.IndexWriter} [options.indexWriter]
    */
-  constructor(store, { indexWriter } = {}) {
-    this.store = store
+  constructor(storeWriter, { indexWriter } = {}) {
+    this.storeWriter = storeWriter
     this.indexWriter = indexWriter
   }
 
@@ -33,7 +33,7 @@ export class PackWriter {
    * @returns {Promise<{containingMultihash: API.MultihashDigest, packsMultihashes: API.MultihashDigest[]}>}
    */
   async write(blob, options) {
-    const { packStream, containingPromise } = create(blob, options)
+    const { packStream, containingPromise } = createPacks(blob, options)
     /** @type {API.MultihashDigest[]} */
     const packsMultihashes = []
 
@@ -78,7 +78,7 @@ export class PackWriter {
         }
 
         // Store the pack (actual data) into the store
-        await this.store.put(multihash, bytes)
+        await this.storeWriter.put(multihash, bytes)
         // Keep track of the multihash for the pack
         packsMultihashes.push(multihash)
       }

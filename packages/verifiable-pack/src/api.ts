@@ -19,7 +19,7 @@ export type {
 }
 
 export interface PackWriter {
-  store: PackStore
+  storeWriter: PackStoreWriter
   indexWriter?: IndexWriter
 
   write(
@@ -50,7 +50,9 @@ export interface CreateOptions extends CreateCarPackOptions {
   type: 'car'
 }
 
-export interface PackStore {
+export interface PackStore extends PackStoreWriter, PackStoreReader {}
+
+export interface PackStoreWriter {
   /**
    * Stores a pack file.
    *
@@ -59,7 +61,9 @@ export interface PackStore {
    * @returns A promise that resolves when the pack file is stored.
    */
   put(hash: MultihashDigest, data: Uint8Array): Promise<void>
+}
 
+export interface PackStoreReader {
   /**
    * Retrieves bytes of a pack file by its multihash digest.
    *
@@ -69,8 +73,7 @@ export interface PackStore {
   get(hash: MultihashDigest): Promise<Uint8Array | null>
 }
 
-export interface VerifiableCarPack {
-  car: IndexedCARFile
+export interface VerifiablePack {
   bytes: Uint8Array
   multihash: MultihashDigest
 }

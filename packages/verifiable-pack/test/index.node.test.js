@@ -8,7 +8,7 @@ import os from 'os'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals } from 'uint8arrays/equals'
 
-import { create } from '../src/index.js'
+import { createPacks } from '../src/index.js'
 import { FSPackStore } from '../src/store/fs.js'
 
 import { randomBytes } from './helpers/random.js'
@@ -43,7 +43,7 @@ describe('create and store verifiable pack with FSPackStore', () => {
       type: /** @type {'car'} */ ('car'),
     }
 
-    const { packStream, containingPromise } = create(
+    const { packStream, containingPromise } = createPacks(
       blob,
       verifiablePackOptions
     )
