@@ -1,11 +1,11 @@
-# @hash-stream/verifiable-pack
+# @hash-stream/pack
 
-> The verifiable-pack client to use hash-stream
+> The pack client to use hash-stream
 
 ## Install
 
 ```sh
-npm install @hash-stream/verifiable-pack
+npm install @hash-stream/pack
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ npm install @hash-stream/verifiable-pack
 When aiming to create packs (as CAR files) from a given Blob like (object with a [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)), one can use `createPacks` function. It returns an object with a `packStream` Async Generator that yields verifiable CAR packs and a `containingPromise` Promise that resolves to a `containingMultihash` representing the blob.
 
 ```js
-import { PackWriter } from '@hash-stream/verifiable-pack'
+import { PackWriter } from '@hash-stream/pack'
 import { base58btc } from 'multiformats/bases/base58'
 
 async function main() {
@@ -50,8 +50,8 @@ Created packs from a given Blob like (object with a [`ReadableStream`](https://d
 ```js
 import { MultipleLevelIndex } from '@hash-stream/index'
 import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
-import { PackWriter } from 'verifiable-pack'
-import { FSPackStore } from 'verifiable-pack/store/fs' // Example file system store
+import { PackWriter } from 'pack'
+import { FSPackStore } from 'pack/store/fs' // Example file system store
 
 async function main() {
   // Initialize the stores

@@ -5,8 +5,8 @@ import { CarIndexer } from '@ipld/car'
 import { createPacks } from './index.js'
 
 /**
- * PackWriter is responsible for creating and storing verifiable packs
- * from a given blob, as well as managing the index data and storing it.
+ * PackWriter is responsible for creating and storing packs from a given
+ * blob, as well as managing the index data and storing it.
  *
  * @implements {API.PackWriter}
  */
@@ -24,7 +24,7 @@ export class PackWriter {
   }
 
   /**
-   * Writes the given blob into a set of verifiable packs and stores them.
+   * Writes the given blob into a set of packs and stores them.
    * The function will parallelize the storing of packs and writing the index data if
    * an Index Writer is set.
    *
@@ -43,7 +43,7 @@ export class PackWriter {
 
     // Run both storing pack storage and indexing in parallel
     await Promise.all([
-      this.#storePacks(packStream, writer, packsMultihashes),
+      this.#storePacks(packStream, writer, packsMultihashes, options),
       this.#storeIndex(readable, containingPromise, options),
     ])
 
@@ -60,11 +60,15 @@ export class PackWriter {
    * @param {AsyncIterable<{ multihash: API.MultihashDigest, bytes: Uint8Array }>} packStream
    * @param {WritableStreamDefaultWriter} writer
    * @param {API.MultihashDigest[]} packsMultihashes
+   * @param {API.PackWriterWriteOptions} [options]
    */
-  async #storePacks(packStream, writer, packsMultihashes) {
+  async #storePacks(packStream, writer, packsMultihashes, options) {
     try {
       // Iterate through each pack in the pack stream
       for await (const { multihash, bytes } of packStream) {
+        // Keep track of the blob multihash
+        /** @type {API.MultihashDigest[]} */
+        const blobMultihashes = []
         // Parse the CAR file to extract index data for each blob
         const blobIterable = await CarIndexer.fromBytes(bytes)
         for await (const blob of blobIterable) {
@@ -75,12 +79,15 @@ export class PackWriter {
             offset: blob.blockOffset, // The offset of the blob in the pack
             length: blob.blockLength, // The length of the blob in the pack
           })
+          // Keep track of the blobs of the pack
+          blobMultihashes.push(blob.cid.multihash)
         }
 
         // Store the pack (actual data) into the store
         await this.storeWriter.put(multihash, bytes)
         // Keep track of the multihash for the pack
         packsMultihashes.push(multihash)
+        options?.onPackWrite?.(multihash, blobMultihashes)
       }
     } finally {
       // Ensure writer is closed once all data is processed
@@ -119,7 +126,7 @@ export class PackWriter {
 
     async function bufferIndexData() {
       try {
-        // Read data from the stream and push it to the buffer
+        // Eagerly read data and push to buffer until stream is done
         while (reading) {
           const { value, done } = await reader.read()
           if (done) break
@@ -127,13 +134,14 @@ export class PackWriter {
         }
       } finally {
         reading = false
-        // Release the lock on the reader when done
+        // Release the lock once we're done processing the stream in bufferIndexData
         reader.releaseLock()
       }
     }
 
     // Start reading in the background to keep the process non-blocking
-    const readPromise = (async () => {
+    // eslint-disable-next-line no-extra-semi
+    ;(async () => {
       // eslint-disable-next-line no-empty
       await bufferIndexData()
     })()
@@ -143,9 +151,20 @@ export class PackWriter {
 
     // Yield the buffered data once the containing multihash is ready
     async function* bufferedStream() {
+      // First yield the buffered data
       yield* buffer
-      reading = false
-      await readPromise // Ensure background reading completes
+      // After buffer is empty, we continue reading lazily from the stream
+      while (reading) {
+        const { value, done } = await reader.read()
+        if (done) {
+          break
+        }
+        /* c8 ignore next 2 */
+        yield value
+      }
+
+      // Release the lock after we've finished reading lazily
+      reader.releaseLock()
     }
 
     await this.indexWriter.addBlobs(bufferedStream(), { containingMultihash })

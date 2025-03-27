@@ -13,9 +13,7 @@ import { FSPackStore } from '../src/store/fs.js'
 
 import { randomBytes } from './helpers/random.js'
 
-export const CarCode = 0x0202
-
-describe('create and store verifiable pack with FSPackStore', () => {
+describe('create and store pack with FSPackStore', () => {
   /** @type {FSPackStore} */
   let store
   /** @type {string} */
@@ -32,21 +30,18 @@ describe('create and store verifiable pack with FSPackStore', () => {
     }
   })
 
-  it('should create sharded verifiable packs from a blob and validate storage', async () => {
+  it('should create sharded packs from a blob and validate storage', async () => {
     const byteLength = 50_000_000
     const chunkSize = byteLength / 5
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     /** @typedef {API.CreateOptions} */
-    const verifiablePackOptions = {
+    const createOptions = {
       shardSize: chunkSize,
       type: /** @type {'car'} */ ('car'),
     }
 
-    const { packStream, containingPromise } = createPacks(
-      blob,
-      verifiablePackOptions
-    )
+    const { packStream, containingPromise } = createPacks(blob, createOptions)
 
     const storedPacks = []
     for await (const pack of packStream) {

@@ -150,7 +150,7 @@ importers:
         specifier: 5.2.2
         version: 5.2.2
 
-  packages/verifiable-pack:
+  packages/pack:
     dependencies:
       '@hash-stream/index':
         specifier: workspace:^

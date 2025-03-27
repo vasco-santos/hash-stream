@@ -33,6 +33,10 @@ export interface PackWriter {
 
 export interface PackWriterWriteOptions extends CreateOptions {
   notIndexContaining?: boolean
+  onPackWrite?: (
+    packMultihash: MultihashDigest,
+    blobMultihashes: MultihashDigest[]
+  ) => void
 }
 
 export interface GenerateIndexedCarsOptions
@@ -45,7 +49,7 @@ export interface CreateCarPackOptions extends GenerateIndexedCarsOptions {
 
 export interface CreateOptions extends CreateCarPackOptions {
   /**
-   * Verifiable pack type
+   * Pack type
    */
   type: 'car'
 }

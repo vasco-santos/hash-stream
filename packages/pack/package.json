@@ -1,11 +1,11 @@
 {
-  "name": "@hash-stream/verifiable-pack",
+  "name": "@hash-stream/pack",
   "version": "0.0.0",
-  "description": "The verifiable-pack client to use hash-stream",
+  "description": "The pack client to use hash-stream",
   "repository": {
     "type": "git",
     "url": "https://github.com/vasco-santos/hash-stream.git",
-    "directory": "packages/verifiable-pack"
+    "directory": "packages/pack"
   },
   "author": "Vasco Santos",
   "license": "Apache-2.0 OR MIT",
@@ -26,6 +26,7 @@
   "exports": {
     ".": "./dist/src/index.js",
     "./store/fs": "./dist/src/store/fs.js",
+    "./writer": "./dist/src/writer.js",
     "./types": "./dist/src/api.js"
   },
   "typesVersions": {

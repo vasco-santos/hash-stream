@@ -12,7 +12,7 @@
     "packages/index": {
       "release-type": "node"
     },
-    "packages/verifiable-pack": {
+    "packages/pack": {
       "release-type": "node"
     }
   },

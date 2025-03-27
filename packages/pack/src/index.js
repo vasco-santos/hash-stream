@@ -9,7 +9,7 @@ import { PackWriter } from './writer.js'
 export { PackWriter }
 
 /**
- * Create a set of verifiable pack from a blob.
+ * Create a set of packs from a blob.
  *
  * @param {import('@web3-storage/upload-client/types').BlobLike} blob
  * @param {API.CreateOptions} [options]

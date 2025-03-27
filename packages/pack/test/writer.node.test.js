@@ -9,6 +9,7 @@ import all from 'it-all'
 import { CarIndexer } from '@ipld/car'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals } from 'uint8arrays/equals'
+import { base58btc } from 'multiformats/bases/base58'
 
 import { MultipleLevelIndex } from '@hash-stream/index'
 import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
@@ -19,9 +20,7 @@ import { FSPackStore } from '../src/store/fs.js'
 
 import { randomBytes } from './helpers/random.js'
 
-export const CarCode = 0x0202
-
-describe('write verifiable pack in FSPackStore', () => {
+describe('write pack in FSPackStore', () => {
   /** @type {string} */
   let tempDir
   /** @type {FSPackStore} */
@@ -41,20 +40,20 @@ describe('write verifiable pack in FSPackStore', () => {
     }
   })
 
-  it('should write sharded verifiable packs from a blob', async () => {
+  it('should write sharded packs from a blob', async () => {
     const byteLength = 50_000_000
     const chunkSize = byteLength / 5
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     /** @typedef {API.CreateOptions} */
-    const verifiablePackOptions = {
+    const createPackOptions = {
       shardSize: chunkSize,
       type: /** @type {'car'} */ ('car'),
     }
 
     const { containingMultihash, packsMultihashes } = await writer.write(
       blob,
-      verifiablePackOptions
+      createPackOptions
     )
 
     assert(packsMultihashes.length > 1)
@@ -75,7 +74,7 @@ describe('write verifiable pack in FSPackStore', () => {
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     /** @typedef {API.CreateOptions} */
-    const verifiablePackOptions = {
+    const createPackOptions = {
       type: 'zip',
     }
 
@@ -83,7 +82,7 @@ describe('write verifiable pack in FSPackStore', () => {
       await writer.write(
         blob,
         // @ts-expect-error type is not valid
-        verifiablePackOptions
+        createPackOptions
       )
       assert.fail('should have thrown')
     } catch (/** @type {any} */ err) {
@@ -92,7 +91,7 @@ describe('write verifiable pack in FSPackStore', () => {
   })
 })
 
-describe('write verifiable pack in FSPackStore and index them in a multiple-level index', () => {
+describe('write pack in FSPackStore and index them in a multiple-level index', () => {
   /** @type {string} */
   let tempDirPackStore
   /** @type {string} */
@@ -126,25 +125,36 @@ describe('write verifiable pack in FSPackStore and index them in a multiple-leve
     }
   })
 
-  it('should write verifiable packs from a blob and index them without containing', async () => {
+  it('should write packs from a blob and index them without containing', async () => {
     const byteLength = 50_000_000
     const chunkSize = byteLength / 5
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
+    /** @type {Map<string, API.MultihashDigest[]>} */
+    const packBlobsMap = new Map()
     /** @typedef {API.PackWriterWriteOptions} */
-    const verifiablePackOptions = {
+    const createPackOptions = {
       shardSize: chunkSize,
       type: /** @type {'car'} */ ('car'),
       notIndexContaining: true,
+      /**
+       * @type {API.PackWriterWriteOptions['onPackWrite']}
+       */
+      onPackWrite: (packMultihash, blobMultihashes) => {
+        const encodedPackMultihash = base58btc.encode(packMultihash.bytes)
+        packBlobsMap.set(encodedPackMultihash, blobMultihashes)
+      },
     }
 
     // Write blob with pack writer
     const { containingMultihash, packsMultihashes } = await packWriter.write(
       blob,
-      verifiablePackOptions
+      createPackOptions
     )
     assert(packsMultihashes.length > 1)
     assert(containingMultihash)
+
+    assert.strictEqual(packsMultihashes.length, packBlobsMap.size)
 
     // Find Records for each pack and verify they have sub-records
     for (const multihash of packsMultihashes) {
@@ -174,11 +184,21 @@ describe('write verifiable pack in FSPackStore and index them in a multiple-leve
       const packIterable = await CarIndexer.fromBytes(packBytes)
       const packBlobs = await all(packIterable)
 
+      // Pack multihash was reported in onPackWrite
+      const encodedPackMultihash = base58btc.encode(multihash.bytes)
+      const packBlobsMultihashes = packBlobsMap.get(encodedPackMultihash)
+      assert(packBlobsMultihashes?.length)
+
+      // Validate subrecords
       for (const record of packRecord.subRecords) {
         const blob = packBlobs.find((blob) =>
           equals(blob.cid.multihash.bytes, record.multihash.bytes)
         )
         assert(blob)
+        const packBlobMultihashReported = packBlobsMultihashes.find((mh) =>
+          equals(mh.bytes, record.multihash.bytes)
+        )
+        assert(packBlobMultihashReported)
         assert(record.type === IndexRecordType.BLOB)
         assert.strictEqual(blob.blockOffset, record.offset)
         assert.strictEqual(blob.blockLength, record.length)
@@ -190,20 +210,20 @@ describe('write verifiable pack in FSPackStore and index them in a multiple-leve
     assert(!containingRecordsStream)
   })
 
-  it('should write verifiable packs from a blob and index them with containing', async () => {
+  it('should write packs from a blob and index them with containing', async () => {
     const byteLength = 50_000_000
     const chunkSize = byteLength / 5
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     /** @typedef {API.PackWriterWriteOptions} */
-    const verifiablePackOptions = {
+    const createPackOptions = {
       shardSize: chunkSize,
       type: /** @type {'car'} */ ('car'),
     }
 
     const { containingMultihash, packsMultihashes } = await packWriter.write(
       blob,
-      verifiablePackOptions
+      createPackOptions
     )
 
     assert(packsMultihashes.length > 1)
@@ -263,13 +283,13 @@ describe('write verifiable pack in FSPackStore and index them in a multiple-leve
     }
   })
 
-  it.skip('should write verifiable packs from a blob and index them with containing to reconstruct the blob', async () => {
+  it.skip('should write packs from a blob and index them with containing to reconstruct the blob', async () => {
     const byteLength = 50_000_000
     const chunkSize = byteLength / 5
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     /** @typedef {API.PackWriterWriteOptions} */
-    const verifiablePackOptions = {
+    const createPackOptions = {
       shardSize: chunkSize,
       type: /** @type {'car'} */ ('car'),
     }
@@ -277,7 +297,7 @@ describe('write verifiable pack in FSPackStore and index them in a multiple-leve
     // Write blob with pack writer
     const { containingMultihash, packsMultihashes } = await packWriter.write(
       blob,
-      verifiablePackOptions
+      createPackOptions
     )
     assert(packsMultihashes.length > 1)
     assert(containingMultihash)

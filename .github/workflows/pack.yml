@@ -1,4 +1,4 @@
-name: Verifiable Pack Client
+name: Pack Client
 env:
   CI: true
   FORCE_COLOR: 1
@@ -7,15 +7,15 @@ on:
     branches:
       - main
     paths:
-      - 'packages/verifiable-pack/**'
+      - 'packages/pack/**'
       - 'packages/eslint-config/**'
-      - '.github/workflows/verifiable-pack.yml'
+      - '.github/workflows/pack.yml'
       - 'pnpm-lock.yaml'
   pull_request:
     paths:
-      - 'packages/verifiable-pack/**'
+      - 'packages/pack/**'
       - 'packages/eslint-config/**'
-      - '.github/workflows/verifiable-pack.yml'
+      - '.github/workflows/pack.yml'
       - 'pnpm-lock.yaml'
 jobs:
   test:
@@ -34,6 +34,6 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install
       - run: pnpm run build
-      - run: pnpm -r --filter @hash-stream/verifiable-pack run lint
-      - run: pnpm -r --filter @hash-stream/verifiable-pack run attw
-      - run: pnpm -r --filter @hash-stream/verifiable-pack test
+      - run: pnpm -r --filter @hash-stream/pack run lint
+      - run: pnpm -r --filter @hash-stream/pack run attw
+      - run: pnpm -r --filter @hash-stream/pack test

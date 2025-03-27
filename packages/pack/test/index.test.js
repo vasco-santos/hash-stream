@@ -7,22 +7,20 @@ import { createPacks } from '../src/index.js'
 
 import { randomBytes } from './helpers/random.js'
 
-export const CarCode = 0x0202
-
-describe('generate verifiable packs', () => {
+describe('generate packs', () => {
   it('should generate CAR pack from a blob', async () => {
     const byteLength = 100_000_000
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     /** @typedef {API.CreateOptions} */
-    const verifiablePackOptions = {
+    const createPackOptions = {
       type: /** @type {'car'} */ ('car'),
     }
 
     const carPacks = []
     const { packStream, containingPromise } = createPacks(
       blob,
-      verifiablePackOptions
+      createPackOptions
     )
     for await (const pack of packStream) {
       carPacks.push(pack)
@@ -41,7 +39,7 @@ describe('generate verifiable packs', () => {
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     /** @typedef {API.CreateOptions} */
-    const verifiablePackOptions = {
+    const createPackOptions = {
       shardSize,
       type: /** @type {'car'} */ ('car'),
     }
@@ -49,7 +47,7 @@ describe('generate verifiable packs', () => {
     const carPacks = []
     const { packStream, containingPromise } = createPacks(
       blob,
-      verifiablePackOptions
+      createPackOptions
     )
     for await (const pack of packStream) {
       carPacks.push(pack)
@@ -68,13 +66,13 @@ describe('generate verifiable packs', () => {
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     /** @typedef {API.CreateOptions} */
-    const verifiablePackOptions = {
+    const createPackOptions = {
       type: /** @type {'dag'} */ ('dag'),
     }
 
     try {
       // @ts-expect-error type is wrong
-      createPacks(blob, verifiablePackOptions)
+      createPacks(blob, createPackOptions)
       assert.fail('should have thrown')
     } catch (/** @type {any} */ err) {
       assert.strictEqual(err.message, 'only CAR packs are supported')
@@ -87,7 +85,7 @@ describe('generate verifiable packs', () => {
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     /** @typedef {API.CreateOptions} */
-    const verifiablePackOptions = {
+    const createPackOptions = {
       shardSize,
       type: /** @type {'car'} */ ('car'),
       hasher: sha512,
@@ -96,7 +94,7 @@ describe('generate verifiable packs', () => {
     const carPacks = []
     const { packStream, containingPromise } = createPacks(
       blob,
-      verifiablePackOptions
+      createPackOptions
     )
     for await (const pack of packStream) {
       carPacks.push(pack)
