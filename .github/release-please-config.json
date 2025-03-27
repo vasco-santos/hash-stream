@@ -6,10 +6,13 @@
     { "type": "chore", "section": "Other Changes", "hidden": false }
   ],
   "packages": {
+    "packages/cli": {
+      "release-type": "node"
+    },
     "packages/index": {
       "release-type": "node"
     },
-    "packages/cli": {
+    "packages/pack": {
       "release-type": "node"
     }
   },
