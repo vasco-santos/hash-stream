@@ -4,6 +4,7 @@ import sade from 'sade'
 import fs from 'fs'
 
 import { indexAdd, indexFindRecords, indexClear } from './index.js'
+import { packWrite, packClear, MAX_PACK_SIZE } from './pack.js'
 
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url)).toString()
@@ -11,6 +12,33 @@ const pkg = JSON.parse(
 const cli = sade(pkg.name)
 
 cli.version(pkg.version)
+
+// Pack commands
+// Command: Write Packs
+cli
+  .command('pack write <filePath>')
+  .describe(
+    'Writes given file blob into a set of verifiable packs, stores them and optionally indexes them.'
+  )
+  .example('pack write some-file.ext -s multiple-level')
+  .example('pack write some-file.ext -s single-level')
+  .option('-t, --type', 'Pack type: "car"', 'car')
+  .option('-ps, --pack-size', 'Pack size in bytes', MAX_PACK_SIZE)
+  .option(
+    '-is, --index-strategy',
+    'Indexing strategy: "single-level" or "multiple-level"',
+    'multiple-level'
+  )
+  .action(packWrite)
+
+// Command: Clear packs
+cli
+  .command('pack clear')
+  .describe('Clear all packs stored.')
+  .example('pack clear')
+  .action(packClear)
+
+// Index commands
 
 // Command: Add Records to the Index
 cli
@@ -45,7 +73,7 @@ cli
 // Command: Clear Index
 cli
   .command('index clear')
-  .describe('Clear all indexes within a stratehy.')
+  .describe('Clear all indexes within a strategy.')
   .example('index clear -s multiple-level')
   .example('index clear -s single-level')
   .option(
@@ -71,3 +99,11 @@ Run \`$ w3 --help\` for more info.
 })
 
 cli.parse(process.argv)
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection:', reason)
+})

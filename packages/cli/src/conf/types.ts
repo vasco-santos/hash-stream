@@ -29,13 +29,14 @@ export interface ConfigDriver<T> {
  */
 export interface AgentDataModel {
   index: IndexDataModel
+  pack: StoreDataModel
 }
 
 interface IndexDataModel {
-  singleLevelIndex: IndexStrategyDataModel
-  multipleLevelIndex: IndexStrategyDataModel
+  singleLevelIndex: StoreDataModel
+  multipleLevelIndex: StoreDataModel
 }
 
-interface IndexStrategyDataModel {
+interface StoreDataModel {
   storeDir: string
 }

@@ -12,7 +12,7 @@ npm install -g @hash-stream/cli
 
 ## Usage
 
-Basic usage with CAR files generated with [`ipfs-car`](https://github.com/storacha/ipfs-car) [documentation](./USAGE.md)
+Basic [Usage Guide](./USAGE.md).
 
 ## Commands
 
@@ -20,6 +20,40 @@ Basic usage with CAR files generated with [`ipfs-car`](https://github.com/storac
   - [`index add`](#index-add-packcid-filepath-containingcid)
   - [`index find records`](#index-find-records-blockcid-containingcid)
   - [`index clear`](#index-clear)
+- **Pack Management**
+  - [`pack write`](#pack-write-filepath)
+  - [`pack clear`](#pack-clear)
+
+---
+
+### `pack write <filePath>`
+
+Writes the given file blob into a set of verifiable packs, stores them, and optionally indexes them.
+
+#### Examples:
+
+```sh
+pack write some-file.ext -s multiple-level
+pack write some-file.ext -s single-level
+```
+
+#### Options:
+
+- `-t, --type` Specifies the pack type (default: `"car"`).
+- `-ps, --pack-size` Defines the maximum pack size in bytes (default: `MAX_PACK_SIZE`).
+- `-is, --index-strategy` Defines the indexing strategy, which can be `"single-level"` or `"multiple-level"` (default: `"multiple-level"`).
+
+---
+
+### `pack clear`
+
+Clear all packs stored.
+
+#### Examples:
+
+```sh
+pack clear
+```
 
 ---
 

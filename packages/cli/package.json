@@ -30,6 +30,7 @@
     "rc": "npm version prerelease --preid rc"
   },
   "devDependencies": {
+    "@storacha/one-webcrypto": "^1.0.1",
     "@types/assert": "^1.5.6",
     "@types/mocha": "^10.0.1",
     "@types/node": "^22.13.10",
@@ -40,6 +41,7 @@
   },
   "dependencies": {
     "@hash-stream/index": "workspace:^",
+    "@hash-stream/pack": "workspace:^",
     "@ipld/car": "^5.4.0",
     "conf": "^11.0.2",
     "multiformats": "^13.3.2",

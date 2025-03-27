@@ -7,6 +7,7 @@ import { CID } from 'multiformats/cid'
 import { base58btc } from 'multiformats/bases/base58'
 
 import { getClient } from './lib.js'
+import { getFileStream } from './utils.js'
 
 /**
  * @param {string} packCid
@@ -23,8 +24,12 @@ export const indexAdd = async (
   containingCid,
   opts = { strategy: 'multiple-level', _: [] }
 ) => {
-  const strategy = validateStrategy(opts.strategy)
-  const client = await getClient()
+  const indexStrategy = validateStrategy(opts.strategy)
+  const client = await getClient({ indexStrategy })
+  if (!client.index.writer || !client.index.reader || !client.index.store) {
+    console.error('Error: Index is not available.')
+    process.exit(1)
+  }
 
   /** @type {import('multiformats').MultihashDigest} */
   let packMultihash
@@ -35,23 +40,7 @@ export const indexAdd = async (
     process.exit(1)
   }
 
-  const resolvedPath = path.isAbsolute(filePath)
-    ? filePath
-    : path.resolve(process.cwd(), filePath)
-
-  try {
-    await fs.promises.access(resolvedPath, fs.constants.F_OK)
-  } catch (err) {
-    console.error(`File does not exist at path: ${resolvedPath}`)
-    process.exit(1)
-  }
-  const fileStream = fs.createReadStream(resolvedPath)
-
-  fileStream.on('error', (err) => {
-    console.error('Error reading file:', err)
-    process.exit(1)
-  })
-
+  const fileStream = await getFileStream(filePath)
   const blobIndexIterable = await CarIndexer.fromIterable(fileStream)
   // Wrap blob index iterable to log indexed blobs
   const wrappedBlobIndexIterable = {
@@ -94,14 +83,10 @@ export const indexAdd = async (
     )
   }
 
-  console.log(`\nIndexing (${strategy})...`)
-  if (strategy === 'single-level') {
-    await client.index.singleLevelIndex.addBlobs(wrappedBlobIndexIterable)
-  } else if (strategy === 'multiple-level') {
-    await client.index.multipleLevelIndex.addBlobs(wrappedBlobIndexIterable, {
-      containingMultihash: containingCidLink?.multihash,
-    })
-  }
+  console.log(`\nIndexing (${indexStrategy})...`)
+  await client.index.writer.addBlobs(wrappedBlobIndexIterable, {
+    containingMultihash: containingCidLink?.multihash,
+  })
 }
 
 /**
@@ -117,8 +102,12 @@ export const indexFindRecords = async (
   containingCid,
   opts = { strategy: 'multiple-level', _: [] }
 ) => {
-  const strategy = validateStrategy(opts.strategy)
-  const client = await getClient()
+  const indexStrategy = validateStrategy(opts.strategy)
+  const client = await getClient({ indexStrategy })
+  if (!client.index.writer || !client.index.reader || !client.index.store) {
+    console.error('Error: Index is not available.')
+    process.exit(1)
+  }
 
   let targetMultihash
   try {
@@ -149,39 +138,20 @@ export const indexFindRecords = async (
     )
   }
 
-  console.log(`\nFinding target (${strategy})...
+  console.log(`\nFinding target (${indexStrategy})...
     ${targetCid}
     base58btc(${base58btc.encode(targetMultihash.bytes)})`)
-
-  if (strategy === 'single-level') {
-    const recordsStream = await client.index.singleLevelIndex.findRecords(
-      targetMultihash
-    )
-    if (!recordsStream) {
-      console.info(`\nIndex Records:
+  const recordsStream = await client.index.reader.findRecords(targetMultihash, {
+    containingMultihash: containingCidLink?.multihash,
+  })
+  if (!recordsStream) {
+    console.info(`\nIndex Records:
     Not found.`)
-      return
-    }
-    const records = await all(recordsStream)
-    console.info(`\nIndex Records:`)
-    logRecords(records)
-  } else if (strategy === 'multiple-level') {
-    const recordsStream = await client.index.multipleLevelIndex.findRecords(
-      targetMultihash,
-      {
-        containingMultihash: containingCidLink?.multihash,
-      }
-    )
-    if (!recordsStream) {
-      console.info(`\nIndex Records:
-    Not found.`)
-      return
-    }
-
-    const records = await all(recordsStream)
-    console.info(`\nIndex Records:`)
-    logRecords(records)
+    return
   }
+  const records = await all(recordsStream)
+  console.info(`\nIndex Records:`)
+  logRecords(records)
 }
 
 /**
@@ -193,18 +163,14 @@ export const indexFindRecords = async (
 export const indexClear = async (
   opts = { strategy: 'multiple-level', _: [] }
 ) => {
-  const strategy = validateStrategy(opts.strategy)
-  const client = await getClient()
-
-  let directoryPath
-  if (strategy === 'single-level') {
-    directoryPath = client.index.singleLevelIndexStore.directory
-  } else if (strategy === 'multiple-level') {
-    directoryPath = client.index.multipleLevelIndexStore.directory
-  } else {
-    console.error(`Invalid strategy: ${strategy}`)
+  const indexStrategy = validateStrategy(opts.strategy)
+  const client = await getClient({ indexStrategy })
+  if (!client.index.writer || !client.index.reader || !client.index.store) {
+    console.error('Error: Index is not available.')
     process.exit(1)
   }
+
+  const directoryPath = client.index.store.directory
 
   try {
     const files = await fs.promises.readdir(directoryPath)
@@ -231,9 +197,10 @@ export const indexClear = async (
 const VALID_STRATEGIES = ['single-level', 'multiple-level']
 
 /**
- * Validates the given strategy.
+ * Validates the given index strategy.
  *
  * @param {string} [strategy]
+ * @returns {'single-level' | 'multiple-level'}
  */
 function validateStrategy(strategy) {
   if (!strategy) {
@@ -247,6 +214,7 @@ function validateStrategy(strategy) {
     process.exit(1)
   }
 
+  // @ts-ignore
   return strategy
 }
 
