@@ -1,0 +1,85 @@
+# Pack Specification
+
+![wip](https://img.shields.io/badge/status-wip-orange.svg?style=flat-square)
+
+## Editors
+
+- [Vasco Santos](https://github.com/vasco-santos)
+
+## Authors
+
+- [Vasco Santos](https://github.com/vasco-santos)
+
+# Abstract
+
+This document describes the Pack Reader, responsible for interacting with a Pack Store to read Packs of part of them.
+
+## Language
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC2119](https://datatracker.ietf.org/doc/html/rfc2119).
+
+# Overview
+
+Hash-stream relies on Packs for both storing Content-Addressable data and transferring it across the network in a verifiable manner. A Pack is a container that holds a collection of byte streams. This specification defines the **Reader** interface, which enable interaction with other Hash-stream building blocks.
+
+A **Pack** contains multiple **Blobs**, each addressed by a unique multihash. A **Pack** itself is also addressable via a multihash, meaning it can be treated as a **Blob**. Multiple **Packs** MAY also store the same **Blob**. A **Blob** is a sequence of bytes that can be stored individually or within a **Pack**.
+
+## Design Principles
+
+- **Trustless verification**: Ensures clients can independently verify retrieved content.
+- **Efficient storage access**: Optimized for cost-effective and rapid data retrieval.
+
+## Interfaces
+
+### Verifiable Entry Interface
+
+A verifiable entry where bytes MUST match the multihash. It may optionally include
+
+```ts
+import { MultihashDigest } from 'multiformats'
+
+export interface VerifiableEntry {
+  bytes: Uint8Array
+  multihash: MultihashDigest
+  offset?: number
+  length?: number
+}
+```
+
+### Pack Reader Interface
+
+```ts
+import { MultihashDigest } from 'multiformats'
+
+export interface PackReader {
+  storeReader: PackStoreReader
+
+  // Retrieves bytes of a pack file by its multihash digest.
+  get(hash: MultihashDigest): Promise<Uint8Array | null>
+
+  // Stream data from a Pack, optionally requesting specific byte ranges.
+  stream(
+    targetMultihash: MultihashDigest,
+    ranges?: Array<{
+      offset?: number
+      length?: number
+      multihash: MultihashDigest
+    }>
+  ): AsyncIterable<VerifiableEntry>
+}
+
+export interface PackStoreReader {
+  // Retrieves bytes of a pack file by its multihash digest.
+  get(hash: MultihashDigest): Promise<Uint8Array | null>
+
+  // Stream data from a Pack, optionally requesting specific byte ranges.
+  stream(
+    targetMultihash: MultihashDigest,
+    ranges?: Array<{
+      offset?: number
+      length?: number
+      multihash: MultihashDigest
+    }>
+  ): AsyncIterable<VerifiableEntry>
+}
+```
