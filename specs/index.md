@@ -30,31 +30,6 @@ There are three different **fundamental units**, which the indexing system MAY b
 - A **Pack** holds several Blobs and is also individually addressed by a multihash (can be seen as a Blob itself). Multiple **Packs** MAY store the same Blob.
 - A **Containing** represents a set of Blobs/Packs. It can be individually addressed by a multihash and implies some cryptographic relationship.
 
-This specification defines an indexing system that MUST support different implementations:
-
-- **Single-level index**: Maps a given blob multihash to the location where the server can read the bytes.
-- **Multiple-level index**: Maps a containing multihash to the set of verifiable pack multihashes that compose it.
-
-The choice of which indexing strategy to use depends on performance, cost, and use case requirements. Depending on the available clients, the content provider's setup, or the usage context of the content-addressable server, the content provider can decide which indexing system to use—or whether to use both.
-
-### Single-level index
-
-A Single-level index maps blob multihashes to the locations where the server can read the bytes of a given blob. An indexing strategy with these records enables fast responses for clients requesting verifiable blobs by their multihash. However, in some setups, implementing this indexing strategy may be prohibitively expensive (e.g., in databases like DynamoDB) or limited (e.g., due to rate limiting when indexing thousands of blobs in parallel from large packs). Furthermore, these indexes alone are insufficient to serve fully verifiable packs, as they do not maintain cryptographic relationships between blobs or packs.
-
-### Multiple-level index
-
-A Multiple-level index maps containing multihashes to a list of verifiable packs containing the blobs that form a given cryptographic relationship. This approach allows serving fully verifiable packs efficiently while reducing index store operations by several orders of magnitude. However, this index alone cannot serve single blob requests unless the request includes hints about a containing multihash.
-
-### Type Comparison
-
-| Feature                                             | single-level Index | multiple-level Index |
-| --------------------------------------------------- | ------------------ | -------------------- |
-| Supports single blob lookups by blob multihash only | ✅                 | ❌                   |
-| Supports content retrieval by containing multihash  | ❌                 | ✅                   |
-| Storage operations                                  | High               | Low                  |
-| Lookup speed for a blob                             | Fast               | Slower               |
-| Lookup speed for containing packs/blobs             | Slower             | Fast                 |
-
 ## Design Principles
 
 The design of the indexing system considers the following key aspects:
@@ -130,37 +105,34 @@ interface IndexReader {
   // Find the index records related to the requested multihash
   findRecords(
     multihash: MultihashDigest,
-    // in a multiple-level-index this can be used with the containing Multihash
     // similar to https://github.com/ipfs/specs/pull/462
     options?: { containingMultihash?: MultihashDigest }
-  ): AsyncIterable<IndexRecord>
+  ): Promise<AsyncIterable<IndexRecord> | null>
 }
 ```
 
 ## Relationship Between Components
 
-**Reading Previously Indexed Content**
+**Reading Previously Indexed Data**
 
-1. A client requests content using a give Content Reader.
-2. The Content Reader queries the appropriate Index (single-level or multi-level).
+1. A client requests a stream of bytes behind a given multihash using a Verifiable Reader.
+2. The Verifiable Reader queries the appropriate Index.
 3. The Index Reader provides index records representing the location where requested multihash bytes are stored.
-4. The Content Reader fetches the actual data based on the resolved locations (see `content-reader.md`).
+4. The Verifiable Reader fetches the actual data based on the resolved locations (see `verifiable-reader.md`).
 
 ```mermaid
 graph TD;
-    Client -->|Requests content| ContentReader;
-    ContentReader -->|Queries| IndexReader;
-    IndexReader -->|Retrieves index entries| ContentReader;
-    ContentReader -->|Read from location| ContentStore;
-    ContentStore -->|Returns data| Client;
+    Client -->|Request stream of bytes| VerifiableReader;
+    VerifiableReader -->|Lookup Multihash| IndexReader;
+    IndexReader -->|Resolve index records| VerifiableReader;
+    VerifiableReader -->|Read from locations| PackReader;
+    PackReader -->|Returns data| Client;
 
     subgraph Index System
         IndexReader
     end
 
     subgraph Storage System
-        ContentStore
+        PackReader
     end
 ```
-
-For content retrieval, see the [Content Reader Specification](./content-reader.md).
