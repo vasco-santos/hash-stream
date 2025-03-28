@@ -141,15 +141,16 @@ export const indexFindRecords = async (
   console.log(`\nFinding target (${indexStrategy})...
     ${targetCid}
     base58btc(${base58btc.encode(targetMultihash.bytes)})`)
-  const recordsStream = await client.index.reader.findRecords(targetMultihash, {
-    containingMultihash: containingCidLink?.multihash,
-  })
-  if (!recordsStream) {
+  const records = await all(
+    client.index.reader.findRecords(targetMultihash, {
+      containingMultihash: containingCidLink?.multihash,
+    })
+  )
+  if (!records.length) {
     console.info(`\nIndex Records:
     Not found.`)
     return
   }
-  const records = await all(recordsStream)
   console.info(`\nIndex Records:`)
   logRecords(records)
 }

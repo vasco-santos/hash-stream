@@ -67,9 +67,9 @@ export class FSBlobIndexStore {
 
   /**
    * @param {API.MultihashDigest} hash
-   * @returns {Promise<AsyncIterable<API.IndexRecord> | null>}
+   * @returns {AsyncIterable<API.IndexRecord>}
    */
-  async get(hash) {
+  async *get(hash) {
     const filePath = this._getFilePath(hash)
     let encodedData
     try {
@@ -80,11 +80,7 @@ export class FSBlobIndexStore {
       throw err
     }
 
-    const data = this.decodeData(encodedData)
-
-    return (async function* () {
-      yield data
-    })()
+    yield this.decodeData(encodedData)
   }
 
   /**

@@ -68,9 +68,11 @@ export class SingleLevelIndex {
    * Find the index records of a given multihash.
    *
    * @param {API.MultihashDigest} multihash
-   * @returns {Promise<AsyncIterable<API.IndexRecord> | null>}
+   * @returns {AsyncIterable<API.IndexRecord>}
    */
-  findRecords(multihash) {
-    return this.store.get(multihash)
+  async *findRecords(multihash) {
+    for await (const entry of this.store.get(multihash)) {
+      yield entry
+    }
   }
 }

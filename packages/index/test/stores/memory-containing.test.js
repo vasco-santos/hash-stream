@@ -40,9 +40,7 @@ describe('MemoryContainingIndexStore', () => {
       })()
     )
 
-    const recordsStream = await store.get(blob.multihash)
-    assert(recordsStream)
-    const records = await all(recordsStream)
+    const records = await all(store.get(blob.multihash))
     assert(records.length === 1)
     assert.strictEqual(records[0].offset, offset)
     assert.strictEqual(records[0].length, length)
@@ -50,10 +48,10 @@ describe('MemoryContainingIndexStore', () => {
     assert(records[0].type === Type.BLOB)
   })
 
-  it('returns null for non-existent entries', async () => {
+  it('returns empty for non-existent entries', async () => {
     const blockCid = await randomCID()
-    const retrieved = await store.get(blockCid.multihash)
-    assert.strictEqual(retrieved, null)
+    const retrieved = await all(store.get(blockCid.multihash))
+    assert.deepEqual(retrieved, [])
   })
 
   it('can handle large offsets and lengths', async () => {
@@ -74,9 +72,7 @@ describe('MemoryContainingIndexStore', () => {
         yield blob
       })()
     )
-    const recordsStream = await store.get(blob.multihash)
-    assert(recordsStream)
-    const records = await all(recordsStream)
+    const records = await all(store.get(blob.multihash))
     assert(records.length === 1)
     assert.strictEqual(records[0].offset, offset)
     assert.strictEqual(records[0].length, length)
@@ -110,9 +106,7 @@ describe('MemoryContainingIndexStore', () => {
       })()
     )
 
-    const recordsStream = await store.get(content.multihash)
-    assert(recordsStream)
-    const records = await all(recordsStream)
+    const records = await all(store.get(content.multihash))
     assert(records.length === 1)
 
     assert(equals(records[0].multihash.digest, content.multihash.digest))
@@ -170,9 +164,7 @@ describe('MemoryContainingIndexStore', () => {
       })()
     )
 
-    const recordsStream = await store.get(content.multihash)
-    assert(recordsStream)
-    const records = await all(recordsStream)
+    const records = await all(store.get(content.multihash))
     assert(records.length === 1)
     assert(equals(records[0].multihash.digest, content.multihash.digest))
     assert.strictEqual(records[0].type, Type.CONTAINING)
