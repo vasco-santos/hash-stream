@@ -158,16 +158,16 @@ describe('write pack in FSPackStore and index them in a multiple-level index', (
 
     // Find Records for each pack and verify they have sub-records
     for (const multihash of packsMultihashes) {
-      // Should not find records with containing
-      const packStreamWithContaining = await index.findRecords(multihash, {
-        containingMultihash,
-      })
-      assert(!packStreamWithContaining)
+      // Should find records with containing even if not indexed that way
+      const recordsWithContaining = await all(
+        index.findRecords(multihash, {
+          containingMultihash,
+        })
+      )
+      assert(recordsWithContaining.length)
 
       // Should find records without containing
-      const packStreamWithoutContaining = await index.findRecords(multihash)
-      assert(packStreamWithoutContaining)
-      const records = await all(packStreamWithoutContaining)
+      const records = await all(index.findRecords(multihash))
       assert(records.length === 1)
       const packRecord = records[0]
       assert(packRecord)
@@ -206,8 +206,8 @@ describe('write pack in FSPackStore and index them in a multiple-level index', (
     }
 
     // Check if containing multihash is not indexed
-    const containingRecordsStream = await index.findRecords(containingMultihash)
-    assert(!containingRecordsStream)
+    const containingRecords = await all(index.findRecords(containingMultihash))
+    assert(!containingRecords.length)
   })
 
   it('should write packs from a blob and index them with containing', async () => {
@@ -261,16 +261,16 @@ describe('write pack in FSPackStore and index them in a multiple-level index', (
 
     // Find Records for each pack and verify they have sub-records
     for (const multihash of packsMultihashes) {
-      // Should not find records with containing
-      const packStreamWithoutContaining = await index.findRecords(multihash)
-      assert(!packStreamWithoutContaining)
+      // Should not find records without containing
+      const recordsWithoutContaining = await all(index.findRecords(multihash))
+      assert(!recordsWithoutContaining.length)
 
       // Should find records with containing
-      const packStreamWithContaining = await index.findRecords(multihash, {
-        containingMultihash,
-      })
-      assert(packStreamWithContaining)
-      const records = await all(packStreamWithContaining)
+      const records = await all(
+        index.findRecords(multihash, {
+          containingMultihash,
+        })
+      )
       assert(records.length === 1)
       const packRecord = records[0]
       assert(packRecord)

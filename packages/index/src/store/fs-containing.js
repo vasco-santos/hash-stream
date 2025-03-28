@@ -84,9 +84,9 @@ export class FSContainingIndexStore {
 
   /**
    * @param {API.MultihashDigest} hash
-   * @returns {Promise<AsyncIterable<API.IndexRecord> | null>}
+   * @returns {AsyncIterable<API.IndexRecord>}
    */
-  async get(hash) {
+  async *get(hash) {
     const folderPath = this._getFolderPath(hash)
     let files
     try {
@@ -105,7 +105,7 @@ export class FSContainingIndexStore {
         records.push(record)
         /* c8 ignore next 4 */
       } catch (/** @type {any} */ err) {
-        if (err.code === 'ENOENT') return null // No data stored
+        if (err.code === 'ENOENT') continue // No data stored
         throw err
       }
     }
@@ -123,11 +123,9 @@ export class FSContainingIndexStore {
       return acc
     }, /** @type {API.IndexRecord[]} */ ([]))
 
-    return (async function* () {
-      for (const entry of mergedRecords) {
-        yield entry
-      }
-    })()
+    for (const entry of mergedRecords) {
+      yield entry
+    }
   }
 
   /**

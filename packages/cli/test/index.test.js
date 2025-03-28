@@ -314,7 +314,7 @@ describe('CLI index', () => {
         'index',
         'find',
         'records',
-        'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
+        'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua2yprewa',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
         '--strategy',
         'multiple-level',

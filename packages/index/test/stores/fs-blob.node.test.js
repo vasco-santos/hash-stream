@@ -47,9 +47,7 @@ describe('FSBlobIndexStore', () => {
       })()
     )
 
-    const recordsStream = await store.get(blob.multihash)
-    assert(recordsStream)
-    const records = await all(recordsStream)
+    const records = await all(store.get(blob.multihash))
     assert(records.length === 1)
     assert.strictEqual(records[0].offset, offset)
     assert.strictEqual(records[0].length, length)
@@ -77,16 +75,14 @@ describe('FSBlobIndexStore', () => {
       })()
     )
 
-    const recordsStream = await store.get(blob.multihash)
-    assert(recordsStream)
-    const records = await all(recordsStream)
+    const records = await all(store.get(blob.multihash))
     assert(records.length === 1)
   })
 
-  it('returns null for non-existent entries', async () => {
+  it('returns empty for non-existent entries', async () => {
     const blobCid = await randomCID()
-    const retrieved = await store.get(blobCid.multihash)
-    assert.strictEqual(retrieved, null)
+    const retrieved = await all(store.get(blobCid.multihash))
+    assert.deepEqual(retrieved, [])
   })
 
   it('can handle large offsets and lengths', async () => {
@@ -107,9 +103,7 @@ describe('FSBlobIndexStore', () => {
         yield blob
       })()
     )
-    const recordsStream = await store.get(blob.multihash)
-    assert(recordsStream)
-    const records = await all(recordsStream)
+    const records = await all(store.get(blob.multihash))
     assert(records.length === 1)
     assert.strictEqual(records[0].offset, offset)
     assert.strictEqual(records[0].length, length)

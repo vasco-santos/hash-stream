@@ -29,7 +29,7 @@ export interface IndexReader {
     // in a multiple-level-index this can be used with the containing Multihash
     // similar to https://github.com/ipfs/specs/pull/462
     options?: { containingMultihash?: MultihashDigest }
-  ): Promise<AsyncIterable<IndexRecord> | null>
+  ): AsyncIterable<IndexRecord>
 }
 
 export interface IndexStore extends IndexStoreReader, IndexStoreWriter {}
@@ -41,7 +41,7 @@ export interface IndexStoreWriter {
 // Index records can be read from a given store based on the
 // following Reader interface.
 export interface IndexStoreReader {
-  get(hash: MultihashDigest): Promise<AsyncIterable<IndexRecord> | null>
+  get(hash: MultihashDigest): AsyncIterable<IndexRecord>
 }
 
 // An index record has the necessary metadata to find the location

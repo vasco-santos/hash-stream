@@ -92,28 +92,23 @@ export class MultipleLevelIndex {
    * @param {API.MultihashDigest} multihash
    * @param {object} [options]
    * @param {API.MultihashDigest} [options.containingMultihash]
-   * @returns {Promise<AsyncIterable<API.IndexRecord> | null>}
+   * @returns {AsyncIterable<API.IndexRecord>}
    */
-  async findRecords(multihash, { containingMultihash } = {}) {
+  async *findRecords(multihash, { containingMultihash } = {}) {
     if (containingMultihash) {
-      const entries = await this.store.get(containingMultihash)
-      if (entries === null) {
-        return null
-      }
-
-      for await (const entry of entries) {
+      for await (const entry of this.store.get(containingMultihash)) {
         for await (const subRecord of findInSubRecords(
           entry.subRecords,
           multihash
         )) {
-          return (async function* () {
-            yield subRecord
-          })()
+          yield subRecord
         }
       }
     }
-
-    return this.store.get(multihash)
+    // If there is no containing multihash, search for the multihash directly
+    for await (const entry of this.store.get(multihash)) {
+      yield entry
+    }
   }
 }
 
@@ -128,7 +123,7 @@ async function* findInSubRecords(subRecords, multihash) {
       yield subRecord
       // /* c8 ignore next 1 */
     }
-    if (subRecord.subRecords) {
+    if (subRecord.subRecords.length) {
       yield* findInSubRecords(subRecord.subRecords, multihash)
     }
   }

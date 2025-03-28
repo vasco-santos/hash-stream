@@ -41,10 +41,8 @@ describe('SingleLevelIndex', () => {
         yield blob
       })()
     )
-    const recordsStream = await singleLevelIndex.findRecords(blobCid.multihash)
-    assert(recordsStream)
 
-    const records = await all(recordsStream)
+    const records = await all(singleLevelIndex.findRecords(blobCid.multihash))
     assert(records.length === 1)
     assert.strictEqual(records[0].offset, offset)
     assert.strictEqual(records[0].length, length)
@@ -54,8 +52,8 @@ describe('SingleLevelIndex', () => {
 
   it('returns null for non-existent blob index records', async () => {
     const blobCid = await randomCID()
-    const records = await singleLevelIndex.findRecords(blobCid.multihash)
-    assert.strictEqual(records, null)
+    const records = await all(singleLevelIndex.findRecords(blobCid.multihash))
+    assert.deepEqual(records, [])
   })
 
   it('can handle large offsets and lengths in blob locations', async () => {
@@ -76,10 +74,8 @@ describe('SingleLevelIndex', () => {
         yield blob
       })()
     )
-    const recordsStream = await singleLevelIndex.findRecords(blobCid.multihash)
-    assert(recordsStream)
 
-    const records = await all(recordsStream)
+    const records = await all(singleLevelIndex.findRecords(blobCid.multihash))
 
     assert(records.length === 1)
     assert.strictEqual(records[0].offset, offset)
@@ -104,11 +100,9 @@ describe('SingleLevelIndex', () => {
     const blobIterator = await CarBlockIterator.fromBytes(carBytes)
     let blobCount = 0
     for await (const blob of blobIterator) {
-      const recordsStream = await singleLevelIndex.findRecords(
-        blob.cid.multihash
+      const records = await all(
+        singleLevelIndex.findRecords(blob.cid.multihash)
       )
-      assert(recordsStream)
-      const records = await all(recordsStream)
       assert(records.length === 1)
       assert(equals(records[0].location.digest, car.cid.multihash.digest))
       assert(records[0].offset)
@@ -137,10 +131,7 @@ describe('SingleLevelIndex', () => {
       assert(equals(shardDigest.digest, car.cid.multihash.digest))
 
       for (const [blobDigest, position] of slices.entries()) {
-        const recordsStream = await singleLevelIndex.findRecords(blobDigest)
-
-        assert(recordsStream)
-        const records = await all(recordsStream)
+        const records = await all(singleLevelIndex.findRecords(blobDigest))
         assert(records.length === 1)
         assert(equals(records[0].location.digest, car.cid.multihash.digest))
         assert.strictEqual(records[0].offset, position[0])

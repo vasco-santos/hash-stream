@@ -21,19 +21,21 @@ describe('MultipleLevelIndex', () => {
     multipleLevelIndex = new MultipleLevelIndex(store)
   })
 
-  it('returns null when records for multihash are not known', async () => {
+  it('returns no records for unknown multihash', async () => {
     const multihash = (await randomCID()).multihash
-    const records = await multipleLevelIndex.findRecords(multihash)
-    assert.strictEqual(records, null)
+    const records = await all(multipleLevelIndex.findRecords(multihash))
+    assert.deepEqual(records, [])
   })
 
-  it('returns null when records for containing multihash are not known', async () => {
+  it('returns no records for unknown containing multihash', async () => {
     const multihash = (await randomCID()).multihash
     const containingMultihash = (await randomCID()).multihash
-    const records = await multipleLevelIndex.findRecords(multihash, {
-      containingMultihash,
-    })
-    assert.strictEqual(records, null)
+    const records = await all(
+      multipleLevelIndex.findRecords(multihash, {
+        containingMultihash,
+      })
+    )
+    assert.deepEqual(records, [])
   })
 
   it('adds blobs packed and associated with a containing record', async () => {
@@ -58,8 +60,8 @@ describe('MultipleLevelIndex', () => {
       { containingMultihash: containing.multihash }
     )
 
-    const entries = await store.get(containing.multihash)
-    assert(entries)
+    const entries = await all(store.get(containing.multihash))
+    assert(entries.length)
   })
 
   it('adds blobs not packed and associated with a containing record', async () => {
@@ -83,8 +85,8 @@ describe('MultipleLevelIndex', () => {
       { containingMultihash: containing.multihash }
     )
 
-    const entries = await store.get(containing.multihash)
-    assert(entries)
+    const entries = await all(store.get(containing.multihash))
+    assert(entries.length)
   })
 
   it('adds blobs non packed and not associated with a containing record', async () => {
@@ -107,10 +109,7 @@ describe('MultipleLevelIndex', () => {
     )
 
     for (const blobCid of blobCids) {
-      const entriesStream = await store.get(blobCid.multihash)
-
-      assert(entriesStream)
-      const records = await all(entriesStream)
+      const records = await all(store.get(blobCid.multihash))
       assert(records.length === 1)
     }
   })
@@ -135,9 +134,7 @@ describe('MultipleLevelIndex', () => {
       })()
     )
 
-    const packEntriesStream = await store.get(packCid.multihash)
-    assert(packEntriesStream)
-    const packRecords = await all(packEntriesStream)
+    const packRecords = await all(store.get(packCid.multihash))
     assert(packRecords.length === 1)
     assert(equals(packRecords[0].multihash.bytes, packCid.multihash.bytes))
     assert(equals(packRecords[0].location.bytes, packCid.multihash.bytes))
@@ -169,12 +166,9 @@ describe('MultipleLevelIndex', () => {
       { containingMultihash: containing.multihash }
     )
 
-    const containingStream = await multipleLevelIndex.findRecords(
-      containing.multihash
+    const records = await all(
+      multipleLevelIndex.findRecords(containing.multihash)
     )
-
-    assert(containingStream)
-    const records = await all(containingStream)
     assert(records.length === 1)
     assert(equals(records[0].multihash.bytes, containing.multihash.bytes))
     assert(equals(records[0].location.bytes, containing.multihash.bytes))
@@ -221,17 +215,16 @@ describe('MultipleLevelIndex', () => {
     )
 
     for (const blobCid of blobCids) {
-      const blobStreamWithoutContaining = await multipleLevelIndex.findRecords(
-        blobCid.multihash
+      const recordsWithoutContaining = await all(
+        multipleLevelIndex.findRecords(blobCid.multihash)
       )
-      assert.strictEqual(blobStreamWithoutContaining, null)
+      assert.deepEqual(recordsWithoutContaining, [])
 
-      const blobStreamWithContaining = await multipleLevelIndex.findRecords(
-        blobCid.multihash,
-        { containingMultihash: containing.multihash }
+      const records = await all(
+        multipleLevelIndex.findRecords(blobCid.multihash, {
+          containingMultihash: containing.multihash,
+        })
       )
-      assert(blobStreamWithContaining)
-      const records = await all(blobStreamWithContaining)
       assert(records.length === 1)
       assert(equals(records[0].multihash.bytes, blobCid.multihash.bytes))
       assert(equals(records[0].location.bytes, packCid.multihash.bytes))
@@ -262,18 +255,16 @@ describe('MultipleLevelIndex', () => {
       })(),
       { containingMultihash: containing.multihash }
     )
-
-    const packStreamWithoutContaining = await multipleLevelIndex.findRecords(
-      packCid.multihash
+    const recordsWithoutContaining = await all(
+      multipleLevelIndex.findRecords(packCid.multihash)
     )
-    assert.strictEqual(packStreamWithoutContaining, null)
+    assert(recordsWithoutContaining.length === 0)
 
-    const packStreamWithContaining = await multipleLevelIndex.findRecords(
-      packCid.multihash,
-      { containingMultihash: containing.multihash }
+    const records = await all(
+      multipleLevelIndex.findRecords(packCid.multihash, {
+        containingMultihash: containing.multihash,
+      })
     )
-    assert(packStreamWithContaining)
-    const records = await all(packStreamWithContaining)
     assert(records.length === 1)
 
     assert(records[0])
@@ -312,12 +303,9 @@ describe('MultipleLevelIndex', () => {
       { containingMultihash: containing.multihash }
     )
 
-    const containingStream = await multipleLevelIndex.findRecords(
-      containing.multihash
+    const records = await all(
+      multipleLevelIndex.findRecords(containing.multihash)
     )
-
-    assert(containingStream)
-    const records = await all(containingStream)
     assert(records.length === 1)
     assert(equals(records[0].multihash.bytes, containing.multihash.bytes))
     assert(equals(records[0].location.bytes, containing.multihash.bytes))
@@ -327,17 +315,16 @@ describe('MultipleLevelIndex', () => {
     assert.strictEqual(records[0].subRecords.length, blobLength)
 
     for (const blobCid of blobCids) {
-      const blobStreamWithoutContaining = await multipleLevelIndex.findRecords(
-        blobCid.multihash
+      const recordsWithoutContaining = await all(
+        multipleLevelIndex.findRecords(blobCid.multihash)
       )
-      assert.strictEqual(blobStreamWithoutContaining, null)
+      assert.deepEqual(recordsWithoutContaining, [])
 
-      const blobStreamWithContaining = await multipleLevelIndex.findRecords(
-        blobCid.multihash,
-        { containingMultihash: containing.multihash }
+      const records = await all(
+        multipleLevelIndex.findRecords(blobCid.multihash, {
+          containingMultihash: containing.multihash,
+        })
       )
-      assert(blobStreamWithContaining)
-      const records = await all(blobStreamWithContaining)
       assert(records.length === 1)
       assert(equals(records[0].multihash.bytes, blobCid.multihash.bytes))
       assert(equals(records[0].location.bytes, blobCid.multihash.bytes))
@@ -445,15 +432,11 @@ describe('MultipleLevelIndex', () => {
     )
 
     for (const blobCid of blobCids) {
-      const entriesStream = await multipleLevelIndex.findRecords(
-        blobCid.multihash,
-        {
+      const records = await all(
+        multipleLevelIndex.findRecords(blobCid.multihash, {
           containingMultihash: containing.multihash,
-        }
+        })
       )
-
-      assert(entriesStream)
-      const records = await all(entriesStream)
       assert(records.length === 1)
     }
   })

@@ -51,18 +51,14 @@ export class MemoryBlobIndexStore {
 
   /**
    * @param {API.MultihashDigest} hash
-   * @returns {Promise<AsyncIterable<API.IndexRecord> | null>}
+   * @returns {AsyncIterable<API.IndexRecord>}
    */
-  async get(hash) {
+  async *get(hash) {
     const key = MemoryBlobIndexStore.encodeKey(hash)
     const encodedData = this.store.get(key)
     if (!encodedData) return null
 
-    const data = this.decodeData(encodedData)
-
-    return (async function* () {
-      yield data
-    })()
+    yield this.decodeData(encodedData)
   }
 
   /**

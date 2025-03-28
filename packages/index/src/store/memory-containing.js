@@ -48,9 +48,9 @@ export class MemoryContainingIndexStore {
 
   /**
    * @param {API.MultihashDigest} hash
-   * @returns {Promise<AsyncIterable<API.IndexRecord> | null>}
+   * @returns {AsyncIterable<API.IndexRecord>}
    */
-  async get(hash) {
+  async *get(hash) {
     const key = MemoryContainingIndexStore.encodeKey(hash)
     const encodedData = this.store.get(key)
     if (!encodedData) return null
@@ -71,11 +71,9 @@ export class MemoryContainingIndexStore {
         return acc
       }, /** @type {API.IndexRecord[]} */ ([]))
 
-    return (async function* () {
-      for (const entry of entries) {
-        yield entry
-      }
-    })()
+    for (const entry of entries) {
+      yield entry
+    }
   }
 
   /**
