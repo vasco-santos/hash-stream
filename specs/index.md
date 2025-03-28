@@ -87,7 +87,7 @@ Index records can be read from a given store based on the following Reader inter
 import { MultihashDigest } from 'multiformats'
 
 interface IndexStoreReader {
-  get(hash: MultihashDigest): Promise<AsyncIterable<IndexRecord> | null>
+  get(hash: MultihashDigest): AsyncIterable<IndexRecord>
 }
 ```
 
@@ -107,7 +107,7 @@ interface IndexReader {
     multihash: MultihashDigest,
     // similar to https://github.com/ipfs/specs/pull/462
     options?: { containingMultihash?: MultihashDigest }
-  ): Promise<AsyncIterable<IndexRecord> | null>
+  ): AsyncIterable<IndexRecord>
 }
 ```
 
