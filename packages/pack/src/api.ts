@@ -18,6 +18,12 @@ export type {
   IndexStore,
 }
 
+export interface PackReader {
+  storeReader: PackStoreReader
+
+  stream(targetMultihash: MultihashDigest): AsyncIterable<VerifiablePack>
+}
+
 export interface PackWriter {
   storeWriter: PackStoreWriter
   indexWriter?: IndexWriter
@@ -75,6 +81,8 @@ export interface PackStoreReader {
    * @returns A promise that resolves with the pack file data or null if not found.
    */
   get(hash: MultihashDigest): Promise<Uint8Array | null>
+
+  stream(targetMultihash: MultihashDigest): AsyncIterable<VerifiablePack>
 }
 
 export interface VerifiablePack {

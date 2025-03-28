@@ -217,6 +217,52 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
 
+  packages/verifiable-reader:
+    dependencies:
+      '@hash-stream/index':
+        specifier: workspace:^
+        version: link:../index
+      '@hash-stream/pack':
+        specifier: workspace:^
+        version: link:../pack
+      multiformats:
+        specifier: ^13.3.2
+        version: 13.3.2
+    devDependencies:
+      '@hash-stream/eslint-config':
+        specifier: workspace:^
+        version: link:../eslint-config
+      '@types/assert':
+        specifier: ^1.5.6
+        version: 1.5.11
+      '@types/mocha':
+        specifier: ^10.0.1
+        version: 10.0.10
+      '@types/node':
+        specifier: ^22.13.10
+        version: 22.13.10
+      assert:
+        specifier: ^2.0.0
+        version: 2.1.0
+      c8:
+        specifier: ^7.13.0
+        version: 7.14.0
+      hundreds:
+        specifier: ^0.0.9
+        version: 0.0.9
+      mocha:
+        specifier: ^10.2.0
+        version: 10.2.0
+      npm-run-all:
+        specifier: ^4.1.5
+        version: 4.1.5
+      playwright-test:
+        specifier: ^12.3.4
+        version: 12.3.4
+      typescript:
+        specifier: 5.2.2
+        version: 5.2.2
+
 packages:
 
   '@andrewbranch/untar.js@1.0.3':

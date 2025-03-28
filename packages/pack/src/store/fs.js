@@ -63,4 +63,14 @@ export class FSPackStore {
       return null
     }
   }
+
+  /**
+   * Retrieves bytes of a pack file by its multihash digest.
+   *
+   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @returns {AsyncIterable<API.VerifiablePack>}
+   */
+  async *stream(hash) {
+    throw new Error('Not implemented')
+  }
 }
