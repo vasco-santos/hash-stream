@@ -20,12 +20,14 @@
     "test": "npm run test:all",
     "test:all": "run-s test:browser test:node",
     "test:node": "hundreds -r html -r text mocha 'test/**/!(*.browser).test.js' -n experimental-vm-modules -n no-warnings",
-    "test:browser": "playwright-test 'test/**/!(*.node).test.js'",
+    "test:browser": "playwright-test --runner mocha 'test/**/!(*.node).test.js'",
     "rc": "npm version prerelease --preid rc"
   },
   "exports": {
     ".": "./dist/src/index.js",
     "./store/fs": "./dist/src/store/fs.js",
+    "./store/memory": "./dist/src/store/memory.js",
+    "./reader": "./dist/src/reader.js",
     "./writer": "./dist/src/writer.js",
     "./types": "./dist/src/api.js"
   },
@@ -37,8 +39,14 @@
       "writer": [
         "dist/src/writer.d.ts"
       ],
+      "reader": [
+        "dist/src/reader.d.ts"
+      ],
       "store/fs": [
         "dist/src/store/fs.d.ts"
+      ],
+      "store/memory": [
+        "dist/src/store/memory.d.ts"
       ]
     }
   },

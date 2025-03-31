@@ -5,8 +5,9 @@ import { ShardingStream } from '@web3-storage/upload-client'
 import { createFileEncoderStream } from '@web3-storage/upload-client/unixfs'
 
 import { PackWriter } from './writer.js'
+import { PackReader } from './reader.js'
 
-export { PackWriter }
+export { PackWriter, PackReader }
 
 /**
  * Create a set of packs from a blob.
@@ -27,7 +28,7 @@ export function createPacks(blob, options) {
  * @param {import('./api.js').BlobLike} blob - The input file-like object containing a ReadableStream.
  * @param {import('./api.js').CreateCarPackOptions} [options] - Optional settings.
  * @returns {{
- *   packStream: AsyncGenerator<API.VerifiablePack, void, void>,
+ *   packStream: AsyncGenerator<API.VerifiableEntry, void, void>,
  *   containingPromise: Promise<API.MultihashDigest>
  * }} - An object containing the generator and a promise for the root CID.
  */

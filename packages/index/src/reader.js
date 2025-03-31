@@ -25,15 +25,21 @@ export class IndexReader {
    * @returns {AsyncIterable<API.IndexRecord>}
    */
   async *findRecords(multihash, { containingMultihash } = {}) {
+    let found = false
     if (containingMultihash) {
       for await (const entry of this.store.get(containingMultihash)) {
         for await (const subRecord of findInSubRecords(
           entry.subRecords,
           multihash
         )) {
+          found = true
           yield subRecord
         }
       }
+    }
+    // No need to try directly if we already found the multihash
+    if (found) {
+      return
     }
     // If there is no containing multihash, search for the multihash directly
     for await (const entry of this.store.get(multihash)) {

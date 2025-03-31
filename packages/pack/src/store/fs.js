@@ -2,7 +2,7 @@ import * as API from '../api.js'
 
 import { base58btc } from 'multiformats/bases/base58'
 
-import { promises as fs } from 'fs'
+import { promises as fs, createReadStream } from 'fs'
 import path from 'path'
 
 /**
@@ -62,5 +62,70 @@ export class FSPackStore {
     } catch {
       return null
     }
+  }
+
+  /**
+   * Retrieves bytes of a pack file by its multihash digest and streams it in specified ranges.
+   *
+   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @param {Array<{ offset: number, length?: number, multihash: API.MultihashDigest }>} [ranges]
+   * @returns {AsyncIterable<API.VerifiableEntry>}
+   */
+  async *stream(hash, ranges = []) {
+    const filePath = this._getFilePath(hash)
+
+    // Check if ranges are provided
+    if (ranges.length === 0) {
+      // If no ranges, stream the entire file
+      const fileBuffer = await fs.readFile(filePath)
+      yield { multihash: hash, bytes: fileBuffer }
+      return
+    }
+    // For each range, create a stream that reads the file chunk and buffers it
+    for (const { multihash, offset, length } of ranges) {
+      // @ts-expect-error we should be able to use the length property
+      const buffer = await this._bufferStream(filePath, offset, length)
+      yield { multihash, bytes: buffer }
+    }
+  }
+
+  /**
+   * Buffers the content of the file between the provided offset and length.
+   *
+   * @param {string} filePath - Path to the file.
+   * @param {number} offset - Starting offset to read from.
+   * @param {number} length - Length of the range to read.
+   * @returns {Promise<Uint8Array>} - The buffered content of the range.
+   */
+  async _bufferStream(filePath, offset, length) {
+    return new Promise((resolve, reject) => {
+      const stream = createReadStream(filePath, {
+        start: offset,
+        end: offset + length - 1,
+      })
+
+      /** @type {Uint8Array[]} */
+      const chunks = []
+      let totalSize = 0
+
+      stream.on('data', (chunk) => {
+        // @ts-expect-error chunk is a Buffer
+        const chunkArray = new Uint8Array(chunk) // Convert to Uint8Array
+        chunks.push(chunkArray)
+        totalSize += chunkArray.length
+      })
+
+      stream.on('end', () => {
+        const result = new Uint8Array(totalSize)
+        let offset = 0
+        for (const chunk of chunks) {
+          result.set(chunk, offset)
+          offset += chunk.length
+        }
+        resolve(result)
+      })
+
+      stream.on('error', reject)
+    })
   }
 }

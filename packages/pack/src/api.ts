@@ -18,6 +18,28 @@ export type {
   IndexStore,
 }
 
+export interface PackReader {
+  storeReader: PackStoreReader
+
+  /**
+   * Stream data from a Pack, optionally requesting specific byte ranges.
+   *
+   * @param {MultihashDigest} targetMultihash - The multihash of the Pack to retrieve.
+   * @param {Array<{ offset: number, length?: number, multihash: MultihashDigest }>} [ranges] -
+   *        Optional ranges specifying which parts of the Pack should be streamed.
+   *        If omitted, the entire Pack is streamed.
+   * @returns {AsyncIterable<VerifiableEntry>}
+   */
+  stream(
+    targetMultihash: MultihashDigest,
+    ranges?: Array<{
+      offset: number
+      length: number
+      multihash: MultihashDigest
+    }>
+  ): AsyncIterable<VerifiableEntry>
+}
+
 export interface PackWriter {
   storeWriter: PackStoreWriter
   indexWriter?: IndexWriter
@@ -75,9 +97,20 @@ export interface PackStoreReader {
    * @returns A promise that resolves with the pack file data or null if not found.
    */
   get(hash: MultihashDigest): Promise<Uint8Array | null>
+
+  stream(
+    targetMultihash: MultihashDigest,
+    ranges?: Array<{
+      offset?: number
+      length?: number
+      multihash: MultihashDigest
+    }>
+  ): AsyncIterable<VerifiableEntry>
 }
 
-export interface VerifiablePack {
+export interface VerifiableEntry {
   bytes: Uint8Array
   multihash: MultihashDigest
+  offset?: number
+  length?: number
 }

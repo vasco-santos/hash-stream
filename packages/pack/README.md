@@ -48,7 +48,7 @@ main().catch(console.error)
 Created packs from a given Blob like (object with a [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)), can be stored into a given Pack Store, as well as optionally indexed if an index writer is provided.
 
 ```js
-import { MultipleLevelIndex } from '@hash-stream/index'
+import { MultipleLevelIndexWriter } from '@hash-stream/index/writer/multiple-level'
 import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
 import { PackWriter } from 'pack'
 import { FSPackStore } from 'pack/store/fs' // Example file system store
@@ -58,10 +58,10 @@ async function main() {
   const indexStore = new FSContainingIndexStore('/path/to/index-store')
   const packStore = new FsStore('/path/to/pack-store')
 
-  // Initialize the index
-  const index = new MultipleLevelIndex(indexStore)
+  // Initialize the index writer
+  const indexWriter = new MultipleLevelIndexWriter(indexStore)
   const packWriter = new PackWriter(packStore, {
-    indexWriter: index,
+    indexWriter,
   })
 
   // Get Blob
@@ -89,6 +89,31 @@ async function main() {
     'Containing multihash (base58btc):',
     base58btc.encode(containingMultihash.bytes)
   )
+}
+
+main().catch(console.error)
+```
+
+### Reading Packs
+
+```ts
+import { PackReader } from 'pack'
+import { FSPackStore } from 'pack/store/fs' // Example file system store
+
+async function main() {
+  // Initialize the stores
+  const packStore = new FsStore('/path/to/pack-store')
+
+  // Initialize the pack reader
+  const packReader = new PackReader(packStore)
+
+  // Get pack multihash
+  const packMultihash = // TODO
+
+  const packs = []
+  for await (const entry of packReader.stream(packMultihash)) {
+    packs.push(entry)
+  }
 }
 
 main().catch(console.error)

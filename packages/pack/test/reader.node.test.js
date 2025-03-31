@@ -5,12 +5,12 @@ import os from 'os'
 import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
 import { FSPackStore } from '../src/store/fs.js'
 
-import { runPackWriterTests } from './writer.js'
+import { runPackReaderTests } from './reader.js'
 ;[
   {
     name: 'FS',
     /**
-     * @returns {import('./writer.js').DestroyablePackStore}
+     * @returns {import('./reader.js').DestroyablePackStore}
      */
     getPackStore: () => {
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-pack-test-'))
@@ -25,7 +25,7 @@ import { runPackWriterTests } from './writer.js'
       return destroyablePackStore
     },
     /**
-     * @returns {import('./writer.js').DestroyableIndexStore}
+     * @returns {import('./reader.js').DestroyableIndexStore}
      */
     getIndexStore: () => {
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-index-test-'))
@@ -41,7 +41,7 @@ import { runPackWriterTests } from './writer.js'
     },
   },
 ].forEach(({ name, getPackStore, getIndexStore }) => {
-  runPackWriterTests(
+  runPackReaderTests(
     name,
     () => getPackStore(),
     () => getIndexStore()
