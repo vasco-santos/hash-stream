@@ -1,20 +1,20 @@
-import * as API from './api.js'
+import * as API from '../api.js'
 
 import { base58btc } from 'multiformats/bases/base58'
 
-import { createFromBlob, createFromPack } from './record.js'
+import { createFromBlob, createFromPack } from '../record.js'
 
 /**
  * @typedef {import('@ipld/car/indexer').BlockIndex} BlockIndex
  */
 
 /**
- * SingleLevelIndex implements the Index interface
- * and provides methods to locate blobs and packs.
+ * SingleLevelIndexWriter implements the Index Writer interface
+ * and provides methods to write blobs and packs.
  *
- * @implements {API.Index}
+ * @implements {API.IndexWriter}
  */
-export class SingleLevelIndex {
+export class SingleLevelIndexWriter {
   /**
    * @param {API.IndexStore} store - The store where the index is maintained.
    */
@@ -61,18 +61,6 @@ export class SingleLevelIndex {
     // Yield Pack Index records as Blobs
     for (const multihash of packs.values()) {
       yield createFromPack(multihash, [])
-    }
-  }
-
-  /**
-   * Find the index records of a given multihash.
-   *
-   * @param {API.MultihashDigest} multihash
-   * @returns {AsyncIterable<API.IndexRecord>}
-   */
-  async *findRecords(multihash) {
-    for await (const entry of this.store.get(multihash)) {
-      yield entry
     }
   }
 }

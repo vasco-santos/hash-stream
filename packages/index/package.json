@@ -25,10 +25,11 @@
   },
   "exports": {
     ".": "./dist/src/index.js",
-    "./single-level-index": "./dist/src/single-level-index.js",
-    "./multiple-level-index": "./dist/src/multiple-level-index.js",
+    "./reader": "./dist/src/reader.js",
     "./record": "./dist/src/record.js",
     "./utils": "./dist/src/utils.js",
+    "./writer/single-level": "./dist/src/writer/single-level.js",
+    "./writer/multiple-level": "./dist/src/writer/multiple-level.js",
     "./store/memory-blob": "./dist/src/store/memory-blob.js",
     "./store/memory-containing": "./dist/src/store/memory-containing.js",
     "./store/fs-blob": "./dist/src/store/fs-blob.js",
@@ -40,17 +41,20 @@
       "types": [
         "dist/src/api"
       ],
-      "single-level-index": [
-        "dist/src/single-level-index.d.ts"
-      ],
-      "multiple-level-index": [
-        "dist/src/multiple-level-index.d.ts"
+      "reader": [
+        "dist/src/reader.d.ts"
       ],
       "record": [
         "dist/src/record.d.ts"
       ],
       "utils": [
         "dist/src/utils.d.ts"
+      ],
+      "writer/single-level": [
+        "dist/src/writer/single-level.d.ts"
+      ],
+      "writer/multiple-level": [
+        "dist/src/writer/multiple-level.d.ts"
       ],
       "store/memory-blob": [
         "dist/src/store/memory-blob.d.ts"

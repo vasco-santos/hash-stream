@@ -5,7 +5,11 @@ import path from 'path'
 // Index
 import { FSBlobIndexStore } from '@hash-stream/index/store/fs-blob'
 import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
-import { SingleLevelIndex, MultipleLevelIndex } from '@hash-stream/index'
+import {
+  SingleLevelIndexWriter,
+  MultipleLevelIndexWriter,
+  IndexReader,
+} from '@hash-stream/index'
 
 // Pack
 import { FSPackStore } from '@hash-stream/pack/store/fs'
@@ -77,31 +81,33 @@ export async function getClient(options = { indexStrategy: 'multiple-level' }) {
   }
 
   // Get index based on strategy
-  let indexStore, index
+  let indexStore, indexWriter, indexReader
 
   if (options.indexStrategy === 'single-level') {
     indexStore = new FSBlobIndexStore(
       agentData.data.index.singleLevelIndex.storeDir
     )
-    index = new SingleLevelIndex(indexStore)
+    indexWriter = new SingleLevelIndexWriter(indexStore)
+    indexReader = new IndexReader(indexStore)
   } else if (options.indexStrategy === 'multiple-level') {
     indexStore = new FSContainingIndexStore(
       agentData.data.index.multipleLevelIndex.storeDir
     )
-    index = new MultipleLevelIndex(indexStore)
+    indexWriter = new MultipleLevelIndexWriter(indexStore)
+    indexReader = new IndexReader(indexStore)
   }
 
   // Get pack store
   const packStore = new FSPackStore(agentData.data.pack.storeDir)
   const packWriter = new PackWriter(packStore, {
-    indexWriter: index,
+    indexWriter,
   })
 
   return {
     index: {
       store: indexStore,
-      writer: index,
-      reader: index,
+      writer: indexWriter,
+      reader: indexReader,
     },
     pack: {
       store: packStore,

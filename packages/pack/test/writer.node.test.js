@@ -11,7 +11,8 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { equals } from 'uint8arrays/equals'
 import { base58btc } from 'multiformats/bases/base58'
 
-import { MultipleLevelIndex } from '@hash-stream/index'
+import { IndexReader } from '@hash-stream/index/reader'
+import { MultipleLevelIndexWriter } from '@hash-stream/index/writer/multiple-level'
 import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
 import { Type as IndexRecordType } from '@hash-stream/index/record'
 
@@ -98,8 +99,10 @@ describe('write pack in FSPackStore and index them in a multiple-level index', (
   let tempDirIndexStore
   /** @type {API.IndexStore} */
   let indexStore
-  /** @type {import('@hash-stream/index/types').Index} */
-  let index
+  /** @type {import('@hash-stream/index/types').IndexWriter} */
+  let indexWriter
+  /** @type {import('@hash-stream/index/types').IndexReader} */
+  let indexReader
   /** @type {FSPackStore} */
   let packStore
   /** @type {PackWriter} */
@@ -109,13 +112,14 @@ describe('write pack in FSPackStore and index them in a multiple-level index', (
     // Create Index
     tempDirIndexStore = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-index-test-'))
     indexStore = new FSContainingIndexStore(tempDirIndexStore)
-    index = new MultipleLevelIndex(indexStore)
+    indexWriter = new MultipleLevelIndexWriter(indexStore)
+    indexReader = new IndexReader(indexStore)
 
     // Create Pack Writer
     tempDirPackStore = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-pack-test-'))
     packStore = new FSPackStore(tempDirPackStore)
     packWriter = new PackWriter(packStore, {
-      indexWriter: index,
+      indexWriter,
     })
   })
 
@@ -160,14 +164,14 @@ describe('write pack in FSPackStore and index them in a multiple-level index', (
     for (const multihash of packsMultihashes) {
       // Should find records with containing even if not indexed that way
       const recordsWithContaining = await all(
-        index.findRecords(multihash, {
+        indexReader.findRecords(multihash, {
           containingMultihash,
         })
       )
       assert(recordsWithContaining.length)
 
       // Should find records without containing
-      const records = await all(index.findRecords(multihash))
+      const records = await all(indexReader.findRecords(multihash))
       assert(records.length === 1)
       const packRecord = records[0]
       assert(packRecord)
@@ -206,7 +210,9 @@ describe('write pack in FSPackStore and index them in a multiple-level index', (
     }
 
     // Check if containing multihash is not indexed
-    const containingRecords = await all(index.findRecords(containingMultihash))
+    const containingRecords = await all(
+      indexReader.findRecords(containingMultihash)
+    )
     assert(!containingRecords.length)
   })
 
@@ -230,7 +236,9 @@ describe('write pack in FSPackStore and index them in a multiple-level index', (
     assert(containingMultihash)
 
     // Get records for containing and verify it has sub-records
-    const containingRecordsStream = await index.findRecords(containingMultihash)
+    const containingRecordsStream = await indexReader.findRecords(
+      containingMultihash
+    )
     assert(containingRecordsStream)
     const containingRecords = await all(containingRecordsStream)
     assert(containingRecords.length === 1)
@@ -262,12 +270,14 @@ describe('write pack in FSPackStore and index them in a multiple-level index', (
     // Find Records for each pack and verify they have sub-records
     for (const multihash of packsMultihashes) {
       // Should not find records without containing
-      const recordsWithoutContaining = await all(index.findRecords(multihash))
+      const recordsWithoutContaining = await all(
+        indexReader.findRecords(multihash)
+      )
       assert(!recordsWithoutContaining.length)
 
       // Should find records with containing
       const records = await all(
-        index.findRecords(multihash, {
+        indexReader.findRecords(multihash, {
           containingMultihash,
         })
       )
@@ -302,7 +312,9 @@ describe('write pack in FSPackStore and index them in a multiple-level index', (
     assert(packsMultihashes.length > 1)
     assert(containingMultihash)
 
-    const containingRecordsStream = await index.findRecords(containingMultihash)
+    const containingRecordsStream = await indexReader.findRecords(
+      containingMultihash
+    )
     assert(containingRecordsStream)
     const containingRecords = await all(containingRecordsStream)
     assert(containingRecords.length === 1)

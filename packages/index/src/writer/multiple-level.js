@@ -1,4 +1,4 @@
-import * as API from './api.js'
+import * as API from '../api.js'
 
 import { equals } from 'uint8arrays'
 import { base58btc } from 'multiformats/bases/base58'
@@ -7,15 +7,15 @@ import {
   createFromBlob,
   createFromPack,
   createFromContaining,
-} from './record.js'
+} from '../record.js'
 
 /**
- * MultipleLevelIndex implements the Index interface
- * and provides find records to locate blobs, packs nad containigns.
+ * MultipleLevelIndex implements the Index Writer interface
+ * and provides methods to write blobs and packs.
  *
- * @implements {API.Index}
+ * @implements {API.IndexWriter}
  */
-export class MultipleLevelIndex {
+export class MultipleLevelIndexWriter {
   /**
    * @param {API.IndexStore} store - The store where the index is maintained.
    */
@@ -83,48 +83,6 @@ export class MultipleLevelIndex {
           }
         })()
       )
-    }
-  }
-
-  /**
-   * Find the index records of a given multihash.
-   *
-   * @param {API.MultihashDigest} multihash
-   * @param {object} [options]
-   * @param {API.MultihashDigest} [options.containingMultihash]
-   * @returns {AsyncIterable<API.IndexRecord>}
-   */
-  async *findRecords(multihash, { containingMultihash } = {}) {
-    if (containingMultihash) {
-      for await (const entry of this.store.get(containingMultihash)) {
-        for await (const subRecord of findInSubRecords(
-          entry.subRecords,
-          multihash
-        )) {
-          yield subRecord
-        }
-      }
-    }
-    // If there is no containing multihash, search for the multihash directly
-    for await (const entry of this.store.get(multihash)) {
-      yield entry
-    }
-  }
-}
-
-/**
- * @param {API.IndexRecord[]} subRecords
- * @param {API.MultihashDigest} multihash
- * @returns {AsyncIterable<API.IndexRecord>}
- */
-async function* findInSubRecords(subRecords, multihash) {
-  for (const subRecord of subRecords) {
-    if (equals(subRecord.multihash.bytes, multihash.bytes)) {
-      yield subRecord
-      // /* c8 ignore next 1 */
-    }
-    if (subRecord.subRecords.length) {
-      yield* findInSubRecords(subRecord.subRecords, multihash)
     }
   }
 }
