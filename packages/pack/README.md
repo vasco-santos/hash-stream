@@ -114,24 +114,99 @@ async function main() {
   for await (const entry of packReader.stream(packMultihash)) {
     packs.push(entry)
   }
+
+  // Can also fetch blobs inside a pack based on ranges provided
+  const blobRanges = [
+    {
+      multihash: // TBD
+      offset: 50,
+      length: 300,
+    },
+    {
+      multihash: // TBD
+      offset: 370,
+      length: 300,
+    }
+  ]
+
+  const rangeEntries = []
+  for await (const entry of packReader.stream(packMultihash, blobRanges)) {
+    rangeEntries.push(entry)
+  }
 }
 
 main().catch(console.error)
 ```
 
+## Stores
+
+### Exported Stores
+
+This package already exports a few stores compatible with `PackStore` Interface:
+
+- File system store: `store/fs.js`
+- Memory store: `store/memory.js`
+
+#### File system store
+
+Stores records within the host file system, by providing the path for a directory.
+
+```js
+import fs from 'fs'
+import path from 'path'
+import os from 'os'
+
+import { FSPackStore } from '@hash-stream/store/fs.js'
+
+const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-pack-store'))
+const packStore = new FSPackStore(tempDir)
+```
+
+#### Memory store
+
+Stores records within a Map in memory. This is a good store to use for testing.
+
+```js
+import { MemoryPackStore } from '@hash-stream/store/memory.js'
+
+const packStore = new MemoryPackStore()
+```
+
 ### Using a Custom Store
 
-The Pack Store must implement the PackStore interface. A store must define the following methods:
+Other implementations of a Store may be implemented accordign to the storage backend intended. The Pack Store must implement the `PackStore` interface, or separately a `PackStoreWriter` and a `PackStoreReader`. A store must define the following methods:
 
 ```ts
 export interface PackStore extends PackStoreWriter, PackStoreReader {}
 
 export interface PackStoreWriter {
+  /**
+   * Stores a pack file.
+   *
+   * @param hash - The Multihash digest of the pack.
+   * @param data - The pack file bytes.
+   * @returns A promise that resolves when the pack file is stored.
+   */
   put(hash: MultihashDigest, data: Uint8Array): Promise<void>
 }
 
 export interface PackStoreReader {
+  /**
+   * Retrieves bytes of a pack file by its multihash digest.
+   *
+   * @param hash - The Multihash digest of the pack.
+   * @returns A promise that resolves with the pack file data or null if not found.
+   */
   get(hash: MultihashDigest): Promise<Uint8Array | null>
+
+  stream(
+    targetMultihash: MultihashDigest,
+    ranges?: Array<{
+      offset?: number
+      length?: number
+      multihash: MultihashDigest
+    }>
+  ): AsyncIterable<VerifiableEntry>
 }
 ```
 
@@ -140,6 +215,7 @@ export interface PackStoreReader {
 ```js
 class MemoryStore {
   constructor() {
+    /** @type {Map<string, Uint8Array>} */
     this.storage = new Map()
   }
 
@@ -147,8 +223,21 @@ class MemoryStore {
     this.storage.set(hash.toString(), data)
   }
 
-  async get(hash) {
-    return this.storage.get(hash.toString()) || null
+  async *stream(hash, ranges = []) {
+    const key = hash.toString()
+    const data = this.storage.get(key)
+    if (!data) return
+
+    if (ranges.length === 0) {
+      yield { multihash: hash, bytes: data }
+      return
+    }
+
+    for (const { multihash, offset, length } of ranges) {
+      /* c8 ignore next 1 */
+      const slice = data.slice(offset, length ? offset + length : undefined)
+      yield { multihash, bytes: slice }
+    }
   }
 }
 
