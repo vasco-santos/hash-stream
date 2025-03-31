@@ -1,3 +1,4 @@
+import * as API from '../src/api.js'
 import assert from 'assert'
 
 import { CarIndexer, CarBlockIterator } from '@ipld/car'
@@ -5,7 +6,8 @@ import { fromShardArchives } from '@web3-storage/blob-index/util'
 import { equals } from 'uint8arrays'
 import all from 'it-all'
 
-import { SingleLevelIndex } from '../src/single-level-index.js'
+import { IndexReader } from '../src/reader.js'
+import { SingleLevelIndexWriter } from '../src/writer/single-level.js'
 import { MemoryBlobIndexStore } from '../src/store/memory-blob.js'
 import { Type, createFromBlob } from '../src/record.js'
 import { carBlockIndexToBlobIndexRecordIterable } from '../src/utils.js'
@@ -15,12 +17,15 @@ import { randomCID, randomCAR } from './helpers/random.js'
 describe('SingleLevelIndex', () => {
   /** @type {MemoryBlobIndexStore} */
   let store
-  /** @type {SingleLevelIndex} */
-  let singleLevelIndex
+  /** @type {API.IndexReader} */
+  let indexReader
+  /** @type {API.IndexWriter} */
+  let indexWriter
 
   beforeEach(() => {
     store = new MemoryBlobIndexStore()
-    singleLevelIndex = new SingleLevelIndex(store)
+    indexReader = new IndexReader(store)
+    indexWriter = new SingleLevelIndexWriter(store)
   })
 
   it('can find the location of a stored blob', async () => {
@@ -42,7 +47,7 @@ describe('SingleLevelIndex', () => {
       })()
     )
 
-    const records = await all(singleLevelIndex.findRecords(blobCid.multihash))
+    const records = await all(indexReader.findRecords(blobCid.multihash))
     assert(records.length === 1)
     assert.strictEqual(records[0].offset, offset)
     assert.strictEqual(records[0].length, length)
@@ -52,7 +57,7 @@ describe('SingleLevelIndex', () => {
 
   it('returns null for non-existent blob index records', async () => {
     const blobCid = await randomCID()
-    const records = await all(singleLevelIndex.findRecords(blobCid.multihash))
+    const records = await all(indexReader.findRecords(blobCid.multihash))
     assert.deepEqual(records, [])
   })
 
@@ -75,7 +80,7 @@ describe('SingleLevelIndex', () => {
       })()
     )
 
-    const records = await all(singleLevelIndex.findRecords(blobCid.multihash))
+    const records = await all(indexReader.findRecords(blobCid.multihash))
 
     assert(records.length === 1)
     assert.strictEqual(records[0].offset, offset)
@@ -92,7 +97,7 @@ describe('SingleLevelIndex', () => {
     const carBytes = new Uint8Array(await car.arrayBuffer())
     const carIndexer = await CarIndexer.fromBytes(carBytes)
 
-    await singleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       carBlockIndexToBlobIndexRecordIterable(carIndexer, car.cid)
     )
 
@@ -100,9 +105,7 @@ describe('SingleLevelIndex', () => {
     const blobIterator = await CarBlockIterator.fromBytes(carBytes)
     let blobCount = 0
     for await (const blob of blobIterator) {
-      const records = await all(
-        singleLevelIndex.findRecords(blob.cid.multihash)
-      )
+      const records = await all(indexReader.findRecords(blob.cid.multihash))
       assert(records.length === 1)
       assert(equals(records[0].location.digest, car.cid.multihash.digest))
       assert(records[0].offset)
@@ -121,7 +124,7 @@ describe('SingleLevelIndex', () => {
     const carBytes = new Uint8Array(await car.arrayBuffer())
     const carIndexer = await CarIndexer.fromBytes(carBytes)
 
-    await singleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       carBlockIndexToBlobIndexRecordIterable(carIndexer, car.cid)
     )
 
@@ -131,7 +134,7 @@ describe('SingleLevelIndex', () => {
       assert(equals(shardDigest.digest, car.cid.multihash.digest))
 
       for (const [blobDigest, position] of slices.entries()) {
-        const records = await all(singleLevelIndex.findRecords(blobDigest))
+        const records = await all(indexReader.findRecords(blobDigest))
         assert(records.length === 1)
         assert(equals(records[0].location.digest, car.cid.multihash.digest))
         assert.strictEqual(records[0].offset, position[0])

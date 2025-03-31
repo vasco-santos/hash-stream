@@ -1,3 +1,4 @@
+import * as API from '../src/api.js'
 import assert from 'assert'
 import { CarIndexer, CarBlockIterator } from '@ipld/car'
 import { fromShardArchives } from '@web3-storage/blob-index/util'
@@ -5,7 +6,8 @@ import { equals } from 'uint8arrays'
 import all from 'it-all'
 
 import { MemoryContainingIndexStore } from '../src/store/memory-containing.js'
-import { MultipleLevelIndex } from '../src/multiple-level-index.js'
+import { IndexReader } from '../src/reader.js'
+import { MultipleLevelIndexWriter } from '../src/writer/multiple-level.js'
 import { Type } from '../src/record.js'
 import { carBlockIndexToBlobIndexRecordIterable } from '../src/utils.js'
 
@@ -14,16 +16,20 @@ import { randomCID, randomCAR } from './helpers/random.js'
 describe('MultipleLevelIndex', () => {
   /** @type {MemoryContainingIndexStore} */
   let store
-  /** @type {MultipleLevelIndex} */
-  let multipleLevelIndex
+  /** @type {API.IndexReader} */
+  let indexReader
+  /** @type {API.IndexWriter} */
+  let indexWriter
+
   beforeEach(() => {
     store = new MemoryContainingIndexStore()
-    multipleLevelIndex = new MultipleLevelIndex(store)
+    indexReader = new IndexReader(store)
+    indexWriter = new MultipleLevelIndexWriter(store)
   })
 
   it('returns no records for unknown multihash', async () => {
     const multihash = (await randomCID()).multihash
-    const records = await all(multipleLevelIndex.findRecords(multihash))
+    const records = await all(indexReader.findRecords(multihash))
     assert.deepEqual(records, [])
   })
 
@@ -31,7 +37,7 @@ describe('MultipleLevelIndex', () => {
     const multihash = (await randomCID()).multihash
     const containingMultihash = (await randomCID()).multihash
     const records = await all(
-      multipleLevelIndex.findRecords(multihash, {
+      indexReader.findRecords(multihash, {
         containingMultihash,
       })
     )
@@ -46,7 +52,7 @@ describe('MultipleLevelIndex', () => {
       Array.from({ length: blobLength }, async () => await randomCID())
     )
 
-    await multipleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       (async function* () {
         for (const blobCid of blobCids) {
           yield {
@@ -71,7 +77,7 @@ describe('MultipleLevelIndex', () => {
       Array.from({ length: blobLength }, async () => await randomCID())
     )
 
-    await multipleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       (async function* () {
         for (const blobCid of blobCids) {
           yield {
@@ -95,7 +101,7 @@ describe('MultipleLevelIndex', () => {
       Array.from({ length: blobLength }, async () => await randomCID())
     )
 
-    await multipleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       (async function* () {
         for (const blobCid of blobCids) {
           yield {
@@ -121,7 +127,7 @@ describe('MultipleLevelIndex', () => {
       Array.from({ length: blobLength }, async () => await randomCID())
     )
 
-    await multipleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       (async function* () {
         for (const blobCid of blobCids) {
           yield {
@@ -152,7 +158,7 @@ describe('MultipleLevelIndex', () => {
       Array.from({ length: blobLength }, async () => await randomCID())
     )
 
-    await multipleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       (async function* () {
         for (const blobCid of blobCids) {
           yield {
@@ -166,9 +172,7 @@ describe('MultipleLevelIndex', () => {
       { containingMultihash: containing.multihash }
     )
 
-    const records = await all(
-      multipleLevelIndex.findRecords(containing.multihash)
-    )
+    const records = await all(indexReader.findRecords(containing.multihash))
     assert(records.length === 1)
     assert(equals(records[0].multihash.bytes, containing.multihash.bytes))
     assert(equals(records[0].location.bytes, containing.multihash.bytes))
@@ -200,7 +204,7 @@ describe('MultipleLevelIndex', () => {
       Array.from({ length: blobLength }, async () => await randomCID())
     )
 
-    await multipleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       (async function* () {
         for (const blobCid of blobCids) {
           yield {
@@ -216,12 +220,12 @@ describe('MultipleLevelIndex', () => {
 
     for (const blobCid of blobCids) {
       const recordsWithoutContaining = await all(
-        multipleLevelIndex.findRecords(blobCid.multihash)
+        indexReader.findRecords(blobCid.multihash)
       )
       assert.deepEqual(recordsWithoutContaining, [])
 
       const records = await all(
-        multipleLevelIndex.findRecords(blobCid.multihash, {
+        indexReader.findRecords(blobCid.multihash, {
           containingMultihash: containing.multihash,
         })
       )
@@ -242,7 +246,7 @@ describe('MultipleLevelIndex', () => {
       Array.from({ length: blobLength }, async () => await randomCID())
     )
 
-    await multipleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       (async function* () {
         for (const blobCid of blobCids) {
           yield {
@@ -256,12 +260,12 @@ describe('MultipleLevelIndex', () => {
       { containingMultihash: containing.multihash }
     )
     const recordsWithoutContaining = await all(
-      multipleLevelIndex.findRecords(packCid.multihash)
+      indexReader.findRecords(packCid.multihash)
     )
     assert(recordsWithoutContaining.length === 0)
 
     const records = await all(
-      multipleLevelIndex.findRecords(packCid.multihash, {
+      indexReader.findRecords(packCid.multihash, {
         containingMultihash: containing.multihash,
       })
     )
@@ -289,7 +293,7 @@ describe('MultipleLevelIndex', () => {
       Array.from({ length: blobLength }, async () => await randomCID())
     )
 
-    await multipleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       (async function* () {
         for (const blobCid of blobCids) {
           yield {
@@ -303,9 +307,7 @@ describe('MultipleLevelIndex', () => {
       { containingMultihash: containing.multihash }
     )
 
-    const records = await all(
-      multipleLevelIndex.findRecords(containing.multihash)
-    )
+    const records = await all(indexReader.findRecords(containing.multihash))
     assert(records.length === 1)
     assert(equals(records[0].multihash.bytes, containing.multihash.bytes))
     assert(equals(records[0].location.bytes, containing.multihash.bytes))
@@ -316,12 +318,12 @@ describe('MultipleLevelIndex', () => {
 
     for (const blobCid of blobCids) {
       const recordsWithoutContaining = await all(
-        multipleLevelIndex.findRecords(blobCid.multihash)
+        indexReader.findRecords(blobCid.multihash)
       )
       assert.deepEqual(recordsWithoutContaining, [])
 
       const records = await all(
-        multipleLevelIndex.findRecords(blobCid.multihash, {
+        indexReader.findRecords(blobCid.multihash, {
           containingMultihash: containing.multihash,
         })
       )
@@ -348,7 +350,7 @@ describe('MultipleLevelIndex', () => {
       cars.map(async (car) => {
         const carBytes = new Uint8Array(await car.arrayBuffer())
         const blockIterable = await CarIndexer.fromBytes(carBytes)
-        await multipleLevelIndex.addBlobs(
+        await indexWriter.addBlobs(
           carBlockIndexToBlobIndexRecordIterable(blockIterable, car.cid),
           {
             containingMultihash: containingCid.multihash,
@@ -358,7 +360,7 @@ describe('MultipleLevelIndex', () => {
     )
 
     // Get packs for the containing CID
-    const containingStream = await multipleLevelIndex.findRecords(
+    const containingStream = await indexReader.findRecords(
       containingCid.multihash
     )
 
@@ -400,7 +402,7 @@ describe('MultipleLevelIndex', () => {
     const containingBlobCids = await Promise.all(
       Array.from({ length: blobLength }, async () => await randomCID())
     )
-    await multipleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       (async function* () {
         for (const blobCid of containingBlobCids) {
           yield {
@@ -418,7 +420,7 @@ describe('MultipleLevelIndex', () => {
     const blobCids = await Promise.all(
       Array.from({ length: blobLength }, async () => await randomCID())
     )
-    await multipleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       (async function* () {
         for (const blobCid of blobCids) {
           yield {
@@ -433,7 +435,7 @@ describe('MultipleLevelIndex', () => {
 
     for (const blobCid of blobCids) {
       const records = await all(
-        multipleLevelIndex.findRecords(blobCid.multihash, {
+        indexReader.findRecords(blobCid.multihash, {
           containingMultihash: containing.multihash,
         })
       )
@@ -449,7 +451,7 @@ describe('MultipleLevelIndex', () => {
     const carBytes = new Uint8Array(await car.arrayBuffer())
     const blockIterable = await CarIndexer.fromBytes(carBytes)
 
-    await multipleLevelIndex.addBlobs(
+    await indexWriter.addBlobs(
       carBlockIndexToBlobIndexRecordIterable(blockIterable, car.cid),
       {
         containingMultihash: root.multihash,
@@ -460,7 +462,7 @@ describe('MultipleLevelIndex', () => {
     const index = await fromShardArchives(root, [carBytes])
     for (const [shardDigest, slices] of index.shards.entries()) {
       for (const [blobDigest, position] of slices.entries()) {
-        const recordsStream = await multipleLevelIndex.findRecords(blobDigest, {
+        const recordsStream = await indexReader.findRecords(blobDigest, {
           containingMultihash: root.multihash,
         })
 
