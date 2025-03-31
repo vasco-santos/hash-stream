@@ -105,66 +105,65 @@ export class PackWriter {
    */
   async #storeIndex(readable, containingPromise, options) {
     if (!this.indexWriter) {
-      // If no index writer is provided, simply drain the stream to avoid blocking
       await drainStream(readable)
       return
     }
 
     const reader = readable.getReader()
 
-    // When 'notIndexContaining' option is provided, stream data directly without buffering
-    // given that the containing multihash is not needed for the index data
     if (options?.notIndexContaining) {
       await this.indexWriter.addBlobs(streamIndexData(reader))
       return
     }
 
-    // Buffer the stream if `containingPromise` is required
     /** @type {import('@hash-stream/index/types').BlobIndexRecord[]} */
     const buffer = []
-    let reading = true
+    /** @type {(value: any) => void} */
+    let resolveNext // Resolver for awaiting new data
+    let doneReading = false
 
-    async function bufferIndexData() {
+    // A promise that resolves when new data is available
+    let nextData = new Promise((resolve) => {
+      resolveNext = resolve
+    })
+
+    // Start buffering eagerly
+    const bufferingTask = (async () => {
       try {
-        // Eagerly read data and push to buffer until stream is done
-        while (reading) {
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
           const { value, done } = await reader.read()
           if (done) break
           buffer.push(value)
+          // @ts-expect-error it is ised above
+          resolveNext(true) // Notify bufferedStream that new data is available
+          nextData = new Promise((resolve) => (resolveNext = resolve)) // Reset for the next item
         }
       } finally {
-        reading = false
-        // Release the lock once we're done processing the stream in bufferIndexData
+        doneReading = true
+        // @ts-expect-error it is ised above
+        resolveNext(true) // Ensure bufferedStream doesn't wait indefinitely
         reader.releaseLock()
       }
-    }
-
-    // Start reading in the background to keep the process non-blocking
-    // eslint-disable-next-line no-extra-semi
-    ;(async () => {
-      // eslint-disable-next-line no-empty
-      await bufferIndexData()
     })()
 
-    // Wait for the containing multihash to resolve so that it can be used in the index data
+    bufferingTask.catch(() => {}) // Prevent unhandled rejections
+
+    // Wait for the containing multihash before yielding data
     const containingMultihash = await containingPromise
 
-    // Yield the buffered data once the containing multihash is ready
     async function* bufferedStream() {
-      // First yield the buffered data
-      yield* buffer
-      // After buffer is empty, we continue reading lazily from the stream
-      while (reading) {
-        const { value, done } = await reader.read()
-        if (done) {
-          break
+      while (buffer.length > 0 || !doneReading) {
+        while (buffer.length > 0) {
+          const record = buffer.shift() // Remove from buffer as we yield
+          if (record) {
+            yield record // Yield the buffered data
+          }
         }
-        /* c8 ignore next 2 */
-        yield value
+        if (!doneReading) {
+          await nextData // Wait for new data if buffer is empty
+        }
       }
-
-      // Release the lock after we've finished reading lazily
-      reader.releaseLock()
     }
 
     await this.indexWriter.addBlobs(bufferedStream(), { containingMultihash })
