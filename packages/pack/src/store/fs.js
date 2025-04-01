@@ -77,15 +77,31 @@ export class FSPackStore {
     // Check if ranges are provided
     if (ranges.length === 0) {
       // If no ranges, stream the entire file
-      const fileBuffer = await fs.readFile(filePath)
-      yield { multihash: hash, bytes: fileBuffer }
+      try {
+        const fileBuffer = await fs.readFile(filePath)
+        yield { multihash: hash, bytes: fileBuffer }
+      } catch (/** @type {any} */ err) {
+        /* c8 ignore next 4 */
+        if (err.code !== 'ENOENT') {
+          // If the file doesn't exist, return null, otherwise throw
+          throw err
+        }
+      }
       return
     }
     // For each range, create a stream that reads the file chunk and buffers it
     for (const { multihash, offset, length } of ranges) {
-      // @ts-expect-error we should be able to use the length property
-      const buffer = await this._bufferStream(filePath, offset, length)
-      yield { multihash, bytes: buffer }
+      try {
+        // @ts-expect-error we should be able to use the length property
+        const buffer = await this._bufferStream(filePath, offset, length)
+        yield { multihash, bytes: buffer }
+      } catch (/** @type {any} */ err) {
+        /* c8 ignore next 4 */
+        if (err.code !== 'ENOENT') {
+          // If the file doesn't exist, return null, otherwise throw
+          throw err
+        }
+      }
     }
   }
 

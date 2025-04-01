@@ -4,7 +4,7 @@ import sade from 'sade'
 import fs from 'fs'
 
 import { indexAdd, indexFindRecords, indexClear } from './index.js'
-import { packWrite, packClear, MAX_PACK_SIZE } from './pack.js'
+import { packWrite, packRead, packClear, MAX_PACK_SIZE } from './pack.js'
 
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url)).toString()
@@ -30,6 +30,16 @@ cli
     'multiple-level'
   )
   .action(packWrite)
+
+// Command: Read Packs
+cli
+  .command('pack read <targetCid> [filePath}')
+  .describe(
+    'Read Packs from the store and writes them to a file in the given path.'
+  )
+  .example('pack read bag... some-file.car')
+  .option('-t, --type', 'Pack type: "car"', 'car')
+  .action(packRead)
 
 // Command: Clear packs
 cli
