@@ -15,17 +15,19 @@ import { getFileStream } from './utils.js'
  * @param {string} [containingCid]
  * @param {{
  *   _: string[],
- *   strategy: 'single-level' | 'multiple-level'
+ *   'index-writer': 'single-level' | 'multiple-level'
  * }} [opts]
  */
 export const indexAdd = async (
   packCid,
   filePath,
   containingCid,
-  opts = { strategy: 'multiple-level', _: [] }
+  opts = { 'index-writer': 'multiple-level', _: [] }
 ) => {
-  const indexStrategy = validateStrategy(opts.strategy)
-  const client = await getClient({ indexStrategy })
+  const indexWriterImplementationName = validateIndexWriter(
+    opts['index-writer']
+  )
+  const client = await getClient({ indexWriterImplementationName })
   if (!client.index.writer || !client.index.reader || !client.index.store) {
     console.error('Error: Index is not available.')
     process.exit(1)
@@ -83,7 +85,9 @@ export const indexAdd = async (
     )
   }
 
-  console.log(`\nIndexing (${indexStrategy})...`)
+  console.log(
+    `\nIndexing with implementation (${indexWriterImplementationName})...`
+  )
   await client.index.writer.addBlobs(wrappedBlobIndexIterable, {
     containingMultihash: containingCidLink?.multihash,
   })
@@ -94,16 +98,18 @@ export const indexAdd = async (
  * @param {string} [containingCid]
  * @param {{
  *   _: string[],
- *   strategy?: 'single-level' | 'multiple-level'
+ *   'index-writer'?: 'single-level' | 'multiple-level'
  * }} [opts]
  */
 export const indexFindRecords = async (
   targetCid,
   containingCid,
-  opts = { strategy: 'multiple-level', _: [] }
+  opts = { 'index-writer': 'multiple-level', _: [] }
 ) => {
-  const indexStrategy = validateStrategy(opts.strategy)
-  const client = await getClient({ indexStrategy })
+  const indexWriterImplementationName = validateIndexWriter(
+    opts['index-writer']
+  )
+  const client = await getClient({ indexWriterImplementationName })
   if (!client.index.writer || !client.index.reader || !client.index.store) {
     console.error('Error: Index is not available.')
     process.exit(1)
@@ -138,7 +144,7 @@ export const indexFindRecords = async (
     )
   }
 
-  console.log(`\nFinding target (${indexStrategy})...
+  console.log(`\nFinding target written using (${indexWriterImplementationName})...
     ${targetCid}
     base58btc(${base58btc.encode(targetMultihash.bytes)})`)
   const records = await all(
@@ -158,14 +164,16 @@ export const indexFindRecords = async (
 /**
  * @param {{
  *   _: string[],
- *   strategy?: 'single-level' | 'multiple-level'
+ *   'index-writer'?: 'single-level' | 'multiple-level'
  * }} [opts]
  */
 export const indexClear = async (
-  opts = { strategy: 'multiple-level', _: [] }
+  opts = { 'index-writer': 'multiple-level', _: [] }
 ) => {
-  const indexStrategy = validateStrategy(opts.strategy)
-  const client = await getClient({ indexStrategy })
+  const indexWriterImplementationName = validateIndexWriter(
+    opts['index-writer']
+  )
+  const client = await getClient({ indexWriterImplementationName })
   if (!client.index.writer || !client.index.reader || !client.index.store) {
     console.error('Error: Index is not available.')
     process.exit(1)
@@ -195,20 +203,20 @@ export const indexClear = async (
 }
 
 // Allowed strategies
-const VALID_STRATEGIES = ['single-level', 'multiple-level']
+const VALID_INDEX_WRITERS = ['single-level', 'multiple-level']
 
 /**
- * Validates the given index strategy.
+ * Validates the given index writer implementation.
  *
  * @param {string} [strategy]
  * @returns {'single-level' | 'multiple-level'}
  */
-function validateStrategy(strategy) {
+function validateIndexWriter(strategy) {
   if (!strategy) {
     return 'multiple-level'
   }
 
-  if (!VALID_STRATEGIES.includes(strategy)) {
+  if (!VALID_INDEX_WRITERS.includes(strategy)) {
     console.error(
       `Error: Invalid strategy "${strategy}". Use "single-level" or "multiple-level".`
     )
