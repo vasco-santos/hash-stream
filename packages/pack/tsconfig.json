@@ -7,6 +7,7 @@
   "include": ["src", "test", "package.json"],
   "exclude": ["**/node_modules/**"],
   "typedocOptions": {
+    "entryPointStrategy": "resolve",
     "entryPoints": ["./src"]
   }
 }
