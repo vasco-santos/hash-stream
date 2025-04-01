@@ -18,9 +18,9 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.4",
-    "lint-staged": "^15.4.3",
+    "lint-staged": "^15.5.0",
     "prettier": "2.8.3",
-    "typescript": "5.2.2"
+    "typescript": "^5.8.2"
   },
   "prettier": {
     "trailingComma": "es5",

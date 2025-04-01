@@ -135,6 +135,7 @@ const Chop = {
 
       let offset = byteLength - bytes.length
       while (offset + byteLength < input.length) {
+        // @ts-expect-error Argument of type 'Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'Uint8Array<ArrayBuffer>'
         chunks.push(input.subarray(offset, offset + byteLength))
         offset += byteLength
       }
