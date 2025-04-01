@@ -16,7 +16,7 @@ export const MAX_PACK_SIZE = 133_169_152
  * @param {string} filePath
  * @param {{
  *   _: string[],
- *   'index-strategy': 'single-level' | 'multiple-level' | 'none',
+ *   'index-writer': 'single-level' | 'multiple-level' | 'none',
  *   type: 'car',
  *   'pack-size': number,
  * }} [opts]
@@ -24,16 +24,19 @@ export const MAX_PACK_SIZE = 133_169_152
 export const packWrite = async (
   filePath,
   opts = {
-    'index-strategy': 'multiple-level',
+    'index-writer': 'multiple-level',
     type: 'car',
     'pack-size': MAX_PACK_SIZE,
     _: [],
   }
 ) => {
-  const indexStrategy = validateIndexStrategy(opts['index-strategy'])
+  const indexWriterImplementationName = validateIndexWriter(
+    opts['index-writer']
+  )
+
   validateType(opts.type)
 
-  const client = await getClient({ indexStrategy })
+  const client = await getClient({ indexWriterImplementationName })
   const fileStream = await getFileStream(filePath)
   /** @type {Map<string, import('multiformats').MultihashDigest[]>} */
   const packBlobsMap = new Map()
@@ -41,7 +44,7 @@ export const packWrite = async (
   console.info(
     `\nPacking file: ${filePath}
     Pack Max Size: ${opts['pack-size']}
-    Index Strategy: ${indexStrategy}`
+    Index Writer: ${indexWriterImplementationName}`
   )
   const { containingMultihash, packsMultihashes } =
     await client.pack.writer.write(
@@ -122,7 +125,7 @@ export const packClear = async () => {
 }
 
 // Allowed strategies
-const VALID_STRATEGIES = ['single-level', 'multiple-level', 'none']
+const VALID_INDEX_WRITERS = ['single-level', 'multiple-level', 'none']
 
 /**
  * Validates the given index strategy.
@@ -130,12 +133,12 @@ const VALID_STRATEGIES = ['single-level', 'multiple-level', 'none']
  * @param {string} [strategy]
  * @returns {'single-level' | 'multiple-level' | 'none'}
  */
-function validateIndexStrategy(strategy) {
+function validateIndexWriter(strategy) {
   if (!strategy) {
     return 'multiple-level'
   }
 
-  if (!VALID_STRATEGIES.includes(strategy)) {
+  if (!VALID_INDEX_WRITERS.includes(strategy)) {
     console.error(
       `Error: Invalid strategy "${strategy}". Use "single-level" or "multiple-level" or "none".`
     )

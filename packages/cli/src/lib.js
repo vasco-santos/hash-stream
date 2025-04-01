@@ -32,9 +32,11 @@ export function getStore() {
  * Get a new hash-stream client configured from configuration.
  *
  * @param {object} [options]
- * @param {'single-level' | 'multiple-level' | 'none'} options.indexStrategy
+ * @param {'single-level' | 'multiple-level' | 'none'} options.indexWriterImplementationName
  */
-export async function getClient(options = { indexStrategy: 'multiple-level' }) {
+export async function getClient(
+  options = { indexWriterImplementationName: 'multiple-level' }
+) {
   const store = getStore()
   let raw = await store.load()
 
@@ -83,13 +85,13 @@ export async function getClient(options = { indexStrategy: 'multiple-level' }) {
   // Get index based on strategy
   let indexStore, indexWriter, indexReader
 
-  if (options.indexStrategy === 'single-level') {
+  if (options.indexWriterImplementationName === 'single-level') {
     indexStore = new FSBlobIndexStore(
       agentData.data.index.singleLevelIndex.storeDir
     )
     indexWriter = new SingleLevelIndexWriter(indexStore)
     indexReader = new IndexReader(indexStore)
-  } else if (options.indexStrategy === 'multiple-level') {
+  } else if (options.indexWriterImplementationName === 'multiple-level') {
     indexStore = new FSContainingIndexStore(
       agentData.data.index.multipleLevelIndex.storeDir
     )

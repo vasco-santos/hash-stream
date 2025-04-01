@@ -53,14 +53,14 @@ describe('CLI index', () => {
     assert.match(fail.error, /File does not exist at path/)
   })
 
-  it('can index add with single strategy', async () => {
+  it('can index add with single index writer implementation', async () => {
     const add = await hashStreamCmd
       .args([
         'index',
         'add',
         'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
         'test/fixture.car',
-        '--strategy',
+        '--index-writer',
         'single-level',
       ])
       .env(env)
@@ -69,11 +69,11 @@ describe('CLI index', () => {
     assert.equal(add.status.code, 0)
     assert.match(
       add.output,
-      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing \(single-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
+      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing with implementation \(single-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
-  it('can index add with multiple strategy', async () => {
+  it('can index add with multiple index writer implementation', async () => {
     const add = await hashStreamCmd
       .args([
         'index',
@@ -81,7 +81,7 @@ describe('CLI index', () => {
         'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
         'test/fixture.car',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
-        '--strategy',
+        '--index-writer',
         'multiple-level',
       ])
       .env(env)
@@ -90,18 +90,18 @@ describe('CLI index', () => {
     assert.equal(add.status.code, 0)
     assert.match(
       add.output,
-      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing \(multiple-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
+      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing with implementation \(multiple-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
-  it('can index add without containing CID for multiple strategy', async () => {
+  it('can index add without containing CID for multiple index writer implementation', async () => {
     const add = await hashStreamCmd
       .args([
         'index',
         'add',
         'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
         'test/fixture.car',
-        '--strategy',
+        '--index-writer',
         'multiple-level',
       ])
       .env(env)
@@ -110,7 +110,7 @@ describe('CLI index', () => {
     assert.equal(add.status.code, 0)
     assert.match(
       add.output,
-      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*(?:Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)?Indexing \(multiple-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
+      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*(?:Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)?Indexing with implementation \(multiple-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
@@ -140,14 +140,14 @@ describe('CLI index', () => {
     assert.match(fail.error, /Error parsing containing CID/)
   })
 
-  it('can index find records with single strategy', async () => {
+  it('can index find records with single index writer implementation', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
         'find',
         'records',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
-        '--strategy',
+        '--index-writer',
         'single-level',
       ])
       .env(env)
@@ -156,18 +156,18 @@ describe('CLI index', () => {
     assert.equal(find.status.code, 0)
     assert.match(
       find.output,
-      /\n*Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target \(single-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+\n*/
+      /\n*Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target written using \(single-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+\n*/
     )
   })
 
-  it('can not find records with index find records with single strategy for unknown target', async () => {
+  it('can not find records with index find records with single index writer implementation for unknown target', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
         'find',
         'records',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ncm',
-        '--strategy',
+        '--index-writer',
         'single-level',
       ])
       .env(env)
@@ -176,11 +176,11 @@ describe('CLI index', () => {
     assert.equal(find.status.code, 0)
     assert.match(
       find.output,
-      /\n*Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target \(single-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+Not found\.\n*/
+      /\n*Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target written using \(single-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+Not found\.\n*/
     )
   })
 
-  it('can index find records with multiple strategy for a blob', async () => {
+  it('can index find records with multiple index writer implementation for a blob', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
@@ -188,7 +188,7 @@ describe('CLI index', () => {
         'records',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
-        '--strategy',
+        '--index-writer',
         'multiple-level',
       ])
       .env(env)
@@ -207,10 +207,10 @@ describe('CLI index', () => {
       /Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
-    // Match Finding target (multiple-level)
+    // Match Finding target written using (multiple-level)
     assert.match(
       find.output,
-      /Finding target \(multiple-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+      /Finding target written using \(multiple-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
     // Match Index Records section
@@ -220,7 +220,7 @@ describe('CLI index', () => {
     assert.match(find.output, /type: BLOB,.*offset: \d+,.*length: \d+/)
   })
 
-  it('can index find records with multiple strategy for a pack', async () => {
+  it('can index find records with multiple index writer implementation for a pack', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
@@ -228,7 +228,7 @@ describe('CLI index', () => {
         'records',
         'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
-        '--strategy',
+        '--index-writer',
         'multiple-level',
       ])
       .env(env)
@@ -247,10 +247,10 @@ describe('CLI index', () => {
       /Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
-    // Match Finding target (multiple-level)
+    // Match Finding target written using (multiple-level)
     assert.match(
       find.output,
-      /Finding target \(multiple-level\)\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+      /Finding target written using \(multiple-level\)\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
     // Match Index Records section
@@ -267,14 +267,14 @@ describe('CLI index', () => {
     )
   })
 
-  it('can index find records with multiple strategy for a containing', async () => {
+  it('can index find records with multiple index writer implementation for a containing', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
         'find',
         'records',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
-        '--strategy',
+        '--index-writer',
         'multiple-level',
       ])
       .env(env)
@@ -288,10 +288,10 @@ describe('CLI index', () => {
       /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
-    // Match Finding target (multiple-level)
+    // Match Finding target written using (multiple-level)
     assert.match(
       find.output,
-      /Finding target \(multiple-level\)\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+      /Finding target written using \(multiple-level\)\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
     // Match Index Records section
@@ -308,7 +308,7 @@ describe('CLI index', () => {
     )
   })
 
-  it('can not find records with multiple strategy for unknown target', async () => {
+  it('can not find records with multiple index writer implementation for unknown target', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
@@ -316,7 +316,7 @@ describe('CLI index', () => {
         'records',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua2yprewa',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
-        '--strategy',
+        '--index-writer',
         'multiple-level',
       ])
       .env(env)
@@ -327,7 +327,7 @@ describe('CLI index', () => {
 
     assert.match(
       find.output,
-      /\s*Target CID:\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target \(multiple-level\)\.\.\.\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+Not found\.\n*/,
+      /\s*Target CID:\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target written using \(multiple-level\)\.\.\.\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+Not found\.\n*/,
       'Output did not match expected pattern for unknown target'
     )
   })
@@ -337,9 +337,9 @@ describe('CLI index', () => {
     assert.match(clear.output, /\n*Cleared all files in directory:\s*\/[\S]+\n/)
   })
 
-  it('can index clear for single-level strategt', async () => {
+  it('can index clear for index writer implementation', async () => {
     const clear = await hashStreamCmd
-      .args(['index', 'clear', '--strategy', 'multiple-level'])
+      .args(['index', 'clear', '--index-writer', 'multiple-level'])
       .env(env)
       .join()
     assert.match(clear.output, /\n*Cleared all files in directory:\s*\/[\S]+\n/)

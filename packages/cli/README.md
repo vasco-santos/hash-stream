@@ -33,15 +33,15 @@ Writes the given file blob into a set of verifiable packs, stores them, and opti
 #### Examples:
 
 ```sh
-pack write some-file.ext -s multiple-level
-pack write some-file.ext -s single-level
+pack write some-file.ext -iw multiple-level
+pack write some-file.ext -iw single-level
 ```
 
 #### Options:
 
 - `-t, --type` Specifies the pack type (default: `"car"`).
 - `-ps, --pack-size` Defines the maximum pack size in bytes (default: `MAX_PACK_SIZE`).
-- `-is, --index-strategy` Defines the indexing strategy, which can be `"single-level"` or `"multiple-level"` (default: `"multiple-level"`).
+- `-iw, --index-writer` Specifies the indexing writer implementation, which can be `"single-level"` or `"multiple-level"` (default: `"multiple-level"`).
 
 ---
 
@@ -64,48 +64,41 @@ Add Index record for the given verifiable pack (CAR file) using the specified st
 #### Examples:
 
 ```sh
-index add bag... pack.car bafy... -s multiple-level
-index add bag... pack.car -s single-level
+index add bag... pack.car bafy... -iw multiple-level
+index add bag... pack.car -iw single-level
 ```
 
 #### Options:
 
-- `-s, --strategy` Indexing strategy: "single-level" or "multiple-level" (default: `multiple-level`)
+- `-iw, --index-writer` Indexing writer implementation: "single-level" or "multiple-level" (default: `multiple-level`)
 
 ---
 
 ### `index find records <targetCid> [containingCid]`
 
-Find index records of a given blob/pack/containing by its CID, using a specified strategy.
+Find index records of a given blob/pack/containing by its CID.
 
 #### Examples:
 
 ```sh
-index find records bafk... -s single-level
-index find records bafy... -s multiple-level
-index find records bafk... bafy... -s multiple-level
+index find records bafk...
+index find records bafk... bafy...
 ```
-
-#### Options:
-
-- `-s, --strategy` Indexing strategy: "single-level" or "multiple-level" (default: `single-level`)
-
----
 
 ### `index clear`
 
-Clear all indexes within a strategy.
+Clear all indexes within a writer.
 
 #### Examples:
 
 ```sh
-index clear -s multiple-level
-index clear -s single-level
+index clear -iw multiple-level
+index clear -iw single-level
 ```
 
 #### Options:
 
-- `-s, --strategy` Indexing strategy: "single-level" or "multiple-level" (default: `multiple-level`)
+- `-iw, --index-writer` Indexing writer implementation: "single-level" or "multiple-level" (default: `multiple-level`)
 
 ## FAQ
 

@@ -20,13 +20,13 @@ cli
   .describe(
     'Writes given file blob into a set of verifiable packs, stores them and optionally indexes them.'
   )
-  .example('pack write some-file.ext -s multiple-level')
-  .example('pack write some-file.ext -s single-level')
+  .example('pack write some-file.ext -iw multiple-level')
+  .example('pack write some-file.ext -iw single-level')
   .option('-t, --type', 'Pack type: "car"', 'car')
   .option('-ps, --pack-size', 'Pack size in bytes', MAX_PACK_SIZE)
   .option(
-    '-is, --index-strategy',
-    'Indexing strategy: "single-level" or "multiple-level"',
+    '-iw, --index-writer',
+    'Indexing writer implementation: "single-level" or "multiple-level"',
     'multiple-level'
   )
   .action(packWrite)
@@ -44,13 +44,13 @@ cli
 cli
   .command('index add <packCid> <filePath> [containingCid]')
   .describe(
-    'Adds an index for a given verifiable pack (CAR file) using the specified strategy.'
+    'Adds an index for a given verifiable pack (CAR file) using the specified writer.'
   )
-  .example('index add bag... pack.car bafy... -s multiple-level')
-  .example('index add bag... pack.car -s single-level')
+  .example('index add bag... pack.car bafy... -iw multiple-level')
+  .example('index add bag... pack.car -iw single-level')
   .option(
-    '-s, --strategy',
-    'Indexing strategy: "single-level" or "multiple-level"',
+    '-iw, --index-writer',
+    'Indexing writer implementation: "single-level" or "multiple-level"',
     'multiple-level'
   )
   .action(indexAdd)
@@ -59,13 +59,13 @@ cli
 cli
   .command('index find records <targetCid> [containingCid]')
   .describe(
-    'Find index records of a given blob/pack/containing by its CID, using a specified strategy.'
+    'Find index records of a given blob/pack/containing by its CID, written using a specified index writer.'
   )
-  .example('index find records bafk... -s single-level')
-  .example('index find records bafk... bafy... -s multiple-level')
+  .example('index find records bafk... -iws single-level')
+  .example('index find records bafk... bafy... -iws multiple-level')
   .option(
-    '-s, --strategy',
-    'Indexing strategy: "single-level" or "multiple-level"',
+    '-iw, --index-writer',
+    'Indexing writer implementation: "single-level" or "multiple-level"',
     'multiple-level'
   )
   .action(indexFindRecords)
@@ -73,12 +73,12 @@ cli
 // Command: Clear Index
 cli
   .command('index clear')
-  .describe('Clear all indexes within a strategy.')
+  .describe('Clear all indexes within a index writer store.')
   .example('index clear -s multiple-level')
   .example('index clear -s single-level')
   .option(
-    '-s, --strategy',
-    'Indexing strategy: "single-level" or "multiple-level"',
+    '-iw, --index-writer',
+    'Indexing writer implementation: "single-level" or "multiple-level"',
     'multiple-level'
   )
   .action(indexClear)

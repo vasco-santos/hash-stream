@@ -47,14 +47,14 @@ describe('CLI pack', () => {
 
     assert.match(
       output,
-      /Packing file: .*\/random\.txt\s*\n\s*Pack Max Size: 133169152\s*\n\s*Index Strategy: multiple-level\s*\n\s*Containing CID:\s*\n\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n\s*Packs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n\s*Blobs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n*)+)/
+      /Packing file: .*\/random\.txt\s*\n\s*Pack Max Size: 133169152\s*\n\s*Index Writer: multiple-level\s*\n\s*Containing CID:\s*\n\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n\s*Packs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n\s*Blobs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n*)+)/
     )
   })
 
   it('pack write a file with index disabled', async () => {
     const { output, status } = await hashStreamCmd
       .env(env)
-      .args(['pack', 'write', testFilePath, '--index-strategy', 'none'])
+      .args(['pack', 'write', testFilePath, '--index-writer', 'none'])
       .env(env)
       .join()
 
@@ -62,7 +62,7 @@ describe('CLI pack', () => {
 
     assert.match(
       output,
-      /Packing file: .*\/random\.txt\s*\n\s*Pack Max Size: \d+\s*\n\s*Index Strategy: none\s*\n\s*Containing CID:\s*\n\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n\s*Packs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n\s*Blobs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n*)+)/
+      /Packing file: .*\/random\.txt\s*\n\s*Pack Max Size: \d+\s*\n\s*Index Writer: none\s*\n\s*Containing CID:\s*\n\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n\s*Packs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n\s*Blobs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n*)+)/
     )
   })
 
@@ -76,7 +76,7 @@ describe('CLI pack', () => {
     assert.equal(status.code, 0)
     assert.match(
       output,
-      /\n*Packing file: .*\/random\.txt\n\s+Pack Max Size: 5000000\n+\s*Index Strategy: multiple-level\n\s*Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Packs:\n+(?:\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Blobs:\n(?:\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)+)+/
+      /\n*Packing file: .*\/random\.txt\n\s+Pack Max Size: 5000000\n+\s*Index Writer: multiple-level\n\s*Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Packs:\n+(?:\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Blobs:\n(?:\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)+)+/
     )
   })
 
