@@ -14,7 +14,7 @@ import { createPacks } from '../src/index.js'
 import { PackReader } from '../src/reader.js'
 import { PackWriter } from '../src/writer.js'
 
-import { randomBytes } from './helpers/random.js'
+import { randomBytes, randomCID } from './helpers/random.js'
 
 /**
  * @typedef {import('@hash-stream/pack/types').PackStore} PackStore
@@ -186,6 +186,30 @@ export function runPackReaderTests(
             assert(equals(entry.bytes, carReaderBlob.bytes))
           }
         }
+      })
+
+      it('reading non existing packs from the reader returns empty stream', async () => {
+        const cid = await randomCID()
+        const packMultihash = cid.multihash
+
+        const entries = await all(packReader.stream(packMultihash))
+        assert(entries.length === 0)
+      })
+
+      it('reading non existing packs from the reader with range returns empty stream', async () => {
+        const cid = await randomCID()
+        const packMultihash = cid.multihash
+
+        const entries = await all(
+          packReader.stream(packMultihash, [
+            {
+              offset: 0,
+              length: 100,
+              multihash: packMultihash,
+            },
+          ])
+        )
+        assert(entries.length === 0)
       })
     })
   })

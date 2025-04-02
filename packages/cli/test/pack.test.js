@@ -94,6 +94,32 @@ describe('CLI pack', () => {
     )
   })
 
+  it('pack read a file after write', async () => {
+    const { output: writeOutput, status: writeStatus } = await hashStreamCmd
+      .env(env)
+      .args(['pack', 'write', testFilePath, '--index-writer', 'none'])
+      .env(env)
+      .join()
+
+    assert.equal(writeStatus.code, 0)
+
+    const regex = /Packs:\s*\n\s*(baf[a-z0-9]+)/
+    const match = writeOutput.match(regex)
+
+    assert(match?.length)
+
+    const { output, status } = await hashStreamCmd
+      .env(env)
+      .args(['pack', 'read', match[1], tempDir])
+      .env(env)
+      .join()
+    assert.equal(status.code, 0)
+    assert.match(
+      output,
+      /Successfully wrote \d+ bytes to .*\/baf[a-z0-9]+\.car\s*/
+    )
+  })
+
   it('can pack clear', async () => {
     const clear = await hashStreamCmd.args(['pack', 'clear']).env(env).join()
     assert.match(clear.output, /\n*Cleared all files in directory:\s*\/[\S]+\n/)

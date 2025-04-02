@@ -57,7 +57,7 @@ async function* findInSubRecords(subRecords, multihash) {
   for (const subRecord of subRecords) {
     if (equals(subRecord.multihash.bytes, multihash.bytes)) {
       yield subRecord
-      // /* c8 ignore next 1 */
+      /* c8 ignore next 1 */
     }
     if (subRecord.subRecords.length) {
       yield* findInSubRecords(subRecord.subRecords, multihash)

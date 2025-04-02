@@ -16,13 +16,14 @@ Basic [Usage Guide](./USAGE.md).
 
 ## Commands
 
-- Index Management
-  - [`index add`](#index-add-packcid-filepath-containingcid)
-  - [`index find records`](#index-find-records-blockcid-containingcid)
-  - [`index clear`](#index-clear)
 - **Pack Management**
   - [`pack write`](#pack-write-filepath)
+  - [`pack read`](#pack-read-targetcid-filepath)
   - [`pack clear`](#pack-clear)
+- **Index Management**
+  - [`index add`](#index-add-packcid-filepath-containingcid)
+  - [`index find records`](#index-find-records-targetcid-containingcid)
+  - [`index clear`](#index-clear)
 
 ---
 
@@ -42,6 +43,22 @@ pack write some-file.ext -iw single-level
 - `-t, --type` Specifies the pack type (default: `"car"`).
 - `-ps, --pack-size` Defines the maximum pack size in bytes (default: `MAX_PACK_SIZE`).
 - `-iw, --index-writer` Specifies the indexing writer implementation, which can be `"single-level"` or `"multiple-level"` (default: `"multiple-level"`).
+
+---
+
+### `pack read <targetCid> [filePath]`
+
+Read Packs from the store and writes them to a file in the given path.
+
+#### Examples:
+
+```sh
+pack read bafk... some-file.car
+```
+
+#### Options:
+
+- `-t, --type` Specifies the pack type (default: `"car"`).
 
 ---
 

@@ -13,7 +13,7 @@ import {
 
 // Pack
 import { FSPackStore } from '@hash-stream/pack/store/fs'
-import { PackWriter } from '@hash-stream/pack'
+import { PackWriter, PackReader } from '@hash-stream/pack'
 
 import { ConfDriver as StoreConf } from './conf/driver.js'
 import { AgentData } from './conf/agent-data.js'
@@ -104,6 +104,7 @@ export async function getClient(
   const packWriter = new PackWriter(packStore, {
     indexWriter,
   })
+  const packReader = new PackReader(packStore)
 
   return {
     index: {
@@ -114,6 +115,7 @@ export async function getClient(
     pack: {
       store: packStore,
       writer: packWriter,
+      reader: packReader,
     },
   }
 }

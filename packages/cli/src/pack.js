@@ -98,6 +98,65 @@ export const packWrite = async (
   }
 }
 
+/**
+ * @param {string} targetCid
+ * @param {string} [filePath]
+ * @param {{
+ *   _: string[],
+ *   type: 'car',
+ * }} [opts]
+ */
+export const packRead = async (
+  targetCid,
+  filePath,
+  opts = { type: 'car', _: [] }
+) => {
+  validateType(opts.type)
+
+  let targetMultihash
+  try {
+    targetMultihash = CID.parse(targetCid).multihash
+  } catch (err) {
+    console.error('Error parsing target CID:', err)
+    process.exit(1)
+  }
+
+  let resolvedPath
+  if (filePath) {
+    resolvedPath = path.isAbsolute(filePath)
+      ? filePath
+      : path.resolve(process.cwd(), filePath)
+  } else {
+    // Default to current working directory
+    resolvedPath = process.cwd()
+  }
+
+  const client = await getClient()
+
+  // Currenty only car is supported
+  const entries = []
+  for await (const entry of client.pack.reader.stream(targetMultihash)) {
+    entries.push(entry)
+  }
+
+  if (entries.length !== 1) {
+    console.error(
+      `Error: Expected 1 entry in the store, but got ${entries.length}. Please check the provided multihash.`
+    )
+    process.exit(1)
+  }
+
+  const entry = entries[0]
+  await fs.promises.writeFile(
+    path.join(resolvedPath, `${targetCid}.car`),
+    entry.bytes,
+    'binary'
+  )
+  console.info(
+    `Successfully wrote ${entry.bytes.byteLength} bytes to ${resolvedPath}/${targetCid}.car`
+  )
+}
+
 export const packClear = async () => {
   const client = await getClient()
 
