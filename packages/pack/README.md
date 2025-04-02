@@ -174,7 +174,7 @@ const packStore = new MemoryPackStore()
 
 ### Using a Custom Store
 
-Other implementations of a Store may be implemented accordign to the storage backend intended. The Pack Store must implement the `PackStore` interface, or separately a `PackStoreWriter` and a `PackStoreReader`. A store must define the following methods:
+Other implementations of a Store may be implemented according to the storage backend intended. The Pack Store must implement the `PackStore` interface, or separately a `PackStoreWriter` and a `PackStoreReader`. A store must define the following methods:
 
 ```ts
 export interface PackStore extends PackStoreWriter, PackStoreReader {}
