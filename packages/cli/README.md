@@ -18,7 +18,7 @@ Basic [Usage Guide](./USAGE.md).
 
 - **Pack Management**
   - [`pack write`](#pack-write-filepath)
-  - [`pack read`](#pack-read-targetcid-filepath)
+  - [`pack extract`](#pack-extract-targetcid-filepath)
   - [`pack clear`](#pack-clear)
 - **Index Management**
   - [`index add`](#index-add-packcid-filepath-containingcid)
@@ -46,14 +46,14 @@ pack write some-file.ext -iw single-level
 
 ---
 
-### `pack read <targetCid> [filePath]`
+### `pack extract <targetCid> [filePath]`
 
-Read Packs from the store and writes them to a file in the given path.
+Extracts Packs from the store and writes them to a file in the given path.
 
 #### Examples:
 
 ```sh
-pack read bafk... some-file.car
+pack extract bafk... some-file.car
 ```
 
 #### Options:

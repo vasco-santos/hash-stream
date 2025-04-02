@@ -15,6 +15,9 @@ import {
 import { FSPackStore } from '@hash-stream/pack/store/fs'
 import { PackWriter, PackReader } from '@hash-stream/pack'
 
+// Streamer
+import { HashStreamer } from '@hash-stream/hash-streamer'
+
 import { ConfDriver as StoreConf } from './conf/driver.js'
 import { AgentData } from './conf/agent-data.js'
 
@@ -117,5 +120,6 @@ export async function getClient(
       writer: packWriter,
       reader: packReader,
     },
+    streamer: indexReader && new HashStreamer(indexReader, packReader),
   }
 }

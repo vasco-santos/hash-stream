@@ -80,21 +80,21 @@ describe('CLI pack', () => {
     )
   })
 
-  it('pack write fails if type is not car', async () => {
+  it('pack write fails if format is not car', async () => {
     const fail = await hashStreamCmd
       .env(env)
-      .args(['pack', 'write', testFilePath, '--type', 'zip'])
+      .args(['pack', 'write', testFilePath, '--format', 'zip'])
       .env(env)
       .join()
       .catch()
 
     assert.match(
       fail.error,
-      /Error: Invalid type "zip". Only "car" is supported.\n/
+      /Error: Invalid format "zip". Only "car" is supported.\n/
     )
   })
 
-  it('pack read a file after write', async () => {
+  it('pack extract a file after write', async () => {
     const { output: writeOutput, status: writeStatus } = await hashStreamCmd
       .env(env)
       .args(['pack', 'write', testFilePath, '--index-writer', 'none'])
@@ -110,14 +110,11 @@ describe('CLI pack', () => {
 
     const { output, status } = await hashStreamCmd
       .env(env)
-      .args(['pack', 'read', match[1], tempDir])
+      .args(['pack', 'extract', match[1], `${tempDir}/${match[1]}.car`])
       .env(env)
       .join()
     assert.equal(status.code, 0)
-    assert.match(
-      output,
-      /Successfully wrote \d+ bytes to .*\/baf[a-z0-9]+\.car\s*/
-    )
+    assert.match(output, /Successfully wrote \d+ bytes to .*\.car\n?/)
   })
 
   it('can pack clear', async () => {

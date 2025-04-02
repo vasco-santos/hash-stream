@@ -17,7 +17,7 @@ export const MAX_PACK_SIZE = 133_169_152
  * @param {{
  *   _: string[],
  *   'index-writer': 'single-level' | 'multiple-level' | 'none',
- *   type: 'car',
+ *   format: 'car',
  *   'pack-size': number,
  * }} [opts]
  */
@@ -25,7 +25,7 @@ export const packWrite = async (
   filePath,
   opts = {
     'index-writer': 'multiple-level',
-    type: 'car',
+    format: 'car',
     'pack-size': MAX_PACK_SIZE,
     _: [],
   }
@@ -34,7 +34,7 @@ export const packWrite = async (
     opts['index-writer']
   )
 
-  validateType(opts.type)
+  validateFormat(opts.format)
 
   const client = await getClient({ indexWriterImplementationName })
   const fileStream = await getFileStream(filePath)
@@ -103,15 +103,15 @@ export const packWrite = async (
  * @param {string} [filePath]
  * @param {{
  *   _: string[],
- *   type: 'car',
+ *   format: 'car',
  * }} [opts]
  */
-export const packRead = async (
+export const packExtract = async (
   targetCid,
   filePath,
-  opts = { type: 'car', _: [] }
+  opts = { format: 'car', _: [] }
 ) => {
-  validateType(opts.type)
+  validateFormat(opts.format)
 
   let targetMultihash
   try {
@@ -147,13 +147,9 @@ export const packRead = async (
   }
 
   const entry = entries[0]
-  await fs.promises.writeFile(
-    path.join(resolvedPath, `${targetCid}.car`),
-    entry.bytes,
-    'binary'
-  )
+  await fs.promises.writeFile(resolvedPath, entry.bytes, 'binary')
   console.info(
-    `Successfully wrote ${entry.bytes.byteLength} bytes to ${resolvedPath}/${targetCid}.car`
+    `\nSuccessfully wrote ${entry.bytes.byteLength} bytes to ${resolvedPath}`
   )
 }
 
@@ -209,11 +205,11 @@ function validateIndexWriter(strategy) {
 }
 
 /**
- * @param {string} type
+ * @param {string} format
  */
-function validateType(type) {
-  if (type !== 'car') {
-    console.error(`Error: Invalid type "${type}". Only "car" is supported.`)
+function validateFormat(format) {
+  if (format !== 'car') {
+    console.error(`Error: Invalid format "${format}". Only "car" is supported.`)
     process.exit(1)
   }
 }
