@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main # Trigger deploy on push to the main branch
-  pull_request:
-    branches:
-      - main # Trigger deploy on pull requests to the main branch
 
 jobs:
   deploy:
