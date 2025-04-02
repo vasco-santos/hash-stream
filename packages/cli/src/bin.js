@@ -4,7 +4,8 @@ import sade from 'sade'
 import fs from 'fs'
 
 import { indexAdd, indexFindRecords, indexClear } from './index.js'
-import { packWrite, packRead, packClear, MAX_PACK_SIZE } from './pack.js'
+import { packWrite, packExtract, packClear, MAX_PACK_SIZE } from './pack.js'
+import { streamerDump } from './streamer.js'
 
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url)).toString()
@@ -12,6 +13,18 @@ const pkg = JSON.parse(
 const cli = sade(pkg.name)
 
 cli.version(pkg.version)
+
+// Streamer commands
+// Command: Streamer dump
+cli
+  .command('streamer dump <targetCid> <filePath> [containingCid]')
+  .describe(
+    `Dump the blob data associated with the given target CID from stored Packs based on the known index records.  
+    The data is extracted and written to the specified file path in the selected Pack format.`
+  )
+  .example('streamer dump bafy... /usr/dumps/baf...car')
+  .option('-f, --format', 'Pack format: "car"', 'car')
+  .action(streamerDump)
 
 // Pack commands
 // Command: Write Packs
@@ -22,7 +35,7 @@ cli
   )
   .example('pack write some-file.ext -iw multiple-level')
   .example('pack write some-file.ext -iw single-level')
-  .option('-t, --type', 'Pack type: "car"', 'car')
+  .option('-f, --format', 'Pack format: "car"', 'car')
   .option('-ps, --pack-size', 'Pack size in bytes', MAX_PACK_SIZE)
   .option(
     '-iw, --index-writer',
@@ -31,15 +44,15 @@ cli
   )
   .action(packWrite)
 
-// Command: Read Packs
+// Command: Extract Packs
 cli
-  .command('pack read <targetCid> [filePath}')
+  .command('pack extract <targetCid> [filePath]')
   .describe(
-    'Read Packs from the store and writes them to a file in the given path.'
+    'Extracts Packs from the store and writes them to a file in the given path.'
   )
-  .example('pack read bag... some-file.car')
-  .option('-t, --type', 'Pack type: "car"', 'car')
-  .action(packRead)
+  .example('pack extract bag... some-file.car')
+  .option('-f, --format', 'Pack format: "car"', 'car')
+  .action(packExtract)
 
 // Command: Clear packs
 cli
