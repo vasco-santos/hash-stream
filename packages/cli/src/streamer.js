@@ -8,6 +8,9 @@ import { code as RawCode } from 'multiformats/codecs/raw'
 import { base58btc } from 'multiformats/bases/base58'
 
 import { getClient } from './lib.js'
+import { equals } from 'uint8arrays/equals'
+
+const dagPbCode = 0x70
 
 /**
  * @param {string} targetCid
@@ -77,7 +80,11 @@ export const streamerDump = async (
   }
 
   // Create a CAR from the blobs
-  const { writer: carWriter, out } = await CarWriter.create([])
+  let roots = []
+  if (!containingMultihash) {
+    roots.push(CID.createV1(dagPbCode, targetMultihash))
+  }
+  const { writer: carWriter, out } = await CarWriter.create(roots)
   Readable.from(out).pipe(fs.createWriteStream(resolvedPath))
 
   let hasEntries = false
@@ -86,6 +93,10 @@ export const streamerDump = async (
     { containingMultihash }
   )) {
     hasEntries = true
+    if (equals(multihash.bytes, targetMultihash.bytes)) {
+      const cid = CID.createV1(dagPbCode, multihash)
+      carWriter.put({ cid, bytes })
+    }
     const cid = CID.createV1(RawCode, multihash)
     carWriter.put({ cid, bytes })
   }

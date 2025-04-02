@@ -12,18 +12,23 @@ npm install -g @hash-stream/cli
 
 ## Usage
 
-Basic [Usage Guide](./USAGE.md).
+There are a few Usage guides provided in this repository:
+
+- Basic [Usage Guide](./BASIC_USAGE.md)
+- [Index previously generated CAR files](./PREVIOUSLY_GENERATED_CAR_INDEXING_USAGE.md)
 
 ## Commands
 
-- **Pack Management**
+- **Pack**
   - [`pack write`](#pack-write-filepath)
   - [`pack extract`](#pack-extract-targetcid-filepath)
   - [`pack clear`](#pack-clear)
-- **Index Management**
+- **Index**
   - [`index add`](#index-add-packcid-filepath-containingcid)
   - [`index find records`](#index-find-records-targetcid-containingcid)
   - [`index clear`](#index-clear)
+- **Streamer**
+  - [`streamer dump`](#streamer-dump-targetcid-filepath-containingcid)
 
 ---
 
@@ -40,7 +45,7 @@ pack write some-file.ext -iw single-level
 
 #### Options:
 
-- `-t, --type` Specifies the pack type (default: `"car"`).
+- `-f, --format` Specifies the pack format (default: `"car"`).
 - `-ps, --pack-size` Defines the maximum pack size in bytes (default: `MAX_PACK_SIZE`).
 - `-iw, --index-writer` Specifies the indexing writer implementation, which can be `"single-level"` or `"multiple-level"` (default: `"multiple-level"`).
 
@@ -58,7 +63,7 @@ pack extract bafk... some-file.car
 
 #### Options:
 
-- `-t, --type` Specifies the pack type (default: `"car"`).
+- `-f, --format` Specifies the pack format (default: `"car"`).
 
 ---
 
@@ -76,7 +81,7 @@ pack clear
 
 ### `index add <packCid> <filePath> [containingCid]`
 
-Add Index record for the given verifiable pack (CAR file) using the specified strategy.
+Add Index record for the given verifiable pack (CAR file) using the specified index writer.
 
 #### Examples:
 
@@ -93,14 +98,20 @@ index add bag... pack.car -iw single-level
 
 ### `index find records <targetCid> [containingCid]`
 
-Find index records of a given blob/pack/containing by its CID.
+Find index records of a given blob/pack/containing by its CID, written using a specified index writer.
 
 #### Examples:
 
 ```sh
-index find records bafk...
-index find records bafk... bafy...
+index find records bafk... -iw single-level
+index find records bafk... bafy... -iw multiple-level
 ```
+
+#### Options:
+
+- `-iw, --index-writer` Indexing writer implementation: "single-level" or "multiple-level" (default: `multiple-level`)
+
+---
 
 ### `index clear`
 
@@ -116,6 +127,23 @@ index clear -iw single-level
 #### Options:
 
 - `-iw, --index-writer` Indexing writer implementation: "single-level" or "multiple-level" (default: `multiple-level`)
+
+---
+
+### `streamer dump <targetCid> <filePath> [containingCid]`
+
+Dump the blob data associated with the given target CID from stored Packs based on the known index records.
+The data is extracted and written to the specified file path in the selected Pack format.
+
+#### Examples:
+
+```sh
+streamer dump bafy... /usr/dumps/baf...car
+```
+
+#### Options:
+
+- `-f, --format` Specifies the pack format (default: "car").
 
 ## FAQ
 
