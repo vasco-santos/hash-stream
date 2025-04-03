@@ -49,7 +49,7 @@ export const packWrite = async (
   const { containingMultihash, packsMultihashes } =
     await client.pack.writer.write(
       {
-        // @ts-expect-error node stream does not match web stream type wise
+        // @ts-expect-error 'ReadableStream<any>' is not assignable to type 'ReadableStream<Uint8Array<ArrayBufferLike>>'
         stream: () => Readable.toWeb(fileStream),
       },
       {

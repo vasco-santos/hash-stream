@@ -15,7 +15,7 @@ npm install @hash-stream/pack
 When aiming to create packs (as CAR files) from a given Blob like (object with a [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)), one can use `createPacks` function. It returns an object with a `packStream` Async Generator that yields verifiable CAR packs and a `containingPromise` Promise that resolves to a `containingMultihash` representing the blob.
 
 ```js
-import { PackWriter } from '@hash-stream/pack'
+import { createPacks } from '@hash-stream/pack'
 import { base58btc } from 'multiformats/bases/base58'
 
 async function main() {
@@ -48,6 +48,8 @@ main().catch(console.error)
 Created packs from a given Blob like (object with a [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)), can be stored into a given Pack Store, as well as optionally indexed if an index writer is provided.
 
 ```js
+import { base58btc } from 'multiformats/bases/base58'
+
 import { MultipleLevelIndexWriter } from '@hash-stream/index/writer/multiple-level'
 import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
 import { PackWriter } from 'pack'
