@@ -43,7 +43,7 @@ export const packWrite = async (
 
   console.info(
     `\nPacking file: ${filePath}
-    Pack Max Size: ${opts['pack-size']}
+    Pack Max Size: ${opts['pack-size']} bytes
     Index Writer: ${indexWriterImplementationName}`
   )
   const { containingMultihash, packsMultihashes } =
@@ -91,7 +91,7 @@ export const packWrite = async (
       const blobCid = CID.create(1, RawCode, blob)
       console.info(
         `${indent}${indent}${indent}${blobCid}
-            base58btc(${base58btc.encode(blob.bytes)})`
+            base58btc(${base58btc.encode(blob.bytes)})\n`
       )
     }
     console.info('\n')

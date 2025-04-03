@@ -49,9 +49,10 @@ export const indexAdd = async (
     [Symbol.asyncIterator]: async function* () {
       for await (const blobIndex of blobIndexIterable) {
         console.info(
-          `Indexed blob: 
+          `Indexed Blob: 
     ${blobIndex.cid.toString()}
     base58btc(${base58btc.encode(blobIndex.cid.multihash.bytes)})
+    location: ${base58btc.encode(packMultihash.bytes)}
     offset: ${blobIndex.blockOffset} length: ${blobIndex.blockLength}`
         )
         yield {
@@ -241,12 +242,15 @@ function logRecords(records, indentLevel = 1) {
 
   for (const record of records) {
     console.info(
-      `${indent}base58btc(${base58btc.encode(
+      `${indent}multihash: base58btc(${base58btc.encode(
+        record.multihash.bytes || new Uint8Array()
+      )})
+${indent}location: base58btc(${base58btc.encode(
         record.location.bytes || new Uint8Array()
       )})
 ${indent}type: ${TypeStr[record.type]}, offset: ${
         record.offset || 'N/A'
-      }, length: ${record.length || 'N/A'}`
+      }, length: ${record.length || 'N/A'}\n`
     )
 
     if (record.subRecords && record.subRecords.length > 0) {

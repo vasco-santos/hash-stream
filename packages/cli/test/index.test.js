@@ -69,7 +69,7 @@ describe('CLI index', () => {
     assert.equal(add.status.code, 0)
     assert.match(
       add.output,
-      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing with implementation \(single-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
+      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing with implementation \(single-level\)\.\.\.\n+(?:Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
@@ -90,7 +90,7 @@ describe('CLI index', () => {
     assert.equal(add.status.code, 0)
     assert.match(
       add.output,
-      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing with implementation \(multiple-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
+      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing with implementation \(multiple-level\)\.\.\.\n+(?:Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
@@ -110,7 +110,7 @@ describe('CLI index', () => {
     assert.equal(add.status.code, 0)
     assert.match(
       add.output,
-      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*(?:Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)?Indexing with implementation \(multiple-level\)\.\.\.\n+(?:Indexed blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
+      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*(?:Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)?\s*Indexing with implementation \(multiple-level\)\.\.\.\n+(?:Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
@@ -156,7 +156,7 @@ describe('CLI index', () => {
     assert.equal(find.status.code, 0)
     assert.match(
       find.output,
-      /\n*Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target written using \(single-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+\n*/
+      /\n*Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target written using \(single-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s*multihash:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*location:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+\n*/
     )
   })
 
@@ -262,8 +262,7 @@ describe('CLI index', () => {
     // Match Sub-Records section (allow multiple sub-records)
     assert.match(
       find.output,
-      /Sub-Records:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+type: BLOB, offset: \d+, length: \d+/,
-      'Sub-Records not found or not matching the expected pattern'
+      /Sub-Records:\n\s*(multihash:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*location:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+\s*)+/
     )
   })
 
@@ -303,8 +302,11 @@ describe('CLI index', () => {
     // Match Sub-Records section (allow multiple sub-records, including nested)
     assert.match(
       find.output,
-      /Sub-Records:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+type: PACK, offset: N\/A, length: N\/A\n\s+Sub-Records:\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+type: BLOB, offset: \d+, length: \d+/,
-      'Sub-Records not found or not matching the expected pattern'
+      /Sub-Records:\s*multihash:\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*location:\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*type:\s*PACK,\s*offset:\s*N\/A,\s*length:\s*N\/A/
+    )
+    assert.match(
+      find.output,
+      /Sub-Records:\s*multihash:\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*location:\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*type:\s*BLOB,\s*offset:\s*\d+,\s*length:\s*\d+\s*/
     )
   })
 
