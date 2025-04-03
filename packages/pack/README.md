@@ -102,7 +102,7 @@ import { FSPackStore } from 'pack/store/fs' // Example file system store
 
 async function main() {
   // Initialize the stores
-  const packStore = new FsStore('/path/to/pack-store')
+  const packStore = new FSPackStore('/path/to/pack-store')
 
   // Initialize the pack reader
   const packReader = new PackReader(packStore)
