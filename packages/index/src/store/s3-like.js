@@ -15,11 +15,11 @@ import {
 } from '@aws-sdk/client-s3'
 
 /**
- * S3 implementation of ContainingIndexStore
+ * S3 implementation of IndexStore
  *
  * @implements {API.IndexStore}
  */
-export class S3LikeContainingIndexStore {
+export class S3LikeIndexStore {
   /**
    * @param {object} config - Configuration for the S3 client.
    * @param {string} config.bucketName - S3 bucket name.
@@ -39,7 +39,9 @@ export class S3LikeContainingIndexStore {
    * @returns {string}
    */
   static encodeKey(hash) {
-    return base58btc.encode(hash.bytes)
+    const encodedMultihash = base58btc.encode(hash.bytes)
+    // Cloud storages typically rate llimit at the path level, this allows more requests
+    return `${encodedMultihash}/${encodedMultihash}`
   }
 
   /**
@@ -48,8 +50,8 @@ export class S3LikeContainingIndexStore {
    * @param {API.MultihashDigest} hash
    * @returns {string}
    */
-  _getFolderPath(hash) {
-    return `containing/${S3LikeContainingIndexStore.encodeKey(hash)}/`
+  #getFolderPath(hash) {
+    return `${S3LikeIndexStore.encodeKey(hash)}/`
   }
 
   /**
@@ -59,21 +61,22 @@ export class S3LikeContainingIndexStore {
    * @param {API.MultihashDigest} [subRecordMultihash]
    * @returns {string}
    */
-  _getFilePath(hash, subRecordMultihash) {
-    const folderPath = this._getFolderPath(hash)
+  #getFilePath(hash, subRecordMultihash) {
+    const folderPath = this.#getFolderPath(hash)
     const uniqueId = subRecordMultihash
-      ? `${S3LikeContainingIndexStore.encodeKey(subRecordMultihash)}`
+      ? `${S3LikeIndexStore.encodeKey(subRecordMultihash)}`
       : Date.now().toString()
     return `${folderPath}${uniqueId}`
   }
 
   /**
    * @param {API.IndexRecord} data
+   * @param {string} recordType
    */
-  encodeData(data) {
-    /** @type {{ type: 'index/containing@0.1'; data: API.IndexRecordEncoded }} */
+  encodeData(data, recordType) {
+    /** @type {{ type: string; data: API.IndexRecordEncoded }} */
     const encodableEntry = {
-      type,
+      type: recordType,
       data: removeUndefinedRecursively(indexRecordEncode(data)),
     }
     return encode(encodableEntry)
@@ -93,7 +96,7 @@ export class S3LikeContainingIndexStore {
    * @returns {AsyncIterable<API.IndexRecord>}
    */
   async *get(hash) {
-    const folderPath = this._getFolderPath(hash)
+    const folderPath = this.#getFolderPath(hash)
     const listCommand = new ListObjectsV2Command({
       Bucket: this.bucketName,
       Prefix: folderPath,
@@ -138,16 +141,17 @@ export class S3LikeContainingIndexStore {
    * Add index entries.
    *
    * @param {AsyncIterable<API.IndexRecord>} entries
+   * @param {string} recordType
    * @returns {Promise<void>}
    */
-  async add(entries) {
+  async add(entries, recordType) {
     for await (const entry of entries) {
       let subRecordMultihash
       if (entry.subRecords.length > 0) {
         subRecordMultihash = entry.subRecords[0].multihash
       }
-      const filePath = this._getFilePath(entry.multihash, subRecordMultihash)
-      const encodedData = this.encodeData(entry)
+      const filePath = this.#getFilePath(entry.multihash, subRecordMultihash)
+      const encodedData = this.encodeData(entry, recordType)
       await this.client.send(
         new PutObjectCommand({
           Bucket: this.bucketName,
@@ -158,5 +162,3 @@ export class S3LikeContainingIndexStore {
     }
   }
 }
-
-export const type = 'index/containing@0.1'

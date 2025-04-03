@@ -69,6 +69,7 @@
   },
   "devDependencies": {
     "@hash-stream/eslint-config": "workspace:^",
+    "@hash-stream/index": "workspace:^",
     "@storacha/one-webcrypto": "^1.0.1",
     "@types/assert": "^1.5.11",
     "@types/mocha": "^10.0.10",

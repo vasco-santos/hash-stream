@@ -1,19 +1,17 @@
-import { MemoryBlobIndexStore } from '../src/store/memory-blob.js'
-import { MemoryContainingIndexStore } from '../src/store/memory-containing.js'
+import { MemoryIndexStore } from '../src/store/memory.js'
 
-import { runBlobStoreTests } from './stores/blob.js'
-import { runContainingStoreTests } from './stores/containing.js'
+import { runIndexStoreTests } from './store.js'
 
-describe('BlobIndexStore implementations', () => {
+describe('IndexStore implementations', () => {
   // eslint-disable-next-line no-extra-semi
   ;[
     {
       name: 'Memory',
       /**
-       * @returns {Promise<import('./stores/blob.js').DestroyableIndexStore>}
+       * @returns {Promise<import('./store.js').DestroyableIndexStore>}
        */
       getIndexStore: () => {
-        const indexStore = new MemoryBlobIndexStore()
+        const indexStore = new MemoryIndexStore()
         const destroyableIndexStore = Object.assign(indexStore, {
           destroy: () => {},
         })
@@ -21,27 +19,6 @@ describe('BlobIndexStore implementations', () => {
       },
     },
   ].forEach(({ name, getIndexStore }) => {
-    runBlobStoreTests(name, () => getIndexStore())
-  })
-})
-
-describe('ContainingIndexStore implementations', () => {
-  // eslint-disable-next-line no-extra-semi
-  ;[
-    {
-      name: 'Memory',
-      /**
-       * @returns {Promise<import('./stores/blob.js').DestroyableIndexStore>}
-       */
-      getIndexStore: () => {
-        const indexStore = new MemoryContainingIndexStore()
-        const destroyableIndexStore = Object.assign(indexStore, {
-          destroy: () => {},
-        })
-        return Promise.resolve(destroyableIndexStore)
-      },
-    },
-  ].forEach(({ name, getIndexStore }) => {
-    runContainingStoreTests(name, () => getIndexStore())
+    runIndexStoreTests(name, () => getIndexStore())
   })
 })

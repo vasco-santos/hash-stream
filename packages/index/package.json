@@ -30,12 +30,9 @@
     "./utils": "./dist/src/utils.js",
     "./writer/single-level": "./dist/src/writer/single-level.js",
     "./writer/multiple-level": "./dist/src/writer/multiple-level.js",
-    "./store/memory-blob": "./dist/src/store/memory-blob.js",
-    "./store/memory-containing": "./dist/src/store/memory-containing.js",
-    "./store/fs-blob": "./dist/src/store/fs-blob.js",
-    "./store/fs-containing": "./dist/src/store/fs-containing.js",
-    "./store/s3-like-blob": "./dist/src/store/s3-like-blob.js",
-    "./store/s3-like-containing": "./dist/src/store/s3-like-containing.js",
+    "./store/memory": "./dist/src/store/memory.js",
+    "./store/fs": "./dist/src/store/fs.js",
+    "./store/s3-like": "./dist/src/store/s3-like.js",
     "./types": "./dist/src/api.js"
   },
   "typesVersions": {
@@ -58,23 +55,14 @@
       "writer/multiple-level": [
         "dist/src/writer/multiple-level.d.ts"
       ],
-      "store/memory-blob": [
-        "dist/src/store/memory-blob.d.ts"
+      "store/memory": [
+        "dist/src/store/memory.d.ts"
       ],
-      "store/memory-containing": [
-        "dist/src/store/memory-containing.d.ts"
+      "store/fs": [
+        "dist/src/store/fs.d.ts"
       ],
-      "store/fs-blob": [
-        "dist/src/store/fs-blob.d.ts"
-      ],
-      "store/fs-containing": [
-        "dist/src/store/fs-containing.d.ts"
-      ],
-      "store/s3-like-blob": [
-        "dist/src/store/s3-like-blob.d.ts"
-      ],
-      "store/s3-like-containing": [
-        "dist/src/store/s3-like-containing.d.ts"
+      "store/s3-like": [
+        "dist/src/store/s3-like.d.ts"
       ]
     }
   },

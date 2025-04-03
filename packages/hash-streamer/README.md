@@ -15,13 +15,13 @@ This usage guides takes into account that the Pack Store and Index Store used by
 ```js
 import { HashStreamer } from '@hash-stream/hash-streamer'
 import { IndexReader } from '@hash-stream/index/reader'
-import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
-import { FSPackStore } from 'pack/store/fs'
-import { PackReader } from 'pack'
+import { FSIndexStore } from '@hash-stream/index/store/fs'
+import { FSPackStore } from '@hash-stream/pack/store/fs'
+import { PackReader } from '@hash-stream/pack'
 
 async function main() {
   // Initialize the stores
-  const indexStore = new FSContainingIndexStore('/path/to/index-store')
+  const indexStore = new FSIndexStore('/path/to/index-store')
   const packStore = new FSPackStore('/path/to/pack-store')
 
   // Initialize the readers

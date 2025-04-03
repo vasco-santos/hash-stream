@@ -35,7 +35,7 @@ export interface IndexReader {
 export interface IndexStore extends IndexStoreReader, IndexStoreWriter {}
 
 export interface IndexStoreWriter {
-  add(entries: AsyncIterable<IndexRecord>): Promise<void>
+  add(entries: AsyncIterable<IndexRecord>, recordType: string): Promise<void>
 }
 
 // Index records can be read from a given store based on the

@@ -1,4 +1,4 @@
-import { MemoryContainingIndexStore } from '@hash-stream/index/store/memory-containing'
+import { MemoryIndexStore } from '@hash-stream/index/store/memory'
 import { MemoryPackStore } from '../src/store/memory.js'
 
 import { runPackReaderTests } from './reader.js'
@@ -19,7 +19,7 @@ import { runPackReaderTests } from './reader.js'
      * @returns {Promise<import('./reader.js').DestroyableIndexStore>}
      */
     getIndexStore: () => {
-      const indexStore = new MemoryContainingIndexStore()
+      const indexStore = new MemoryIndexStore()
       const destroyableIndexStore = Object.assign(indexStore, {
         destroy: () => {},
       })

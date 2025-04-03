@@ -1,5 +1,4 @@
 import assert from 'assert'
-
 import { equals } from 'uint8arrays'
 import all from 'it-all'
 
@@ -8,39 +7,53 @@ import {
   createFromBlob,
   createFromPack,
   createFromContaining,
-} from '../../src/record.js'
+} from '../src/record.js'
+import { recordType } from '../src/writer/multiple-level.js'
 
-import { randomCID } from '../helpers/random.js'
+import { randomCID } from './helpers/random.js'
 
 /**
- * @typedef {import('@hash-stream/index/types').IndexStore} IndexStore
+ * @typedef {import('@hash-stream/index/types').IndexReader} IndexReader
  *
  * @typedef {object} Destroyable
  * @property {() => void} destroy
  *
- * @typedef {IndexStore & Destroyable} DestroyableIndexStore
+ * @typedef {IndexReader & Destroyable} DestroyableIndexReader
  */
 
 /**
- * Runs the test suite for Containing Store.
+ * Runs the test suite for Index Reader.
  *
- * @param {string} storeName - The name of the store (e.g., "Memory", "FS").
- * @param {() => Promise<DestroyableIndexStore>} createIndexStore - Function to create the index store.
+ * @param {string} indexReaderName - The name of the IndexReader implementation.
+ * @param {() => Promise<DestroyableIndexReader>} createIndexReader - Function to create the index reader.
  */
-export function runContainingStoreTests(storeName, createIndexStore) {
-  describe(`${storeName} ContainingIndexStore`, () => {
-    /** @type {DestroyableIndexStore} */
-    let store
+export function runIndexReaderTests(indexReaderName, createIndexReader) {
+  describe(`${indexReaderName}`, () => {
+    /** @type {DestroyableIndexReader} */
+    let indexReader
 
     beforeEach(async () => {
-      store = await createIndexStore()
+      indexReader = await createIndexReader()
     })
 
-    afterEach(() => {
-      store.destroy()
+    it('returns no records for unknown multihash', async () => {
+      const multihash = (await randomCID()).multihash
+      const records = await all(indexReader.findRecords(multihash))
+      assert.deepEqual(records, [])
     })
 
-    it('can store and retrieve a blob index record', async () => {
+    it('returns no records for unknown containing multihash', async () => {
+      const multihash = (await randomCID()).multihash
+      const containingMultihash = (await randomCID()).multihash
+      const records = await all(
+        indexReader.findRecords(multihash, {
+          containingMultihash,
+        })
+      )
+      assert.deepEqual(records, [])
+    })
+
+    it('can find the location of a stored blob', async () => {
       const blobCid = await randomCID()
       const packCid = await randomCID()
       const offset = 0
@@ -53,13 +66,14 @@ export function runContainingStoreTests(storeName, createIndexStore) {
         length
       )
 
-      await store.add(
+      await indexReader.store.add(
         (async function* () {
           yield blob
-        })()
+        })(),
+        recordType
       )
 
-      const records = await all(store.get(blob.multihash))
+      const records = await all(indexReader.findRecords(blobCid.multihash))
       assert(records.length === 1)
       assert.strictEqual(records[0].offset, offset)
       assert.strictEqual(records[0].length, length)
@@ -67,39 +81,7 @@ export function runContainingStoreTests(storeName, createIndexStore) {
       assert(records[0].type === Type.BLOB)
     })
 
-    it('returns empty for non-existent entries', async () => {
-      const blockCid = await randomCID()
-      const retrieved = await all(store.get(blockCid.multihash))
-      assert.deepEqual(retrieved, [])
-    })
-
-    it('can handle large offsets and lengths', async () => {
-      const blobCid = await randomCID()
-      const packCid = await randomCID()
-      const offset = Number.MAX_SAFE_INTEGER
-      const length = Number.MAX_SAFE_INTEGER
-
-      const blob = createFromBlob(
-        blobCid.multihash,
-        packCid.multihash,
-        offset,
-        length
-      )
-
-      await store.add(
-        (async function* () {
-          yield blob
-        })()
-      )
-      const records = await all(store.get(blob.multihash))
-      assert(records.length === 1)
-      assert.strictEqual(records[0].offset, offset)
-      assert.strictEqual(records[0].length, length)
-      assert(equals(records[0].location.digest, packCid.multihash.digest))
-      assert(records[0].type === Type.BLOB)
-    })
-
-    it('can store and retrieve a containing index record with a pack composed by two Blobs', async () => {
+    it('can retrieve a containing index record with a pack composed by two Blobs', async () => {
       const content = await randomCID()
       const blobCids = await Promise.all(
         Array.from({ length: 2 }, async () => await randomCID())
@@ -119,13 +101,14 @@ export function runContainingStoreTests(storeName, createIndexStore) {
         ),
       ])
 
-      await store.add(
+      await indexReader.store.add(
         (async function* () {
           yield record
-        })()
+        })(),
+        recordType
       )
 
-      const records = await all(store.get(content.multihash))
+      const records = await all(indexReader.findRecords(content.multihash))
       assert(records.length === 1)
 
       assert(equals(records[0].multihash.digest, content.multihash.digest))
@@ -149,7 +132,7 @@ export function runContainingStoreTests(storeName, createIndexStore) {
       }
     })
 
-    it('can store and retrieve containing index records with multiple packs', async () => {
+    it('can retrieve containing index records with multiple packs', async () => {
       const content = await randomCID()
       const packLength = 2
       const blobLength = 4
@@ -177,13 +160,14 @@ export function runContainingStoreTests(storeName, createIndexStore) {
         )
       )
 
-      await store.add(
+      await indexReader.store.add(
         (async function* () {
           yield record
-        })()
+        })(),
+        recordType
       )
 
-      const records = await all(store.get(content.multihash))
+      const records = await all(indexReader.findRecords(content.multihash))
       assert(records.length === 1)
       assert(equals(records[0].multihash.digest, content.multihash.digest))
       assert.strictEqual(records[0].type, Type.CONTAINING)
@@ -213,7 +197,7 @@ export function runContainingStoreTests(storeName, createIndexStore) {
       // Add each pack individually
       await Promise.all(
         packCids.map((packCid) => {
-          return store.add(
+          return indexReader.store.add(
             (async function* () {
               yield createFromContaining(content.multihash, [
                 createFromPack(
@@ -228,12 +212,13 @@ export function runContainingStoreTests(storeName, createIndexStore) {
                   )
                 ),
               ])
-            })()
+            })(),
+            recordType
           )
         })
       )
 
-      const records = await all(store.get(content.multihash))
+      const records = await all(indexReader.findRecords(content.multihash))
       assert(records.length === 1)
       assert(equals(records[0].multihash.digest, content.multihash.digest))
       assert.strictEqual(records[0].type, Type.CONTAINING)

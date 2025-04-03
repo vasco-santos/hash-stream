@@ -50,14 +50,15 @@ Created packs from a given Blob like (object with a [`ReadableStream`](https://d
 ```js
 import { base58btc } from 'multiformats/bases/base58'
 
+// Using multiple level index writer implementation
 import { MultipleLevelIndexWriter } from '@hash-stream/index/writer/multiple-level'
-import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
-import { PackWriter } from 'pack'
-import { FSPackStore } from 'pack/store/fs' // Example file system store
+import { FSIndexStore } from '@hash-stream/index/store/fs'
+import { PackWriter } from '@hash-stream/pack'
+import { FSPackStore } from '@hash-stream/pack/store/fs' // Example file system store
 
 async function main() {
   // Initialize the stores
-  const indexStore = new FSContainingIndexStore('/path/to/index-store')
+  const indexStore = new FSIndexStore('/path/to/index-store')
   const packStore = new FsStore('/path/to/pack-store')
 
   // Initialize the index writer
@@ -99,8 +100,8 @@ main().catch(console.error)
 ### Reading Packs
 
 ```ts
-import { PackReader } from 'pack'
-import { FSPackStore } from 'pack/store/fs' // Example file system store
+import { PackReader } from '@hash-stream/pack'
+import { FSPackStore } from '@hash-stream/pack/store/fs' // Example file system store
 
 async function main() {
   // Initialize the stores

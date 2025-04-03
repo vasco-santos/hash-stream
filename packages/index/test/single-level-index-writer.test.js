@@ -8,14 +8,14 @@ import all from 'it-all'
 
 import { IndexReader } from '../src/reader.js'
 import { SingleLevelIndexWriter } from '../src/writer/single-level.js'
-import { MemoryBlobIndexStore } from '../src/store/memory-blob.js'
-import { Type, createFromBlob } from '../src/record.js'
+import { MemoryIndexStore } from '../src/store/memory.js'
+import { Type } from '../src/record.js'
 import { carBlockIndexToBlobIndexRecordIterable } from '../src/utils.js'
 
-import { randomCID, randomCAR } from './helpers/random.js'
+import { randomCAR } from './helpers/random.js'
 
-describe('SingleLevelIndex', () => {
-  /** @type {MemoryBlobIndexStore} */
+describe('SingleLevelIndex Writer', () => {
+  /** @type {MemoryIndexStore} */
   let store
   /** @type {API.IndexReader} */
   let indexReader
@@ -23,70 +23,9 @@ describe('SingleLevelIndex', () => {
   let indexWriter
 
   beforeEach(() => {
-    store = new MemoryBlobIndexStore()
+    store = new MemoryIndexStore()
     indexReader = new IndexReader(store)
     indexWriter = new SingleLevelIndexWriter(store)
-  })
-
-  it('can find the location of a stored blob', async () => {
-    const blobCid = await randomCID()
-    const packCid = await randomCID()
-    const offset = 0
-    const length = 100
-
-    const blob = createFromBlob(
-      blobCid.multihash,
-      packCid.multihash,
-      offset,
-      length
-    )
-
-    await store.add(
-      (async function* () {
-        yield blob
-      })()
-    )
-
-    const records = await all(indexReader.findRecords(blobCid.multihash))
-    assert(records.length === 1)
-    assert.strictEqual(records[0].offset, offset)
-    assert.strictEqual(records[0].length, length)
-    assert(equals(records[0].location.digest, packCid.multihash.digest))
-    assert(records[0].type === Type.BLOB)
-  })
-
-  it('returns null for non-existent blob index records', async () => {
-    const blobCid = await randomCID()
-    const records = await all(indexReader.findRecords(blobCid.multihash))
-    assert.deepEqual(records, [])
-  })
-
-  it('can handle large offsets and lengths in blob locations', async () => {
-    const blobCid = await randomCID()
-    const packCid = await randomCID()
-    const offset = Number.MAX_SAFE_INTEGER
-    const length = Number.MAX_SAFE_INTEGER
-
-    const blob = createFromBlob(
-      blobCid.multihash,
-      packCid.multihash,
-      offset,
-      length
-    )
-
-    await store.add(
-      (async function* () {
-        yield blob
-      })()
-    )
-
-    const records = await all(indexReader.findRecords(blobCid.multihash))
-
-    assert(records.length === 1)
-    assert.strictEqual(records[0].offset, offset)
-    assert.strictEqual(records[0].length, length)
-    assert(equals(records[0].location.digest, packCid.multihash.digest))
-    assert(records[0].type === Type.BLOB)
   })
 
   it('can add a pack and find records', async () => {

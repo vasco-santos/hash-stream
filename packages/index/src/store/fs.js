@@ -13,11 +13,11 @@ import {
 import { removeUndefinedRecursively } from './utils.js'
 
 /**
- * File System implementation of ContainingIndexStore
+ * File System implementation of IndexStore
  *
  * @implements {API.IndexStore}
  */
-export class FSContainingIndexStore {
+export class FSIndexStore {
   /**
    * @param {string} directory
    */
@@ -41,8 +41,8 @@ export class FSContainingIndexStore {
    * @param {API.MultihashDigest} hash
    * @returns {string}
    */
-  _getFolderPath(hash) {
-    return path.join(this.directory, FSContainingIndexStore.encodeKey(hash))
+  #getFolderPath(hash) {
+    return path.join(this.directory, FSIndexStore.encodeKey(hash))
   }
 
   /**
@@ -52,21 +52,22 @@ export class FSContainingIndexStore {
    * @param {API.MultihashDigest} [subRecordMultihash]
    * @returns {string}
    */
-  _getFilePath(hash, subRecordMultihash) {
-    const folderPath = this._getFolderPath(hash)
+  #getFilePath(hash, subRecordMultihash) {
+    const folderPath = this.#getFolderPath(hash)
     const uniqueId = subRecordMultihash
-      ? `${FSContainingIndexStore.encodeKey(subRecordMultihash)}`
+      ? `${FSIndexStore.encodeKey(subRecordMultihash)}`
       : Date.now().toString()
     return path.join(folderPath, uniqueId)
   }
 
   /**
    * @param {API.IndexRecord} data
+   * @param {string} recordType
    */
-  encodeData(data) {
-    /** @type {{ type: 'index/containing@0.1'; data: API.IndexRecordEncoded }} */
+  encodeData(data, recordType) {
+    /** @type {{ type: string; data: API.IndexRecordEncoded }} */
     const encodableEntry = {
-      type,
+      type: recordType,
       data: removeUndefinedRecursively(indexRecordEncode(data)),
     }
 
@@ -87,7 +88,7 @@ export class FSContainingIndexStore {
    * @returns {AsyncIterable<API.IndexRecord>}
    */
   async *get(hash) {
-    const folderPath = this._getFolderPath(hash)
+    const folderPath = this.#getFolderPath(hash)
     let files
     try {
       files = await fs.readdir(folderPath)
@@ -132,20 +133,19 @@ export class FSContainingIndexStore {
    * Add index entries.
    *
    * @param {AsyncIterable<API.IndexRecord>} entries
+   * @param {string} recordType
    * @returns {Promise<void>}
    */
-  async add(entries) {
+  async add(entries, recordType) {
     for await (const entry of entries) {
       let subRecordMultihash
       if (entry.subRecords.length > 0) {
         subRecordMultihash = entry.subRecords[0].multihash
       }
-      const filePath = this._getFilePath(entry.multihash, subRecordMultihash)
-      const encodedData = this.encodeData(entry)
+      const filePath = this.#getFilePath(entry.multihash, subRecordMultihash)
+      const encodedData = this.encodeData(entry, recordType)
       await fs.mkdir(path.dirname(filePath), { recursive: true })
       await fs.writeFile(filePath, encodedData)
     }
   }
 }
-
-export const type = 'index/containing@0.1'
