@@ -37,10 +37,12 @@ async function main() {
 
   // Iterate over the verifiable entries and reconstruct the content
   for await (const { multihash, bytes } of hashStreamer.stream(
-        containingMultihash
+    targetMultihash,
+    { containingMultihash }
   )) {
     // TODO
   }
+}
 
 main().catch(console.error)
 ```
