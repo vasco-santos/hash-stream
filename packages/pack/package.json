@@ -19,7 +19,7 @@
     "dev": "tsc --build --watch",
     "test": "npm run test:all",
     "test:all": "run-s test:browser test:node",
-    "test:node": "hundreds -r html -r text mocha 'test/**/!(*.browser).test.js' -n experimental-vm-modules -n no-warnings",
+    "test:node": "hundreds -r html -r text mocha 'test/**/!(*.browser).test.js' -n experimental-vm-modules -n no-warnings --timeout=30s",
     "test:browser": "playwright-test --runner mocha 'test/**/!(*.node).test.js'",
     "rc": "npm version prerelease --preid rc"
   },
@@ -27,6 +27,7 @@
     ".": "./dist/src/index.js",
     "./store/fs": "./dist/src/store/fs.js",
     "./store/memory": "./dist/src/store/memory.js",
+    "./store/s3-like": "./dist/src/store/s3-like.js",
     "./reader": "./dist/src/reader.js",
     "./writer": "./dist/src/writer.js",
     "./types": "./dist/src/api.js"
@@ -47,6 +48,9 @@
       ],
       "store/memory": [
         "dist/src/store/memory.d.ts"
+      ],
+      "store/s3-like": [
+        "dist/src/store/s3-like.d.ts"
       ]
     }
   },
@@ -57,6 +61,7 @@
     "dist/src/**/*.d.ts.map"
   ],
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.779.0",
     "@hash-stream/index": "workspace:^",
     "@ipld/car": "^5.4.0",
     "@web3-storage/upload-client": "^17.1.4",
@@ -73,8 +78,11 @@
     "hundreds": "^0.0.9",
     "it-all": "^3.0.7",
     "mocha": "^11.1.0",
+    "nanoid": "^5.1.5",
     "npm-run-all": "^4.1.5",
     "playwright-test": "^14.1.9",
+    "p-retry": "^6.2.1",
+    "testcontainers": "^10.24.0",
     "typescript": "^5.8.2",
     "uint8arrays": "^5.1.0"
   },

@@ -5,14 +5,14 @@ import { runPackTests } from './pack.js'
   {
     name: 'Memory',
     /**
-     * @returns {import('./pack.js').DestroyablePackStore}
+     * @returns {Promise<import('./pack.js').DestroyablePackStore>}
      */
     getPackStore: () => {
       const packStore = new MemoryPackStore()
       const destroyablePackStore = Object.assign(packStore, {
         destroy: () => {},
       })
-      return destroyablePackStore
+      return Promise.resolve(destroyablePackStore)
     },
   },
 ].forEach(({ name, getPackStore }) => {

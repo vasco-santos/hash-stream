@@ -5,24 +5,24 @@ import { runHashStreamTests } from './hash-streamer.js'
   {
     name: 'Memory',
     /**
-     * @returns {import('./hash-streamer.js').DestroyableIndexStore}
+     * @returns {Promise<import('./hash-streamer.js').DestroyableIndexStore>}
      */
     getIndexStore: () => {
       const indexStore = new MemoryContainingIndexStore()
       const destroyableIndexStore = Object.assign(indexStore, {
         destroy: () => {},
       })
-      return destroyableIndexStore
+      return Promise.resolve(destroyableIndexStore)
     },
     /**
-     * @returns {import('./hash-streamer.js').DestroyablePackStore}
+     * @returns {Promise<import('./hash-streamer.js').DestroyablePackStore>}
      */
     getPackStore: () => {
       const packStore = new MemoryPackStore()
       const destroyablePackStore = Object.assign(packStore, {
         destroy: () => {},
       })
-      return destroyablePackStore
+      return Promise.resolve(destroyablePackStore)
     },
   },
 ].forEach(({ name, getIndexStore, getPackStore }) => {

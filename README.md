@@ -5,6 +5,7 @@
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+- [Requirements](#requirements)
 - [Packages](#packages)
 - [Usage](#usage)
 - [Contributing](#contributing)
@@ -15,6 +16,26 @@
 This repository provides a set of libraries and tools that allow you to build and run a trustless HTTP server for content-addressable data. These building blocks are modular and designed in a plug-and-play fashion, enabling you to use just a subset of them to create a custom server.
 
 For those interested in implementing building blocks differently, there are a few [specifications](./specs/) and interfaces available, allowing new implementations to be compatible with the existing pieces.
+
+## Development
+
+### Installing
+
+To work on this codebase **you need**:
+
+- Node.js >= v18
+- Install the deps with `pnpm i`
+
+### Testing
+
+For testing environment, first install [Docker Desktop](https://www.docker.com/) and ensure it is running. This codebase has `S3 client compatible` backed datastores used in testing, which are simulated using Docker.
+
+Next, ensure the `AWS_REGION`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables are set in your terminal. They do
+not need to be set to real values - the following works in `bash`-like shells:
+
+```
+export AWS_REGION='us-west-2'; export AWS_ACCESS_KEY_ID='NOSUCH'; export AWS_SECRET_ACCESS_KEY='NOSUCH'
+```
 
 ## Packages
 

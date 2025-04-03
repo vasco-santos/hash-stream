@@ -111,11 +111,13 @@ The following ones are compatible with the `MultipleLevelIndexWriter`:
 
 - File system store: `store/fs-containing`
 - Memory store: `store/memory-containing.js`
+- S3-like Cloud Object store: `store/s3-like-containing.js`
 
 The following ones are compatible with the `SingleLevelIndexWriter`:
 
 - File system store: `store/fs-blob`
 - Memory store: `store/memory-blob.js`
+- S3-like Cloud Object store: `store/s3-like-blob.js`
 
 #### MultipleLevelIndexWriter Stores
 
@@ -144,6 +146,28 @@ import { MemoryContainingIndexStore } from '@hash-stream/index/store/memory-cont
 const indexStore = new MemoryContainingIndexStore()
 ```
 
+##### S3-like Cloud Object store
+
+Stores records using a S3 compatible Cloud Storage solution like S3 or R2.
+
+```js
+import fs from 'fs'
+import path from 'path'
+import os from 'os'
+
+import { S3Client } from '@aws-sdk/client-s3'
+import { S3LikeContainingIndexStore } from '@hash-stream/index/store/s3-like-containing'
+
+const client = new S3Client({
+  // TODO: setup client options according to target
+})
+const bucketName = 'containing-index-store'
+const indexStore = new S3LikeContainingIndexStore({
+  bucketName,
+  client,
+})
+```
+
 #### SingleLevelIndexWriter Stores
 
 ##### File System store
@@ -169,6 +193,28 @@ Stores records within a Map in memory. This is a good store to use for testing.
 import { BlobContainingIndexStore } from '@hash-stream/index/store/memory-blob'
 
 const indexStore = new BlobContainingIndexStore()
+```
+
+##### S3-like Cloud Object store
+
+Stores records using a S3 compatible Cloud Storage solution like S3 or R2.
+
+```js
+import fs from 'fs'
+import path from 'path'
+import os from 'os'
+
+import { S3Client } from '@aws-sdk/client-s3'
+import { S3LikeBlobIndexStore } from '@hash-stream/index/store/s3-like-blob'
+
+const client = new S3Client({
+  // TODO: setup client options according to target
+})
+const bucketName = 'blob-index-store'
+const indexStore = new S3LikeBlobIndexStore({
+  bucketName,
+  client,
+})
 ```
 
 ### Using a Custom Store

@@ -148,6 +148,7 @@ This package already exports a few stores compatible with `PackStore` Interface:
 
 - File system store: `store/fs.js`
 - Memory store: `store/memory.js`
+- S3-like Cloud Object store: `store/s3-like.js`
 
 #### File system store
 
@@ -158,7 +159,7 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 
-import { FSPackStore } from '@hash-stream/store/fs.js'
+import { FSPackStore } from '@hash-stream/pack/store/fs.js'
 
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-pack-store'))
 const packStore = new FSPackStore(tempDir)
@@ -169,9 +170,31 @@ const packStore = new FSPackStore(tempDir)
 Stores records within a Map in memory. This is a good store to use for testing.
 
 ```js
-import { MemoryPackStore } from '@hash-stream/store/memory.js'
+import { MemoryPackStore } from '@hash-stream/pack/store/memory.js'
 
 const packStore = new MemoryPackStore()
+```
+
+##### S3-like Cloud Object store
+
+Stores records using a S3 compatible Cloud Storage solution like S3 or R2.
+
+```js
+import fs from 'fs'
+import path from 'path'
+import os from 'os'
+
+import { S3Client } from '@aws-sdk/client-s3'
+import { S3LikePackStore } from '@hash-stream/pack/store/s3-like'
+
+const client = new S3Client({
+  // TODO: setup client options according to target
+})
+const bucketName = 'pack-store'
+const packStore = new S3LikePackStore({
+  bucketName,
+  client,
+})
 ```
 
 ### Using a Custom Store

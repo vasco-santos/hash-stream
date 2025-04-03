@@ -31,8 +31,8 @@ import { randomBytes, randomCID } from './helpers/random.js'
  * Runs the test suite for Pack Reader.
  *
  * @param {string} storeName - The name of the store (e.g., "Memory", "FS").
- * @param {() => DestroyablePackStore} createPackStore - Function to create the pack store.
- * @param {() => DestroyableIndexStore} createIndexStore - Function to create the index store.
+ * @param {() => Promise<DestroyablePackStore>} createPackStore - Function to create the pack store.
+ * @param {() => Promise<DestroyableIndexStore>} createIndexStore - Function to create the index store.
  */
 export function runPackReaderTests(
   storeName,
@@ -54,14 +54,14 @@ export function runPackReaderTests(
       /** @type {PackReader} */
       let packReader
 
-      beforeEach(() => {
+      beforeEach(async () => {
         // Create Index
-        indexStore = createIndexStore()
+        indexStore = await createIndexStore()
         indexReader = new IndexReader(indexStore)
         indexWriter = new MultipleLevelIndexWriter(indexStore)
 
         // Create Pack Writer
-        packStore = createPackStore()
+        packStore = await createPackStore()
         packWriter = new PackWriter(packStore, {
           indexWriter,
         })
@@ -76,8 +76,8 @@ export function runPackReaderTests(
       })
 
       it('reads packs from the store after they are written', async () => {
-        const byteLength = 50_000_000
-        const chunkSize = byteLength / 5
+        const byteLength = 30_000_000
+        const chunkSize = byteLength / 3
         const bytes = await randomBytes(byteLength)
         const blob = new Blob([bytes])
         /** @type {Map<string, Uint8Array>} */
@@ -120,8 +120,8 @@ export function runPackReaderTests(
       })
 
       it('reads packs from the store after they are written with byte ranges', async () => {
-        const byteLength = 50_000_000
-        const chunkSize = byteLength / 5
+        const byteLength = 30_000_000
+        const chunkSize = byteLength / 3
         const bytes = await randomBytes(byteLength)
         const blob = new Blob([bytes])
         /** @type {Map<string, Uint8Array>} */

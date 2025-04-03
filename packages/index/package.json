@@ -19,7 +19,7 @@
     "dev": "tsc --build --watch",
     "test": "npm run test:all",
     "test:all": "run-s test:browser test:node",
-    "test:node": "hundreds -r html -r text mocha 'test/**/!(*.browser).test.js' -n experimental-vm-modules -n no-warnings",
+    "test:node": "hundreds -r html -r text mocha 'test/**/!(*.browser).test.js' -n experimental-vm-modules -n no-warnings --timeout=30s",
     "test:browser": "playwright-test 'test/**/!(*.node).test.js'",
     "rc": "npm version prerelease --preid rc"
   },
@@ -34,6 +34,8 @@
     "./store/memory-containing": "./dist/src/store/memory-containing.js",
     "./store/fs-blob": "./dist/src/store/fs-blob.js",
     "./store/fs-containing": "./dist/src/store/fs-containing.js",
+    "./store/s3-like-blob": "./dist/src/store/s3-like-blob.js",
+    "./store/s3-like-containing": "./dist/src/store/s3-like-containing.js",
     "./types": "./dist/src/api.js"
   },
   "typesVersions": {
@@ -67,6 +69,12 @@
       ],
       "store/fs-containing": [
         "dist/src/store/fs-containing.d.ts"
+      ],
+      "store/s3-like-blob": [
+        "dist/src/store/s3-like-blob.d.ts"
+      ],
+      "store/s3-like-containing": [
+        "dist/src/store/s3-like-containing.d.ts"
       ]
     }
   },
@@ -77,6 +85,7 @@
     "dist/src/**/*.d.ts.map"
   ],
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.779.0",
     "@ipld/dag-json": "^10.2.3",
     "multiformats": "^13.3.2",
     "uint8arrays": "^5.1.0"
@@ -96,8 +105,11 @@
     "ipfs-car": "^3.0.0",
     "it-all": "^3.0.7",
     "mocha": "^11.1.0",
+    "nanoid": "^5.1.5",
     "npm-run-all": "^4.1.5",
     "playwright-test": "^14.1.9",
+    "p-retry": "^6.2.1",
+    "testcontainers": "^10.24.0",
     "typescript": "^5.8.2"
   },
   "eslintConfig": {

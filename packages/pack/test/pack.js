@@ -21,7 +21,7 @@ import { randomBytes } from './helpers/random.js'
  * Runs the test suite for packs.
  *
  * @param {string} storeName - The name of the store (e.g., "Memory", "FS").
- * @param {() => DestroyablePackStore} createPackStore - Function to create the pack store.
+ * @param {() => Promise<DestroyablePackStore>} createPackStore - Function to create the pack store.
  */
 export function runPackTests(storeName, createPackStore) {
   describe('pack', () => {
@@ -130,8 +130,8 @@ export function runPackTests(storeName, createPackStore) {
       /** @type {DestroyablePackStore} */
       let store
 
-      beforeEach(() => {
-        store = createPackStore()
+      beforeEach(async () => {
+        store = await createPackStore()
       })
 
       afterEach(() => {
@@ -139,8 +139,8 @@ export function runPackTests(storeName, createPackStore) {
       })
 
       it('should create sharded packs from a blob and validate storage', async () => {
-        const byteLength = 50_000_000
-        const chunkSize = byteLength / 5
+        const byteLength = 30_000_000
+        const chunkSize = byteLength / 3
         const bytes = await randomBytes(byteLength)
         const blob = new Blob([bytes])
         /** @typedef {API.CreateOptions} */
