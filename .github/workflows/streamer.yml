@@ -1,4 +1,4 @@
-name: Hash Streamer Client
+name: Streamer Client
 env:
   CI: true
   FORCE_COLOR: 1
@@ -7,15 +7,15 @@ on:
     branches:
       - main
     paths:
-      - 'packages/hash-streamer/**'
+      - 'packages/streamer/**'
       - 'packages/eslint-config/**'
-      - '.github/workflows/hash-streamer.yml'
+      - '.github/workflows/streamer.yml'
       - 'pnpm-lock.yaml'
   pull_request:
     paths:
-      - 'packages/hash-streamer/**'
+      - 'packages/streamer/**'
       - 'packages/eslint-config/**'
-      - '.github/workflows/hash-streamer.yml'
+      - '.github/workflows/streamer.yml'
       - 'pnpm-lock.yaml'
 jobs:
   test:
@@ -34,6 +34,6 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install
       - run: pnpm run build
-      - run: pnpm -r --filter @hash-stream/hash-streamer run lint
-      - run: pnpm -r --filter @hash-stream/hash-streamer run attw
-      - run: pnpm -r --filter @hash-stream/hash-streamer test
+      - run: pnpm -r --filter @hash-stream/streamer run lint
+      - run: pnpm -r --filter @hash-stream/streamer run attw
+      - run: pnpm -r --filter @hash-stream/streamer test

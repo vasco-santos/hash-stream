@@ -1,19 +1,19 @@
-# @hash-stream/hash-streamer
+# @hash-stream/streamer
 
-> The hash-streamer client to use hash-stream
+> The streamer client to use hash-stream
 
 ## Install
 
 ```sh
-npm install @hash-stream/hash-streamer
+npm install @hash-stream/streamer
 ```
 
 ## Usage
 
-This usage guides takes into account that the Pack Store and Index Store used by the `hash-streamer` implementation to stream data from are populated with the multihashes to be requested. If not the case, please see the documentation for `pack` and `index` packages first.
+This usage guides takes into account that the Pack Store and Index Store used by the `streamer` implementation to stream data from are populated with the multihashes to be requested. If not the case, please see the documentation for `pack` and `index` packages first.
 
 ```js
-import { HashStreamer } from '@hash-stream/hash-streamer'
+import { HashStreamer } from '@hash-stream/streamer'
 import { IndexReader } from '@hash-stream/index/reader'
 import { FSIndexStore } from '@hash-stream/index/store/fs'
 import { FSPackStore } from '@hash-stream/pack/store/fs'

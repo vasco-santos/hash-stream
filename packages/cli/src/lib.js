@@ -15,7 +15,7 @@ import { FSPackStore } from '@hash-stream/pack/store/fs'
 import { PackWriter, PackReader } from '@hash-stream/pack'
 
 // Streamer
-import { HashStreamer } from '@hash-stream/hash-streamer'
+import { HashStreamer } from '@hash-stream/streamer'
 
 import { ConfDriver as StoreConf } from './conf/driver.js'
 import { AgentData } from './conf/agent-data.js'

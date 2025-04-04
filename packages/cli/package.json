@@ -42,7 +42,7 @@
     "uint8arrays": "^5.1.0"
   },
   "dependencies": {
-    "@hash-stream/hash-streamer": "workspace:^",
+    "@hash-stream/streamer": "workspace:^",
     "@hash-stream/index": "workspace:^",
     "@hash-stream/pack": "workspace:^",
     "@ipld/car": "^5.4.0",
