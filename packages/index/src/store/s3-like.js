@@ -40,7 +40,7 @@ export class S3LikeIndexStore {
    */
   static encodeKey(hash) {
     const encodedMultihash = base58btc.encode(hash.bytes)
-    // Cloud storages typically rate llimit at the path level, this allows more requests
+    // Cloud storages typically rate limit at the path level, this allows more requests
     return `${encodedMultihash}/${encodedMultihash}`
   }
 
