@@ -158,6 +158,20 @@ const indexStore = new S3LikeIndexStore({
 })
 ```
 
+## Custom implementations
+
+Given `hash-stream` provides a set of building blocks to run a HTTP server for content-addressable data, anyone is welcome to write new implementations for each of the building blocks based on their specifications. This library also exports a test suite to verify if the implementation will be comaptible with the remaining pieces. Here is how you can use it:
+
+```js
+import { test } from '@hash-stream/index/test'
+
+// Run tests for a reader implementation
+await test.reader(readerName, () => getNewReaderImplementation())
+
+// Run tests for a store implementation
+await test.store(readerName, () => getNewStoreImplementation())
+```
+
 ### Using a Custom Store
 
 Other implementations of a Store may be implemented according to the storage backend intended. The Pack Store must implement the `IndexStore` interface, or separately a `IndexStoreReader` and a `IndexStoreWriter`. A store must define the following methods:

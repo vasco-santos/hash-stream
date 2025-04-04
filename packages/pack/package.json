@@ -30,7 +30,8 @@
     "./store/s3-like": "./dist/src/store/s3-like.js",
     "./reader": "./dist/src/reader.js",
     "./writer": "./dist/src/writer.js",
-    "./types": "./dist/src/api.js"
+    "./types": "./dist/src/api.js",
+    "./test": "./dist/test/lib.d.ts"
   },
   "typesVersions": {
     "*": {
@@ -51,14 +52,17 @@
       ],
       "store/s3-like": [
         "dist/src/store/s3-like.d.ts"
+      ],
+      "test": [
+        "dist/test/lib.d.ts"
       ]
     }
   },
   "files": [
-    "dist/src/**/*.js",
-    "dist/src/**/*.js.map",
-    "dist/src/**/*.d.ts",
-    "dist/src/**/*.d.ts.map"
+    "dist/**/*.js",
+    "dist/**/*.js.map",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map"
   ],
   "dependencies": {
     "@aws-sdk/client-s3": "^3.779.0",

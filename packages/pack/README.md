@@ -198,6 +198,20 @@ const packStore = new S3LikePackStore({
 })
 ```
 
+## Custom implementations
+
+Given `hash-stream` provides a set of building blocks to run a HTTP server for content-addressable data, anyone is welcome to write new implementations for each of the building blocks based on their specifications. This library also exports a test suite to verify if the implementation will be comaptible with the remaining pieces. Here is how you can use it:
+
+```js
+import { test } from '@hash-stream/pack/test'
+
+// Run tests for a reader implementation
+await test.reader(readerName, () => getNewReaderImplementation())
+
+// Run tests for a writer implementation
+await test.writer(readerName, () => getNewWriterImplementation())
+```
+
 ### Using a Custom Store
 
 Other implementations of a Store may be implemented according to the storage backend intended. The Pack Store must implement the `PackStore` interface, or separately a `PackStoreWriter` and a `PackStoreReader`. A store must define the following methods:
