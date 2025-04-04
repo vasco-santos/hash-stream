@@ -5,7 +5,7 @@ import { fromShardArchives } from '@web3-storage/blob-index/util'
 import { equals } from 'uint8arrays'
 import all from 'it-all'
 
-import { MemoryContainingIndexStore } from '../src/store/memory-containing.js'
+import { MemoryIndexStore } from '../src/store/memory.js'
 import { IndexReader } from '../src/reader.js'
 import { MultipleLevelIndexWriter } from '../src/writer/multiple-level.js'
 import { Type } from '../src/record.js'
@@ -13,8 +13,8 @@ import { carBlockIndexToBlobIndexRecordIterable } from '../src/utils.js'
 
 import { randomCID, randomCAR } from './helpers/random.js'
 
-describe('MultipleLevelIndex', () => {
-  /** @type {MemoryContainingIndexStore} */
+describe('MultipleLevelIndex writer', () => {
+  /** @type {MemoryIndexStore} */
   let store
   /** @type {API.IndexReader} */
   let indexReader
@@ -22,26 +22,9 @@ describe('MultipleLevelIndex', () => {
   let indexWriter
 
   beforeEach(() => {
-    store = new MemoryContainingIndexStore()
+    store = new MemoryIndexStore()
     indexReader = new IndexReader(store)
     indexWriter = new MultipleLevelIndexWriter(store)
-  })
-
-  it('returns no records for unknown multihash', async () => {
-    const multihash = (await randomCID()).multihash
-    const records = await all(indexReader.findRecords(multihash))
-    assert.deepEqual(records, [])
-  })
-
-  it('returns no records for unknown containing multihash', async () => {
-    const multihash = (await randomCID()).multihash
-    const containingMultihash = (await randomCID()).multihash
-    const records = await all(
-      indexReader.findRecords(multihash, {
-        containingMultihash,
-      })
-    )
-    assert.deepEqual(records, [])
   })
 
   it('adds blobs packed and associated with a containing record', async () => {

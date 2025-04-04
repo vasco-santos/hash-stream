@@ -9,11 +9,11 @@ import {
 } from '../record.js'
 
 /**
- * In-memory implementation of ContainingIndexStore
+ * In-memory implementation of IndexStore
  *
  * @implements {API.IndexStore}
  */
-export class MemoryContainingIndexStore {
+export class MemoryIndexStore {
   constructor() {
     /** @type {Map<string, API.IndexRecordEntry[]>} */
     this.store = new Map()
@@ -31,10 +31,11 @@ export class MemoryContainingIndexStore {
 
   /**
    * @param {API.IndexRecord} data
+   * @param {string} recordType
    */
-  encodeData(data) {
+  encodeData(data, recordType) {
     return {
-      type,
+      type: recordType,
       data: indexRecordEncode(data),
     }
   }
@@ -51,7 +52,7 @@ export class MemoryContainingIndexStore {
    * @returns {AsyncIterable<API.IndexRecord>}
    */
   async *get(hash) {
-    const key = MemoryContainingIndexStore.encodeKey(hash)
+    const key = MemoryIndexStore.encodeKey(hash)
     const encodedData = this.store.get(key)
     if (!encodedData) return null
 
@@ -80,21 +81,20 @@ export class MemoryContainingIndexStore {
    * Add index entries.
    *
    * @param {AsyncIterable<API.IndexRecord>} entries
+   * @param {string} recordType
    * @returns {Promise<void>}
    */
-  async add(entries) {
+  async add(entries, recordType) {
     for await (const entry of entries) {
-      const key = MemoryContainingIndexStore.encodeKey(entry.multihash)
+      const key = MemoryIndexStore.encodeKey(entry.multihash)
 
       let storedIndexEntries = this.store.get(key)
       if (!storedIndexEntries) {
-        storedIndexEntries = [this.encodeData(entry)]
+        storedIndexEntries = [this.encodeData(entry, recordType)]
         this.store.set(key, storedIndexEntries)
       } else {
-        storedIndexEntries.push(this.encodeData(entry))
+        storedIndexEntries.push(this.encodeData(entry, recordType))
       }
     }
   }
 }
-
-export const type = 'index/containing@0.1'

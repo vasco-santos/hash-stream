@@ -1,35 +1,28 @@
 import * as API from '../api.js'
+
+import fs from 'fs/promises'
+import path from 'path'
 import { encode, decode } from '@ipld/dag-json'
 import { base58btc } from 'multiformats/bases/base58'
 import { equals } from 'uint8arrays'
+
 import {
   encode as indexRecordEncode,
   decode as indexRecordDecode,
 } from '../record.js'
 import { removeUndefinedRecursively } from './utils.js'
-import {
-  S3Client,
-  PutObjectCommand,
-  ListObjectsV2Command,
-  GetObjectCommand,
-} from '@aws-sdk/client-s3'
 
 /**
- * S3 implementation of ContainingIndexStore
+ * File System implementation of IndexStore
  *
  * @implements {API.IndexStore}
  */
-export class S3LikeContainingIndexStore {
+export class FSIndexStore {
   /**
-   * @param {object} config - Configuration for the S3 client.
-   * @param {string} config.bucketName - S3 bucket name.
-   * @param {S3Client} config.client - S3 client instance.
-   * @param {string} [config.prefix] - Optional prefix for stored objects.
+   * @param {string} directory
    */
-  constructor({ bucketName, client, prefix = '' }) {
-    this.bucketName = bucketName
-    this.prefix = prefix
-    this.client = client
+  constructor(directory) {
+    this.directory = directory
   }
 
   /**
@@ -48,8 +41,8 @@ export class S3LikeContainingIndexStore {
    * @param {API.MultihashDigest} hash
    * @returns {string}
    */
-  _getFolderPath(hash) {
-    return `containing/${S3LikeContainingIndexStore.encodeKey(hash)}/`
+  #getFolderPath(hash) {
+    return path.join(this.directory, FSIndexStore.encodeKey(hash))
   }
 
   /**
@@ -59,23 +52,25 @@ export class S3LikeContainingIndexStore {
    * @param {API.MultihashDigest} [subRecordMultihash]
    * @returns {string}
    */
-  _getFilePath(hash, subRecordMultihash) {
-    const folderPath = this._getFolderPath(hash)
+  #getFilePath(hash, subRecordMultihash) {
+    const folderPath = this.#getFolderPath(hash)
     const uniqueId = subRecordMultihash
-      ? `${S3LikeContainingIndexStore.encodeKey(subRecordMultihash)}`
+      ? `${FSIndexStore.encodeKey(subRecordMultihash)}`
       : Date.now().toString()
-    return `${folderPath}${uniqueId}`
+    return path.join(folderPath, uniqueId)
   }
 
   /**
    * @param {API.IndexRecord} data
+   * @param {string} recordType
    */
-  encodeData(data) {
-    /** @type {{ type: 'index/containing@0.1'; data: API.IndexRecordEncoded }} */
+  encodeData(data, recordType) {
+    /** @type {{ type: string; data: API.IndexRecordEncoded }} */
     const encodableEntry = {
-      type,
+      type: recordType,
       data: removeUndefinedRecursively(indexRecordEncode(data)),
     }
+
     return encode(encodableEntry)
   }
 
@@ -93,30 +88,30 @@ export class S3LikeContainingIndexStore {
    * @returns {AsyncIterable<API.IndexRecord>}
    */
   async *get(hash) {
-    const folderPath = this._getFolderPath(hash)
-    const listCommand = new ListObjectsV2Command({
-      Bucket: this.bucketName,
-      Prefix: folderPath,
-    })
-    const listedObjects = await this.client.send(listCommand)
-
-    if (!listedObjects.Contents) return null
-
-    const records = []
-    for (const object of listedObjects.Contents) {
-      /* c8 ignore next 7 */
-      if (!object.Key) continue
-      const getCommand = new GetObjectCommand({
-        Bucket: this.bucketName,
-        Key: object.Key,
-      })
-      const { Body } = await this.client.send(getCommand)
-      if (!Body) continue
-      const encodedData = await Body.transformToByteArray()
-      const record = this.decodeData(encodedData)
-      records.push(record)
+    const folderPath = this.#getFolderPath(hash)
+    let files
+    try {
+      files = await fs.readdir(folderPath)
+    } catch (/** @type {any} */ err) {
+      /* c8 ignore next 3 */
+      if (err.code === 'ENOENT') return null // No data stored
+      throw err
     }
 
+    const records = []
+    for (const file of files) {
+      try {
+        const encodedData = await fs.readFile(path.join(folderPath, file))
+        const record = this.decodeData(encodedData)
+        records.push(record)
+        /* c8 ignore next 4 */
+      } catch (/** @type {any} */ err) {
+        if (err.code === 'ENOENT') continue // No data stored
+        throw err
+      }
+    }
+
+    // Merge subRecords similar to the in-memory implementation
     const mergedRecords = records.reduce((acc, val) => {
       const entry = acc.find((entry) =>
         equals(entry.multihash.bytes, val.multihash.bytes)
@@ -138,25 +133,19 @@ export class S3LikeContainingIndexStore {
    * Add index entries.
    *
    * @param {AsyncIterable<API.IndexRecord>} entries
+   * @param {string} recordType
    * @returns {Promise<void>}
    */
-  async add(entries) {
+  async add(entries, recordType) {
     for await (const entry of entries) {
       let subRecordMultihash
       if (entry.subRecords.length > 0) {
         subRecordMultihash = entry.subRecords[0].multihash
       }
-      const filePath = this._getFilePath(entry.multihash, subRecordMultihash)
-      const encodedData = this.encodeData(entry)
-      await this.client.send(
-        new PutObjectCommand({
-          Bucket: this.bucketName,
-          Key: filePath,
-          Body: encodedData,
-        })
-      )
+      const filePath = this.#getFilePath(entry.multihash, subRecordMultihash)
+      const encodedData = this.encodeData(entry, recordType)
+      await fs.mkdir(path.dirname(filePath), { recursive: true })
+      await fs.writeFile(filePath, encodedData)
     }
   }
 }
-
-export const type = 'index/containing@0.1'

@@ -30,7 +30,10 @@ export class SingleLevelIndexWriter {
    */
   async addBlobs(blobIndexIterable) {
     // Pass an async iterable transformer directly to store.add()
-    await this.store.add(this.#transformToIndexRecords(blobIndexIterable))
+    await this.store.add(
+      this.#transformToIndexRecords(blobIndexIterable),
+      recordType
+    )
   }
 
   /**
@@ -64,3 +67,5 @@ export class SingleLevelIndexWriter {
     }
   }
 }
+
+export const recordType = 'index/blob@0.1'

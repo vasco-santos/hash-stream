@@ -76,13 +76,13 @@ import { PackWriter } from '@hash-stream/pack'
 import { MultipleLevelIndexWriter } from '@hash-stream/index/writer/multiple-level'
 
 // Example using File System stores implementation
-import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
-import { FSPackStore } from 'pack/store/fs'
+import { FSIndexStore } from '@hash-stream/index/store/fs'
+import { FSPackStore } from '@hash-stream/pack/store/fs'
 
 async function main() {
   // Initialize the stores
-  const indexStore = new FSContainingIndexStore('/path/to/index-store')
-  const packStore = new FsStore('/path/to/pack-store')
+  const indexStore = new FSIndexStore('/path/to/index-store')
+  const packStore = new FSPackStore('/path/to/pack-store')
 
   // Initialize the index writer
   const indexWriter = new MultipleLevelIndexWriter(indexStore)
@@ -154,13 +154,13 @@ import { IndexReader } from '@hash-stream/index/reader'
 import { PackReader } from '@hash-stream/pack'
 
 // Example using File System stores implementation
-import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
-import { FSPackStore } from 'pack/store/fs'
+import { FSIndexStore } from '@hash-stream/index/store/fs'
+import { FSPackStore } from '@hash-stream/pack/store/fs'
 
 async function main() {
   // Initialize the stores
-  const indexStore = new FSContainingIndexStore('/path/to/index-store')
-  const packStore = new FsStore('/path/to/pack-store')
+  const indexStore = new FSIndexStore('/path/to/index-store')
+  const packStore = new FSPackStore('/path/to/pack-store')
 
   // Initialize the readers
   const indexReader = new IndexReader(indexStore)

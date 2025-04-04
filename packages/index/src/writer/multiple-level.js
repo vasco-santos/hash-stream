@@ -71,7 +71,8 @@ export class MultipleLevelIndexWriter {
       await this.store.add(
         (async function* () {
           yield containing
-        })()
+        })(),
+        recordType
       )
     }
     // If there is no containing multihash, add all subRecords individually
@@ -81,8 +82,11 @@ export class MultipleLevelIndexWriter {
           for (const record of subRecords.values()) {
             yield record
           }
-        })()
+        })(),
+        recordType
       )
     }
   }
 }
+
+export const recordType = 'index/containing@0.1'

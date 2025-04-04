@@ -105,23 +105,13 @@ main().catch(console.error)
 
 ### Exported Stores
 
-This package already exports a few stores compatible with `IndexStore` Interface.
+This package already exports a few stores compatible with `IndexStore` Interface:
 
-The following ones are compatible with the `MultipleLevelIndexWriter`:
+- File system store: `store/fs.js`
+- Memory store: `store/memory.js`
+- S3-like Cloud Object store: `store/s3-like.js`
 
-- File system store: `store/fs-containing`
-- Memory store: `store/memory-containing.js`
-- S3-like Cloud Object store: `store/s3-like-containing.js`
-
-The following ones are compatible with the `SingleLevelIndexWriter`:
-
-- File system store: `store/fs-blob`
-- Memory store: `store/memory-blob.js`
-- S3-like Cloud Object store: `store/s3-like-blob.js`
-
-#### MultipleLevelIndexWriter Stores
-
-##### File System store
+#### File System store
 
 Stores records within the host file system, by providing the path for a directory.
 
@@ -130,23 +120,23 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 
-import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
+import { FSIndexStore } from '@hash-stream/index/store/fs'
 
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-index-store'))
-const indexStore = new FSContainingIndexStore(tempDir)
+const indexStore = new FSIndexStore(tempDir)
 ```
 
-##### Memory System store
+#### Memory System store
 
 Stores records within a Map in memory. This is a good store to use for testing.
 
 ```js
-import { MemoryContainingIndexStore } from '@hash-stream/index/store/memory-containing'
+import { MemoryIndexStore } from '@hash-stream/index/store/memory'
 
-const indexStore = new MemoryContainingIndexStore()
+const indexStore = new MemoryIndexStore()
 ```
 
-##### S3-like Cloud Object store
+#### S3-like Cloud Object store
 
 Stores records using a S3 compatible Cloud Storage solution like S3 or R2.
 
@@ -156,62 +146,13 @@ import path from 'path'
 import os from 'os'
 
 import { S3Client } from '@aws-sdk/client-s3'
-import { S3LikeContainingIndexStore } from '@hash-stream/index/store/s3-like-containing'
+import { S3LikeIndexStore } from '@hash-stream/index/store/s3-like'
 
 const client = new S3Client({
   // TODO: setup client options according to target
 })
-const bucketName = 'containing-index-store'
-const indexStore = new S3LikeContainingIndexStore({
-  bucketName,
-  client,
-})
-```
-
-#### SingleLevelIndexWriter Stores
-
-##### File System store
-
-Stores records within the host file system, by providing the path for a directory.
-
-```js
-import fs from 'fs'
-import path from 'path'
-import os from 'os'
-
-import { FSBlobIndexStore } from '@hash-stream/index/store/fs-blob'
-
-const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-index-store'))
-const indexStore = new FSBlobIndexStore(tempDir)
-```
-
-##### Memory System store
-
-Stores records within a Map in memory. This is a good store to use for testing.
-
-```js
-import { BlobContainingIndexStore } from '@hash-stream/index/store/memory-blob'
-
-const indexStore = new BlobContainingIndexStore()
-```
-
-##### S3-like Cloud Object store
-
-Stores records using a S3 compatible Cloud Storage solution like S3 or R2.
-
-```js
-import fs from 'fs'
-import path from 'path'
-import os from 'os'
-
-import { S3Client } from '@aws-sdk/client-s3'
-import { S3LikeBlobIndexStore } from '@hash-stream/index/store/s3-like-blob'
-
-const client = new S3Client({
-  // TODO: setup client options according to target
-})
-const bucketName = 'blob-index-store'
-const indexStore = new S3LikeBlobIndexStore({
+const bucketName = 'index-store'
+const indexStore = new S3LikeIndexStore({
   bucketName,
   client,
 })

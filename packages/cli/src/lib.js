@@ -3,8 +3,7 @@ import fs from 'fs'
 import path from 'path'
 
 // Index
-import { FSBlobIndexStore } from '@hash-stream/index/store/fs-blob'
-import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
+import { FSIndexStore } from '@hash-stream/index/store/fs'
 import {
   SingleLevelIndexWriter,
   MultipleLevelIndexWriter,
@@ -89,13 +88,13 @@ export async function getClient(
   let indexStore, indexWriter, indexReader
 
   if (options.indexWriterImplementationName === 'single-level') {
-    indexStore = new FSBlobIndexStore(
+    indexStore = new FSIndexStore(
       agentData.data.index.singleLevelIndex.storeDir
     )
     indexWriter = new SingleLevelIndexWriter(indexStore)
     indexReader = new IndexReader(indexStore)
   } else if (options.indexWriterImplementationName === 'multiple-level') {
-    indexStore = new FSContainingIndexStore(
+    indexStore = new FSIndexStore(
       agentData.data.index.multipleLevelIndex.storeDir
     )
     indexWriter = new MultipleLevelIndexWriter(indexStore)

@@ -6,51 +6,57 @@ import os from 'os'
 import { FSIndexStore } from '../src/store/fs.js'
 import { S3LikeIndexStore } from '../src/store/s3-like.js'
 
-import { runIndexStoreTests } from './store.js'
+// Reader
+import { IndexReader } from '../src/reader.js'
+
+import { runIndexReaderTests } from './reader.js'
 import { createS3Like, createBucket } from './helpers/resources.js'
 
-describe('IndexStore implementations', () => {
+describe('Index Reader implementations', () => {
   // eslint-disable-next-line no-extra-semi
   ;[
     {
-      name: 'FS',
+      name: 'with FS Store',
       /**
-       * @returns {Promise<import('./store.js').DestroyableIndexStore>}
+       * @returns {Promise<import('./reader.js').DestroyableIndexReader>}
        */
-      getIndexStore: () => {
+      getIndexReader: () => {
         const tempDir = fs.mkdtempSync(
           path.join(os.tmpdir(), 'fs-index-store-')
         )
         const indexStore = new FSIndexStore(tempDir)
-        const destroyableIndexStore = Object.assign(indexStore, {
+        const indexReader = new IndexReader(indexStore)
+
+        const destroyableIndexReader = Object.assign(indexReader, {
           destroy: () => {
             if (fs.existsSync(tempDir)) {
               fs.rmSync(tempDir, { recursive: true, force: true })
             }
           },
         })
-        return Promise.resolve(destroyableIndexStore)
+        return Promise.resolve(destroyableIndexReader)
       },
     },
     {
-      name: 'S3Like',
+      name: 'with S3Like Store',
       /**
-       * @returns {Promise<import('./store.js').DestroyableIndexStore>}
+       * @returns {Promise<import('./reader.js').DestroyableIndexReader>}
        */
-      getIndexStore: async () => {
+      getIndexReader: async () => {
         const { client } = await createS3Like()
         const bucketName = await createBucket(client)
         const indexStore = new S3LikeIndexStore({
           bucketName,
           client,
         })
-        const destroyableIndexStore = Object.assign(indexStore, {
+        const indexReader = new IndexReader(indexStore)
+        const destroyableIndexReader = Object.assign(indexReader, {
           destroy: () => {},
         })
-        return Promise.resolve(destroyableIndexStore)
+        return Promise.resolve(destroyableIndexReader)
       },
     },
-  ].forEach(({ name, getIndexStore }) => {
-    runIndexStoreTests(name, () => getIndexStore())
+  ].forEach(({ name, getIndexReader }) => {
+    runIndexReaderTests(name, () => getIndexReader())
   })
 })

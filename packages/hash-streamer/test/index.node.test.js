@@ -3,12 +3,12 @@ import os from 'os'
 import path from 'path'
 
 // FS Stores
-import { FSContainingIndexStore } from '@hash-stream/index/store/fs-containing'
+import { FSIndexStore } from '@hash-stream/index/store/fs'
 import { FSPackStore } from '@hash-stream/pack/store/fs'
 
 // S3Like Stores
 import { S3LikePackStore } from '@hash-stream/pack/store/s3-like'
-import { S3LikeContainingIndexStore } from '@hash-stream/index/store/s3-like-containing'
+import { S3LikeIndexStore } from '@hash-stream/index/store/s3-like'
 
 import { runHashStreamTests } from './hash-streamer.js'
 
@@ -21,7 +21,7 @@ import { createS3Like, createBucket } from './helpers/resources.js'
      */
     getIndexStore: () => {
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-index-test-'))
-      const indexStore = new FSContainingIndexStore(tempDir)
+      const indexStore = new FSIndexStore(tempDir)
       const destroyableIndexStore = Object.assign(indexStore, {
         destroy: () => {
           if (fs.existsSync(tempDir)) {
@@ -70,7 +70,7 @@ import { createS3Like, createBucket } from './helpers/resources.js'
     getIndexStore: async () => {
       const { client } = await createS3Like()
       const bucketName = await createBucket(client)
-      const packStore = new S3LikeContainingIndexStore({
+      const packStore = new S3LikeIndexStore({
         bucketName,
         client,
       })

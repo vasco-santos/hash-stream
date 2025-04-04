@@ -13,7 +13,10 @@ import { CID } from 'multiformats/cid'
 import { code as RawCode } from 'multiformats/codecs/raw'
 
 import { IndexReader } from '@hash-stream/index/reader'
-import { MultipleLevelIndexWriter } from '@hash-stream/index/writer/multiple-level'
+import {
+  MultipleLevelIndexWriter,
+  recordType,
+} from '@hash-stream/index/writer/multiple-level'
 import { createFromPack } from '@hash-stream/index/record'
 import { PackWriter, PackReader, createPacks } from '@hash-stream/pack'
 
@@ -328,7 +331,8 @@ export function runHashStreamTests(
         (async function* () {
           // Yield only the pack
           yield createFromPack(pack.multihash, [])
-        })()
+        })(),
+        recordType
       )
 
       // Get verifiable blobs from the pack
