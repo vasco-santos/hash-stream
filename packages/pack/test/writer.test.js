@@ -6,24 +6,24 @@ import { runPackWriterTests } from './writer.js'
   {
     name: 'Memory',
     /**
-     * @returns {import('./writer.js').DestroyablePackStore}
+     * @returns {Promise<import('./writer.js').DestroyablePackStore>}
      */
     getPackStore: () => {
       const packStore = new MemoryPackStore()
       const destroyablePackStore = Object.assign(packStore, {
         destroy: () => {},
       })
-      return destroyablePackStore
+      return Promise.resolve(destroyablePackStore)
     },
     /**
-     * @returns {import('./writer.js').DestroyableIndexStore}
+     * @returns {Promise<import('./writer.js').DestroyableIndexStore>}
      */
     getIndexStore: () => {
       const indexStore = new MemoryContainingIndexStore()
       const destroyableIndexStore = Object.assign(indexStore, {
         destroy: () => {},
       })
-      return destroyableIndexStore
+      return Promise.resolve(destroyableIndexStore)
     },
   },
 ].forEach(({ name, getPackStore, getIndexStore }) => {

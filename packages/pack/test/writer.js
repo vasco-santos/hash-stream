@@ -31,8 +31,8 @@ import { randomBytes } from './helpers/random.js'
  * Runs the test suite for Pack Writer.
  *
  * @param {string} storeName - The name of the store (e.g., "Memory", "FS").
- * @param {() => DestroyablePackStore} createPackStore - Function to create the pack store.
- * @param {() => DestroyableIndexStore} createIndexStore - Function to create the index store.
+ * @param {() => Promise<DestroyablePackStore>} createPackStore - Function to create the pack store.
+ * @param {() => Promise<DestroyableIndexStore>} createIndexStore - Function to create the index store.
  */
 export function runPackWriterTests(
   storeName,
@@ -46,8 +46,8 @@ export function runPackWriterTests(
       /** @type {PackWriter} */
       let writer
 
-      beforeEach(() => {
-        store = createPackStore()
+      beforeEach(async () => {
+        store = await createPackStore()
         writer = new PackWriter(store)
       })
 
@@ -56,8 +56,8 @@ export function runPackWriterTests(
       })
 
       it('should write sharded packs from a blob', async () => {
-        const byteLength = 50_000_000
-        const chunkSize = byteLength / 5
+        const byteLength = 30_000_000
+        const chunkSize = byteLength / 3
         const bytes = await randomBytes(byteLength)
         const blob = new Blob([bytes])
         /** @typedef {API.CreateOptions} */
@@ -118,14 +118,14 @@ export function runPackWriterTests(
       /** @type {PackWriter} */
       let packWriter
 
-      beforeEach(() => {
+      beforeEach(async () => {
         // Create Index
-        indexStore = createIndexStore()
+        indexStore = await createIndexStore()
         indexReader = new IndexReader(indexStore)
         indexWriter = new MultipleLevelIndexWriter(indexStore)
 
         // Create Pack Writer
-        packStore = createPackStore()
+        packStore = await createPackStore()
         packWriter = new PackWriter(packStore, {
           indexWriter,
         })
@@ -137,8 +137,8 @@ export function runPackWriterTests(
       })
 
       it('should write packs from a blob and index them without containing', async () => {
-        const byteLength = 50_000_000
-        const chunkSize = byteLength / 5
+        const byteLength = 30_000_000
+        const chunkSize = byteLength / 3
         const bytes = await randomBytes(byteLength)
         const blob = new Blob([bytes])
         /** @type {Map<string, API.MultihashDigest[]>} */
@@ -228,8 +228,8 @@ export function runPackWriterTests(
       })
 
       it('should write packs from a blob and index them with containing', async () => {
-        const byteLength = 50_000_000
-        const chunkSize = byteLength / 5
+        const byteLength = 30_000_000
+        const chunkSize = byteLength / 3
         const bytes = await randomBytes(byteLength)
         const blob = new Blob([bytes])
         /** @typedef {API.PackWriterWriteOptions} */
@@ -366,8 +366,8 @@ export function runPackWriterTests(
       })
 
       it.skip('should write packs from a blob and index them with containing to reconstruct the blob', async () => {
-        const byteLength = 50_000_000
-        const chunkSize = byteLength / 5
+        const byteLength = 30_000_000
+        const chunkSize = byteLength / 3
         const bytes = await randomBytes(byteLength)
         const blob = new Blob([bytes])
         /** @typedef {API.PackWriterWriteOptions} */

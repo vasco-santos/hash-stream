@@ -38,15 +38,15 @@ const dagPbCode = 0x70
  * Runs the test suite for hash streaming.
  *
  * @param {string} storeName - The name of the store (e.g., "Memory", "FS").
- * @param {() => DestroyableIndexStore} createIndexStore - Function to create the index store.
- * @param {() => DestroyablePackStore} createPackStore - Function to create the pack store.
+ * @param {() => Promise<DestroyableIndexStore>} createIndexStore - Function to create the index store.
+ * @param {() => Promise<DestroyablePackStore>} createPackStore - Function to create the pack store.
  */
 export function runHashStreamTests(
   storeName,
   createIndexStore,
   createPackStore
 ) {
-  describe(`Hash streaming from ${storeName} Stores`, () => {
+  describe(`Hash streaming using ${storeName} Stores`, () => {
     /** @type {DestroyableIndexStore} */
     let indexStore
     /** @type {import('@hash-stream/index/types').IndexReader} */
@@ -62,12 +62,12 @@ export function runHashStreamTests(
     /** @type {HashStreamer} */
     let hashStreamer
 
-    beforeEach(() => {
-      indexStore = createIndexStore()
+    beforeEach(async () => {
+      indexStore = await createIndexStore()
       indexReader = new IndexReader(indexStore)
       indexWriter = new MultipleLevelIndexWriter(indexStore)
 
-      packStore = createPackStore()
+      packStore = await createPackStore()
       packWriter = new PackWriter(packStore, { indexWriter })
 
       packReader = new PackReader(packStore)
