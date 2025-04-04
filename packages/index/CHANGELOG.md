@@ -1,0 +1,28 @@
+# Changelog
+
+## 1.0.0 (2025-04-04)
+
+
+### Features
+
+* add s3 like stores ([#38](https://github.com/vasco-santos/hash-stream/issues/38)) ([1f7244f](https://github.com/vasco-santos/hash-stream/commit/1f7244f1947e3d7d2ceb6d9c3373a8f6d950f2e8))
+* add to cli pack reader ([#31](https://github.com/vasco-santos/hash-stream/issues/31)) ([a9eb82e](https://github.com/vasco-santos/hash-stream/commit/a9eb82e4252f66b68eee1ffea519ee5d58640388))
+* export test interface runners for third party implementors ([#40](https://github.com/vasco-santos/hash-stream/issues/40)) ([a7fedc9](https://github.com/vasco-santos/hash-stream/commit/a7fedc95446b8ff986df27d9c90cfbc56ee778f5))
+* index package ([#7](https://github.com/vasco-santos/hash-stream/issues/7)) ([5ed02b5](https://github.com/vasco-santos/hash-stream/commit/5ed02b51b4225303031e69ed08c18586a986ed5f))
+* index package base and eslint config ([#3](https://github.com/vasco-santos/hash-stream/issues/3)) ([7becbd3](https://github.com/vasco-santos/hash-stream/commit/7becbd3ad252d0d27f1ea68c2f4315a6fdd9837f))
+* pack reader ([#25](https://github.com/vasco-santos/hash-stream/issues/25)) ([77f0d7e](https://github.com/vasco-santos/hash-stream/commit/77f0d7ed0045dad70ade06507f6dbb254b9c9f1f))
+
+
+### Fixes
+
+* index implementation according to spec revision ([#16](https://github.com/vasco-santos/hash-stream/issues/16)) ([e4d8c1c](https://github.com/vasco-santos/hash-stream/commit/e4d8c1c9fe52f4f2cecd1ddfcce8540fef6877f8))
+* index split writer and reader classes ([#24](https://github.com/vasco-santos/hash-stream/issues/24)) ([1f53df1](https://github.com/vasco-santos/hash-stream/commit/1f53df1d16f2fe5e90828faddfeedc8ab08def6e))
+* index store async iterator type ([#22](https://github.com/vasco-santos/hash-stream/issues/22)) ([c529172](https://github.com/vasco-santos/hash-stream/commit/c5291722555389516b8688495bbd4f5dd5824071))
+* refactor index testing structure and stores  ([#39](https://github.com/vasco-santos/hash-stream/issues/39)) ([d17b667](https://github.com/vasco-santos/hash-stream/commit/d17b66783e9c54266c507b9fab0c9ec6bfd463d0))
+* rename fs blob store and fix make blob store handle undefined on encode ([#17](https://github.com/vasco-santos/hash-stream/issues/17)) ([6bbd5bc](https://github.com/vasco-santos/hash-stream/commit/6bbd5bcc7dcdda4ea20252a1e2a4b5264565d52e))
+* upgrade deps ([#27](https://github.com/vasco-santos/hash-stream/issues/27)) ([e23ccc4](https://github.com/vasco-santos/hash-stream/commit/e23ccc4599a9131aa7f07de87378a74e79423f25))
+
+
+### Other Changes
+
+* rename repo ([#5](https://github.com/vasco-santos/hash-stream/issues/5)) ([faf668e](https://github.com/vasco-santos/hash-stream/commit/faf668e1b7d7098d0af129b548e7893ca6c787e5))
