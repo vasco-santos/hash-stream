@@ -17,6 +17,8 @@ This repository provides a set of libraries and tools that allow you to build an
 
 For those interested in implementing building blocks differently, there are a few [specifications](./specs/) and interfaces available, allowing new implementations to be compatible with the existing pieces.
 
+Documentation generated from types can be seen at [https://vasco-santos.github.io/hash-stream](https://vasco-santos.github.io/hash-stream).
+
 ## Development
 
 ### Installing
@@ -42,14 +44,14 @@ export AWS_REGION='us-west-2'; export AWS_ACCESS_KEY_ID='NOSUCH'; export AWS_SEC
 The repository includes the following packages:
 
 - [`packages/cli`](./packages/cli/): A CLI tool for transforming data into content-addressable data, writing index records, and a verifiable streamer.
-- [`packages/hash-streamer`](./packages/hash-streamer/): A library for streaming verifiable data associated with a requested multihash, based on available index records and stored packs.
+- [`packages/streamer`](./packages/streamer/): A library for streaming verifiable data associated with a requested multihash, based on available index records and stored packs.
 - [`packages/index`](./packages/index/): A library with implementations for `IndexReader` and various `IndexWriter` strategies, along with `IndexStore` implementations.
 - [`packages/pack`](./packages/pack/): A library for writing data into packs (`PackWriter`) and reading them back (`PackReader`), facilitating the creation and retrieval of content-addressable data. While writing data into packs, Index Records can be created when provided an `IndexWriter` implementation.
 
 ```mermaid
 graph TD
     A[hash-stream Repository] --> B[packages/cli] --> C[Transforms data to content-addressable]
-    A --> D[packages/hash-streamer] --> E[Streams verifiable data]
+    A --> D[packages/streamer] --> E[Streams verifiable data]
     A --> F[packages/index] --> G[Reads/Writes index records]
     A --> H[packages/pack] --> I[Handles content-addressable data packs]
 
@@ -147,7 +149,7 @@ Note that `PackWriter` in example above is used to write transformed data into t
 The next example relies on the used `PackStore` and `Index Records` written to have a verifiable stream of data provided. The `hashStreamer` is an abstraction layer that relies on the `IndexReader` and the `PackReader` to stream verifiable entries associated with the target multihash. The implementor can decide to simply use the `IndexReader` and the `PackReader` to have more control over the stream behaviour.
 
 ```js
-import { HashStreamer } from '@hash-stream/hash-streamer'
+import { HashStreamer } from '@hash-stream/streamer'
 
 // Readers implementations
 import { IndexReader } from '@hash-stream/index/reader'
