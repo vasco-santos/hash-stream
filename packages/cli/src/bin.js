@@ -2,6 +2,7 @@
 
 import sade from 'sade'
 import fs from 'fs'
+import updateNotifier from 'update-notifier'
 
 import { indexAdd, indexFindRecords, indexClear } from './index.js'
 import { packWrite, packExtract, packClear, MAX_PACK_SIZE } from './pack.js'
@@ -10,6 +11,9 @@ import { streamerDump } from './streamer.js'
 const pkg = JSON.parse(
   fs.readFileSync(new URL('../package.json', import.meta.url)).toString()
 )
+
+updateNotifier({ pkg }).notify({ isGlobal: true })
+
 const cli = sade(pkg.name)
 
 cli.version(pkg.version)
