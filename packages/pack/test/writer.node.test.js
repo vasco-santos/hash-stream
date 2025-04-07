@@ -10,9 +10,17 @@ import { FSPackStore } from '../src/store/fs.js'
 import { S3LikeIndexStore } from '@hash-stream/index/store/s3-like'
 import { S3LikePackStore } from '../src/store/s3-like.js'
 
+// Worker like Stores
+import { CloudflareWorkerBucketIndexStore } from '@hash-stream/index/store/cf-worker-bucket'
+import { CloudflareWorkerBucketPackStore } from '../src/store/cf-worker-bucket.js'
+
 import { runPackWriterTests } from './writer.js'
 
-import { createS3Like, createBucket } from './helpers/resources.js'
+import {
+  createS3Like,
+  createBucket,
+  createCloudflareWorkerBucket,
+} from './helpers/resources.js'
 ;[
   {
     name: 'FS',
@@ -78,6 +86,35 @@ import { createS3Like, createBucket } from './helpers/resources.js'
         destroy: () => {},
       })
       return destroyablePackStore
+    },
+  },
+  {
+    name: 'Cloudflare Worker Bucket',
+    /**
+     * @returns {Promise<import('./writer.js').DestroyablePackStore>}
+     */
+    getPackStore: async () => {
+      const { mf, bucket } = await createCloudflareWorkerBucket()
+      const packStore = new CloudflareWorkerBucketPackStore({ bucket })
+      const destroyablePackStore = Object.assign(packStore, {
+        destroy: async () => {
+          await mf.dispose()
+        },
+      })
+      return Promise.resolve(destroyablePackStore)
+    },
+    /**
+     * @returns {Promise<import('./writer.js').DestroyableIndexStore>}
+     */
+    getIndexStore: async () => {
+      const { mf, bucket } = await createCloudflareWorkerBucket()
+      const indexStore = new CloudflareWorkerBucketIndexStore({ bucket })
+      const destroyableIndexStore = Object.assign(indexStore, {
+        destroy: async () => {
+          await mf.dispose()
+        },
+      })
+      return Promise.resolve(destroyableIndexStore)
     },
   },
 ].forEach(({ name, getPackStore, getIndexStore }) => {

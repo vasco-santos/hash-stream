@@ -110,6 +110,7 @@ This package already exports a few stores compatible with `IndexStore` Interface
 - File system store: `store/fs.js`
 - Memory store: `store/memory.js`
 - S3-like Cloud Object store: `store/s3-like.js`
+- Cloudflare worker bucket like: `store/cf-worker-bucket.js`
 
 #### File System store
 
@@ -157,6 +158,10 @@ const indexStore = new S3LikeIndexStore({
   client,
 })
 ```
+
+#### Cloudflare worker bucket like
+
+TODO
 
 ## Custom implementations
 

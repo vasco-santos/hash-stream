@@ -30,6 +30,7 @@
     "./utils": "./dist/src/utils.js",
     "./writer/single-level": "./dist/src/writer/single-level.js",
     "./writer/multiple-level": "./dist/src/writer/multiple-level.js",
+    "./store/cf-worker-bucket": "./dist/src/store/cf-worker-bucket.js",
     "./store/memory": "./dist/src/store/memory.js",
     "./store/fs": "./dist/src/store/fs.js",
     "./store/s3-like": "./dist/src/store/s3-like.js",
@@ -55,6 +56,9 @@
       ],
       "writer/multiple-level": [
         "dist/src/writer/multiple-level.d.ts"
+      ],
+      "store/cf-worker-bucket": [
+        "dist/src/store/cf-worker-bucket.d.ts"
       ],
       "store/memory": [
         "dist/src/store/memory.d.ts"
@@ -83,6 +87,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250407.0",
     "@ipld/car": "^5.4.0",
     "@ipld/unixfs": "^3.0.0",
     "@hash-stream/eslint-config": "workspace:^",
@@ -96,6 +101,7 @@
     "hundreds": "^0.0.9",
     "ipfs-car": "^3.0.0",
     "it-all": "^3.0.7",
+    "miniflare": "^4.20250404.0",
     "mocha": "^11.1.0",
     "nanoid": "^5.1.5",
     "npm-run-all": "^4.1.5",
