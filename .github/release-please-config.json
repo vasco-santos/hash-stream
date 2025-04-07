@@ -9,7 +9,7 @@
     "packages/cli": {
       "release-type": "node"
     },
-    "packages/hash-streamer": {
+    "packages/streamer": {
       "release-type": "node"
     },
     "packages/index": {

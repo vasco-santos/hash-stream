@@ -1,11 +1,11 @@
 {
-  "name": "@hash-stream/hash-streamer",
+  "name": "@hash-stream/streamer",
   "version": "0.0.0",
-  "description": "The hash streamer client for hash-stream",
+  "description": "The streamer client for hash-stream",
   "repository": {
     "type": "git",
     "url": "https://github.com/vasco-santos/hash-stream.git",
-    "directory": "packages/hash-streamer"
+    "directory": "packages/streamer"
   },
   "author": "Vasco Santos",
   "license": "Apache-2.0 OR MIT",
