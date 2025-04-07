@@ -4,10 +4,15 @@ import os from 'os'
 
 import { FSPackStore } from '../src/store/fs.js'
 import { S3LikePackStore } from '../src/store/s3-like.js'
+import { CloudflareWorkerBucketPackStore } from '../src/store/cf-worker-bucket.js'
 
 import { runPackTests } from './pack.js'
 
-import { createS3Like, createBucket } from './helpers/resources.js'
+import {
+  createS3Like,
+  createBucket,
+  createCloudflareWorkerBucket,
+} from './helpers/resources.js'
 ;[
   {
     name: 'FS',
@@ -43,6 +48,22 @@ import { createS3Like, createBucket } from './helpers/resources.js'
         destroy: () => {},
       })
       return destroyablePackStore
+    },
+  },
+  {
+    name: 'Cloudflare Worker Bucket',
+    /**
+     * @returns {Promise<import('./pack.js').DestroyablePackStore>}
+     */
+    getPackStore: async () => {
+      const { mf, bucket } = await createCloudflareWorkerBucket()
+      const packStore = new CloudflareWorkerBucketPackStore({ bucket })
+      const destroyablePackStore = Object.assign(packStore, {
+        destroy: async () => {
+          await mf.dispose()
+        },
+      })
+      return Promise.resolve(destroyablePackStore)
     },
   },
 ].forEach(({ name, getPackStore }) => {

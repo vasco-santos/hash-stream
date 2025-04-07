@@ -1,5 +1,4 @@
 import { MemoryIndexStore } from '../src/store/memory.js'
-
 import { runIndexStoreTests } from './store.js'
 
 describe('IndexStore implementations', () => {

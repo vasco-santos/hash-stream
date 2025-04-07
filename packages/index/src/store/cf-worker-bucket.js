@@ -7,29 +7,19 @@ import {
   decode as indexRecordDecode,
 } from '../record.js'
 import { removeUndefinedRecursively } from './utils.js'
-import {
-  S3Client,
-  PutObjectCommand,
-  ListObjectsV2Command,
-  GetObjectCommand,
-} from '@aws-sdk/client-s3'
 
 /**
- * S3 implementation of IndexStore
+ * Cloudflare Worker Bucket R2 implementation of IndexStore
  *
  * @implements {API.IndexStore}
  */
-export class S3LikeIndexStore {
+export class CloudflareWorkerBucketIndexStore {
   /**
-   * @param {object} config - Configuration for the S3 client.
-   * @param {string} config.bucketName - S3 bucket name.
-   * @param {S3Client} config.client - S3 client instance.
-   * @param {string} [config.prefix] - Optional prefix for stored objects.
+   * @param {object} config - Configuration for the R2 client.
+   * @param {import('@cloudflare/workers-types').R2Bucket} config.bucket - R2 bucket instance of a worker.
    */
-  constructor({ bucketName, client, prefix = '' }) {
-    this.bucketName = bucketName
-    this.prefix = prefix
-    this.client = client
+  constructor({ bucket }) {
+    this.bucket = bucket
   }
 
   /**
@@ -51,7 +41,7 @@ export class S3LikeIndexStore {
    * @returns {string}
    */
   #getFolderPath(hash) {
-    return `${S3LikeIndexStore.encodeKey(hash)}/`
+    return `${CloudflareWorkerBucketIndexStore.encodeKey(hash)}/`
   }
 
   /**
@@ -64,7 +54,7 @@ export class S3LikeIndexStore {
   #getFilePath(hash, subRecordMultihash) {
     const folderPath = this.#getFolderPath(hash)
     const uniqueId = subRecordMultihash
-      ? `${S3LikeIndexStore.encodeKey(subRecordMultihash)}`
+      ? `${CloudflareWorkerBucketIndexStore.encodeKey(subRecordMultihash)}`
       : Date.now().toString()
     return `${folderPath}${uniqueId}`
   }
@@ -97,27 +87,20 @@ export class S3LikeIndexStore {
    */
   async *get(hash) {
     const folderPath = this.#getFolderPath(hash)
-    const listCommand = new ListObjectsV2Command({
-      Bucket: this.bucketName,
-      Prefix: folderPath,
+    const listedObjects = await this.bucket.list({
+      prefix: folderPath,
     })
-    const listedObjects = await this.client.send(listCommand)
 
-    if (!listedObjects.Contents) return null
+    /* c8 ignore next 1 */
+    if (!listedObjects.objects) return null
 
     const records = []
-    for (const object of listedObjects.Contents) {
+    for (const object of listedObjects.objects) {
+      const r2ObjectBody = await this.bucket.get(object.key)
       /* c8 ignore next 1 */
-      if (!object.Key) continue
-      const getCommand = new GetObjectCommand({
-        Bucket: this.bucketName,
-        Key: object.Key,
-      })
-      const { Body } = await this.client.send(getCommand)
-      /* c8 ignore next 1 */
-      if (!Body) continue
-      const encodedData = await Body.transformToByteArray()
-      const record = this.decodeData(encodedData)
+      if (!r2ObjectBody) continue
+      const encodedData = await r2ObjectBody.arrayBuffer()
+      const record = this.decodeData(new Uint8Array(encodedData))
       records.push(record)
     }
 
@@ -153,13 +136,7 @@ export class S3LikeIndexStore {
       }
       const filePath = this.#getFilePath(entry.multihash, subRecordMultihash)
       const encodedData = this.encodeData(entry, recordType)
-      await this.client.send(
-        new PutObjectCommand({
-          Bucket: this.bucketName,
-          Key: filePath,
-          Body: encodedData,
-        })
-      )
+      await this.bucket.put(filePath, new Uint8Array(encodedData))
     }
   }
 }

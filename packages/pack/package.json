@@ -25,6 +25,7 @@
   },
   "exports": {
     ".": "./dist/src/index.js",
+    "./store/cf-worker-bucket": "./dist/src/store/cf-worker-bucket.js",
     "./store/fs": "./dist/src/store/fs.js",
     "./store/memory": "./dist/src/store/memory.js",
     "./store/s3-like": "./dist/src/store/s3-like.js",
@@ -43,6 +44,9 @@
       ],
       "reader": [
         "dist/src/reader.d.ts"
+      ],
+      "store/cf-worker-bucket": [
+        "dist/src/store/cf-worker-bucket.d.ts"
       ],
       "store/fs": [
         "dist/src/store/fs.d.ts"
@@ -72,6 +76,7 @@
     "multiformats": "^13.3.2"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250407.0",
     "@hash-stream/eslint-config": "workspace:^",
     "@hash-stream/index": "workspace:^",
     "@storacha/one-webcrypto": "^1.0.1",
@@ -82,6 +87,7 @@
     "c8": "^10.1.3",
     "hundreds": "^0.0.9",
     "it-all": "^3.0.7",
+    "miniflare": "^4.20250404.0",
     "mocha": "^11.1.0",
     "nanoid": "^5.1.5",
     "npm-run-all": "^4.1.5",

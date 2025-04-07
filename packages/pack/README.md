@@ -150,6 +150,7 @@ This package already exports a few stores compatible with `PackStore` Interface:
 - File system store: `store/fs.js`
 - Memory store: `store/memory.js`
 - S3-like Cloud Object store: `store/s3-like.js`
+- Cloudflare worker bucket like: `store/cf-worker-bucket.js`
 
 #### File system store
 
@@ -195,6 +196,21 @@ const bucketName = 'pack-store'
 const packStore = new S3LikePackStore({
   bucketName,
   client,
+})
+```
+
+##### Cloudflare worker bucket like
+
+Stores records using a Cloudflare worker bucket reference.
+
+```js
+import { CloudflareWorkerBucketPackStore } from '@hash-stream/pack/store/s3-like'
+
+// Worker bindings R2 Bucket
+const bucket = // TODO
+
+const packStore = new CloudflareWorkerBucketPackStore({
+  bucket
 })
 ```
 

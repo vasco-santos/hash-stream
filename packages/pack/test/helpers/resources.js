@@ -2,6 +2,7 @@ import pRetry from 'p-retry'
 import { customAlphabet } from 'nanoid'
 import { GenericContainer as Container } from 'testcontainers'
 import { S3Client, CreateBucketCommand } from '@aws-sdk/client-s3'
+import { Miniflare } from 'miniflare'
 
 /**
  * @param {object} [opts]
@@ -43,4 +44,33 @@ export async function createBucket(s3) {
   const Bucket = id()
   await s3.send(new CreateBucketCommand({ Bucket }))
   return Bucket
+}
+
+/**
+ * Create a mock R2Bucket
+ *
+ * @returns {Promise<{ bucket: import('@cloudflare/workers-types').R2Bucket, mf: Miniflare }>}
+ */
+export async function createCloudflareWorkerBucket() {
+  // Initialize a new R2 bucket instance with Miniflare's mock environment
+  const mf = new Miniflare({
+    // Pass any configuration you'd like, or leave it empty
+    script: `
+      export default {
+        fetch(req) {
+          return new Response("Hello World")
+        }
+      }
+    `,
+    r2Buckets: {
+      BUCKET: '',
+    },
+    modules: true,
+  })
+
+  await mf.ready // Ensure Miniflare is ready
+  const bucket = await mf.getR2Bucket('BUCKET') // Gets mock R2Bucket
+
+  // @ts-expect-error different types between miniflare and worker types
+  return { mf, bucket }
 }
