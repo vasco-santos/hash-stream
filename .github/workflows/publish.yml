@@ -3,7 +3,7 @@ name: Publish to npm
 on:
   release:
     types: [created]
-  workflow_dispatch: # allows manual trigger from UI
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -29,21 +29,13 @@ jobs:
           echo "Release context: ${{ toJson(github.event) }}"
           echo "Release tag name: ${{ github.event.release.tag_name }}"
 
-      - name: Extract released package name from tag
+      - name: Hardcoded package name for now
         id: tag
         run: |
-          TAG_NAME="${{ github.event.release.tag_name }}"
-          echo "Release tag: $TAG_NAME"
-
-          # Using regular expression to extract package name
-          if [[ "$TAG_NAME" =~ ^([a-zA-Z0-9_-]+)-v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
-            PKG_NAME="${BASH_REMATCH[1]}"
-            echo "Package name: $PKG_NAME"
-            echo "name=$PKG_NAME" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Could not extract package name from tag: $TAG_NAME"
-            exit 1
-          fi
+          # Hardcode the package name here
+          PKG_NAME="@hash-stream/index"
+          echo "Package name: $PKG_NAME"
+          echo "name=$PKG_NAME" >> $GITHUB_OUTPUT
 
       - name: Publish only released package
         run: |
