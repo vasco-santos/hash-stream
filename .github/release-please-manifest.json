@@ -1,6 +1,6 @@
 {
   "packages/cli": "1.0.0",
   "packages/streamer": "1.0.0",
-  "packages/index": "1.0.0",
+  "packages/index": "1.1.0",
   "packages/pack": "1.1.0"
 }
