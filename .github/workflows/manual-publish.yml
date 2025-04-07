@@ -44,10 +44,10 @@ jobs:
           corepack enable
           pnpm install --frozen-lockfile
 
-      - name: Build the selected package
+      - name: Build
         run: |
           PACKAGE="${{ github.event.inputs.package }}"
-          pnpm -r --filter $PACKAGE build
+          pnpm build
 
       - name: Debug the release output
         run: |
