@@ -29,13 +29,21 @@ jobs:
           echo "Release context: ${{ toJson(github.event) }}"
           echo "Release tag name: ${{ github.event.release.tag_name }}"
 
-      - name: Hardcoded package name for now
+      - name: Extract released package name from tag
         id: tag
         run: |
-          # Hardcode the package name here
-          PKG_NAME="@hash-stream/index"
-          echo "Package name: $PKG_NAME"
-          echo "name=$PKG_NAME" >> $GITHUB_OUTPUT
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          echo "Release tag: $TAG_NAME"
+
+          # Using regular expression to extract package name from the tag
+          if [[ "$TAG_NAME" =~ ^([a-zA-Z0-9_-]+)-v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
+            PKG_NAME="${BASH_REMATCH[1]}"
+            echo "Package name: $PKG_NAME"
+            echo "name=$PKG_NAME" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Could not extract package name from tag: $TAG_NAME"
+            exit 1
+          fi
 
       - name: Publish only released package
         run: |
