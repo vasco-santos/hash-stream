@@ -25,10 +25,11 @@ jobs:
       - name: Extract released package name from tag
         id: tag
         run: |
-          # Expect tag like package-name-v1.2.3
+          # Expect tag like package-name: v1.2.3
           TAG_NAME="${{ github.event.release.tag_name }}"
           echo "Release tag: $TAG_NAME"
-          PKG_NAME=$(echo $TAG_NAME | sed -E 's/-v[0-9]+\.[0-9]+\.[0-9]+$//')
+          # Example: index-v1.0.0 → index
+          PKG_NAME=$(echo "$TAG_NAME" | sed -E 's/-v[0-9]+\.[0-9]+\.[0-9]+.*$//')
           echo "Package name: $PKG_NAME"
           echo "name=$PKG_NAME" >> $GITHUB_OUTPUT
 
