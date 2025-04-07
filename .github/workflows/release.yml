@@ -10,12 +10,38 @@ permissions:
   pull-requests: write
 
 jobs:
-  release-please:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Release Please
         uses: google-github-actions/release-please-action@v4
+        id: release
         with:
           config-file: .github/release-please-config.json
           manifest-file: .github/release-please-manifest.json
           token: ${{ secrets.GITHUB_TOKEN }}
+  npm:
+    needs: release
+    if: |
+      contains(fromJson(needs.release.outputs.paths_released), 'packages/cli') ||
+      contains(fromJson(needs.release.outputs.paths_released), 'packages/index') ||
+      contains(fromJson(needs.release.outputs.paths_released), 'packages/pack') ||
+      contains(fromJson(needs.release.outputs.paths_released), 'packages/streamer')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm -r publish --access=public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      - name: Debug release output
+        run: |
+          echo "Released packages: ${{ toJson(steps.release.outputs) }}"
