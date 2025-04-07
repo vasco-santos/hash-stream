@@ -24,6 +24,11 @@ jobs:
           corepack enable
           pnpm install --frozen-lockfile
 
+      - name: Debug release tag and context
+        run: |
+          echo "Release context: ${{ toJson(github.event) }}"
+          echo "Release tag name: ${{ github.event.release.tag_name }}"
+
       - name: Extract released package name from tag
         id: tag
         run: |
