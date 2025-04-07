@@ -13,15 +13,14 @@ on:
           - index
           - pack
           - streamer
-      environment:
-        description: 'Environment to deploy'
+      tag:
+        description: 'Tag to publish the package under'
         required: true
         type: choice
-        default: 'staging'
+        default: 'latest'
         options:
-          - production
-          - staging
-          - dev
+          - latest
+          - beta
 
 jobs:
   manual-publish:
@@ -52,17 +51,12 @@ jobs:
       - name: Debug the release output
         run: |
           echo "Package selected for deployment: ${{ github.event.inputs.package }}"
-          echo "Deploying to environment: ${{ github.event.inputs.environment }}"
+          echo "Publishing with tag: ${{ github.event.inputs.tag }}"
 
       - name: Publish the package
         run: |
           PACKAGE="${{ github.event.inputs.package }}"
-          pnpm -r --filter $PACKAGE publish --access public
+          TAG="${{ github.event.inputs.tag }}"
+          pnpm -r --filter $PACKAGE publish --access public --tag $TAG
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Commit changes (if any)
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: 'chore(${{ github.event.inputs.package }}): Bump version and deploy'
-        if: ${{ github.event.inputs.package == 'cli' || github.event.inputs.package == 'index' || github.event.inputs.package == 'pack' || github.event.inputs.package == 'streamer' }}

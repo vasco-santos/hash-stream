@@ -24,7 +24,6 @@ jobs:
   npm:
     needs: release
     if: |
-      # Make sure there are outputs from the release step and check the released paths
       contains(fromJson(steps.release.outputs.released), 'packages/cli') ||
       contains(fromJson(steps.release.outputs.released), 'packages/index') ||
       contains(fromJson(steps.release.outputs.released), 'packages/pack') ||
