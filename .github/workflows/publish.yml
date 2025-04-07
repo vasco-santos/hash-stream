@@ -20,18 +20,25 @@ jobs:
           always-auth: true
 
       - name: Install dependencies
-        run: corepack enable && pnpm install --frozen-lockfile
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
 
       - name: Extract released package name from tag
         id: tag
         run: |
-          # Expect tag like package-name: v1.2.3
           TAG_NAME="${{ github.event.release.tag_name }}"
           echo "Release tag: $TAG_NAME"
-          # Example: index-v1.0.0 → index
-          PKG_NAME=$(echo "$TAG_NAME" | sed -E 's/-v[0-9]+\.[0-9]+\.[0-9]+.*$//')
-          echo "Package name: $PKG_NAME"
-          echo "name=$PKG_NAME" >> $GITHUB_OUTPUT
+
+          # Using regular expression to extract package name
+          if [[ "$TAG_NAME" =~ ^([a-zA-Z0-9_-]+)-v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
+            PKG_NAME="${BASH_REMATCH[1]}"
+            echo "Package name: $PKG_NAME"
+            echo "name=$PKG_NAME" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Could not extract package name from tag: $TAG_NAME"
+            exit 1
+          fi
 
       - name: Publish only released package
         run: |
