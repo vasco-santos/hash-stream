@@ -161,7 +161,18 @@ const indexStore = new S3LikeIndexStore({
 
 #### Cloudflare worker bucket like
 
-TODO
+Stores records using a Cloudflare worker bucket reference.
+
+```js
+import { CloudflareWorkerBucketIndexStore } from '@hash-stream/index/store/s3-like'
+
+// Worker bindings R2 Bucket
+const bucket = // TODO
+
+const packStore = new CloudflareWorkerBucketIndexStore({
+  bucket
+})
+```
 
 ## Custom implementations
 

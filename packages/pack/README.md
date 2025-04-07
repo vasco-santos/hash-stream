@@ -199,6 +199,21 @@ const packStore = new S3LikePackStore({
 })
 ```
 
+##### Cloudflare worker bucket like
+
+Stores records using a Cloudflare worker bucket reference.
+
+```js
+import { CloudflareWorkerBucketPackStore } from '@hash-stream/pack/store/s3-like'
+
+// Worker bindings R2 Bucket
+const bucket = // TODO
+
+const packStore = new CloudflareWorkerBucketPackStore({
+  bucket
+})
+```
+
 ## Custom implementations
 
 Given `hash-stream` provides a set of building blocks to run a HTTP server for content-addressable data, anyone is welcome to write new implementations for each of the building blocks based on their specifications. This library also exports a test suite to verify if the implementation will be comaptible with the remaining pieces. Here is how you can use it:
