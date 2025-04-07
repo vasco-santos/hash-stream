@@ -22,11 +22,18 @@ jobs:
       - name: Install dependencies
         run: corepack enable && pnpm install --frozen-lockfile
 
-      - name: Determine which package to publish
-        id: package
-        run: echo "PACKAGE=$(echo '${{ github.event.release.tag_name }}' | cut -d'@' -f1)" >> $GITHUB_ENV
+      - name: Extract released package name from tag
+        id: tag
+        run: |
+          # Expect tag like package-name-v1.2.3
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          echo "Release tag: $TAG_NAME"
+          PKG_NAME=$(echo $TAG_NAME | sed -E 's/-v[0-9]+\.[0-9]+\.[0-9]+$//')
+          echo "Package name: $PKG_NAME"
+          echo "name=$PKG_NAME" >> $GITHUB_OUTPUT
 
-      - name: Publish to npm
-        run: pnpm publish --filter $PACKAGE --access public
+      - name: Publish only released package
+        run: |
+          pnpm --filter "${{ steps.tag.outputs.name }}" publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
