@@ -1,0 +1,68 @@
+name: Manual Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package to publish'
+        required: true
+        type: choice
+        default: 'cli'
+        options:
+          - cli
+          - index
+          - pack
+          - streamer
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        default: 'staging'
+        options:
+          - production
+          - staging
+          - dev
+
+jobs:
+  manual-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+
+      - name: Build
+        run: |
+          PACKAGE="${{ github.event.inputs.package }}"
+          pnpm build
+
+      - name: Debug the release output
+        run: |
+          echo "Package selected for deployment: ${{ github.event.inputs.package }}"
+          echo "Deploying to environment: ${{ github.event.inputs.environment }}"
+
+      - name: Publish the package
+        run: |
+          PACKAGE="${{ github.event.inputs.package }}"
+          pnpm -r --filter $PACKAGE publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit changes (if any)
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'chore(${{ github.event.inputs.package }}): Bump version and deploy'
+        if: ${{ github.event.inputs.package == 'cli' || github.event.inputs.package == 'index' || github.event.inputs.package == 'pack' || github.event.inputs.package == 'streamer' }}

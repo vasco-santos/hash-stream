@@ -1,6 +1,6 @@
 {
   "name": "@hash-stream/streamer",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "The streamer client for hash-stream",
   "repository": {
     "type": "git",
