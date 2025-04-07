@@ -1,6 +1,7 @@
 {
   "name": "@hash-stream/eslint-config",
   "version": "1.0.0",
+  "private": true,
   "description": "eslint rules for hash-stream",
   "repository": {
     "type": "git",
