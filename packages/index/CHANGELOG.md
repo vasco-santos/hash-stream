@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/vasco-santos/hash-stream/compare/index-v1.0.0...index-v1.1.0) (2025-04-07)
+
+
+### Features
+
+* cf worker bucket stores ([#45](https://github.com/vasco-santos/hash-stream/issues/45)) ([b3faa5d](https://github.com/vasco-santos/hash-stream/commit/b3faa5d6e7d5d8459bb7968b53fcfa5c8f5c48e6))
+
 ## 1.0.0 (2025-04-04)
 
 
