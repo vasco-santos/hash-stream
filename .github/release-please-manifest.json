@@ -2,5 +2,5 @@
   "packages/cli": "0.0.0",
   "packages/streamer": "0.0.0",
   "packages/index": "1.0.0",
-  "packages/pack": "0.0.0"
+  "packages/pack": "1.0.0"
 }
