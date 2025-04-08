@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/vasco-santos/hash-stream/compare/cli-v1.0.0...cli-v1.1.0) (2025-04-08)
+
+
+### Features
+
+* cli supports store backend selection with s3 like ([#48](https://github.com/vasco-santos/hash-stream/issues/48)) ([f7e9c0a](https://github.com/vasco-santos/hash-stream/commit/f7e9c0a079f2bfbbee8cd5780a64015b6d440fc3))
+
 ## 1.0.0 (2025-04-07)
 
 
