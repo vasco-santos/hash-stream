@@ -17,9 +17,11 @@ export class CloudflareWorkerBucketIndexStore {
   /**
    * @param {object} config - Configuration for the R2 client.
    * @param {import('@cloudflare/workers-types').R2Bucket} config.bucket - R2 bucket instance of a worker.
+   * @param {string} [config.prefix] - Optional prefix for stored objects.
    */
-  constructor({ bucket }) {
+  constructor({ bucket, prefix = '' }) {
     this.bucket = bucket
+    this.prefix = prefix
   }
 
   /**
@@ -41,7 +43,7 @@ export class CloudflareWorkerBucketIndexStore {
    * @returns {string}
    */
   #getFolderPath(hash) {
-    return `${CloudflareWorkerBucketIndexStore.encodeKey(hash)}/`
+    return `${this.prefix}${CloudflareWorkerBucketIndexStore.encodeKey(hash)}/`
   }
 
   /**

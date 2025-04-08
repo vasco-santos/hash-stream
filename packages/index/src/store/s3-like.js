@@ -51,7 +51,7 @@ export class S3LikeIndexStore {
    * @returns {string}
    */
   #getFolderPath(hash) {
-    return `${S3LikeIndexStore.encodeKey(hash)}/`
+    return `${this.prefix}${S3LikeIndexStore.encodeKey(hash)}/`
   }
 
   /**
