@@ -18,6 +18,7 @@ $ hash-stream pack write IMG_9528.mov --pack-size 10000000
 Packing file: IMG_9528.mov
     Pack Max Size: 10000000 bytes
     Index Writer: multiple-level
+    Store backend: fs
 
 Containing CID:
     bafkreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m

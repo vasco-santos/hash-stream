@@ -7,7 +7,7 @@ import { CID } from 'multiformats/cid'
 import { base58btc } from 'multiformats/bases/base58'
 
 import { getClient } from './lib.js'
-import { getFileStream } from './utils.js'
+import { getFileStream, resolveStoreBackend } from './utils.js'
 
 /**
  * @param {string} packCid
@@ -15,19 +15,24 @@ import { getFileStream } from './utils.js'
  * @param {string} [containingCid]
  * @param {{
  *   _: string[],
- *   'index-writer': 'single-level' | 'multiple-level'
+ *   'index-writer': 'single-level' | 'multiple-level',
+ *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
 export const indexAdd = async (
   packCid,
   filePath,
   containingCid,
-  opts = { 'index-writer': 'multiple-level', _: [] }
+  opts = { 'index-writer': 'multiple-level', 'store-backend': undefined, _: [] }
 ) => {
   const indexWriterImplementationName = validateIndexWriter(
     opts['index-writer']
   )
-  const client = await getClient({ indexWriterImplementationName })
+  const storeBackend = resolveStoreBackend(opts['store-backend'])
+  const client = await getClient({
+    indexWriterImplementationName,
+    storeBackend,
+  })
   if (!client.index.writer || !client.index.reader || !client.index.store) {
     console.error('Error: Index is not available.')
     process.exit(1)
@@ -86,8 +91,10 @@ export const indexAdd = async (
     )
   }
 
-  console.log(
-    `\nIndexing with implementation (${indexWriterImplementationName})...`
+  console.info(
+    `\nIndexing writer implementation: ${indexWriterImplementationName}
+    Store backend: ${storeBackend}
+    Indexing blobs...`
   )
   await client.index.writer.addBlobs(wrappedBlobIndexIterable, {
     containingMultihash: containingCidLink?.multihash,
@@ -99,18 +106,23 @@ export const indexAdd = async (
  * @param {string} [containingCid]
  * @param {{
  *   _: string[],
- *   'index-writer'?: 'single-level' | 'multiple-level'
+ *   'index-writer'?: 'single-level' | 'multiple-level',
+ *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
 export const indexFindRecords = async (
   targetCid,
   containingCid,
-  opts = { 'index-writer': 'multiple-level', _: [] }
+  opts = { 'index-writer': 'multiple-level', 'store-backend': undefined, _: [] }
 ) => {
   const indexWriterImplementationName = validateIndexWriter(
     opts['index-writer']
   )
-  const client = await getClient({ indexWriterImplementationName })
+  const storeBackend = resolveStoreBackend(opts['store-backend'])
+  const client = await getClient({
+    indexWriterImplementationName,
+    storeBackend,
+  })
   if (!client.index.writer || !client.index.reader || !client.index.store) {
     console.error('Error: Index is not available.')
     process.exit(1)
@@ -145,9 +157,14 @@ export const indexFindRecords = async (
     )
   }
 
-  console.log(`\nFinding target written using (${indexWriterImplementationName})...
+  console.info(
+    `\nIndexing store implementation: ${indexWriterImplementationName}
+    Store backend: ${storeBackend}
+    Finding target...
     ${targetCid}
-    base58btc(${base58btc.encode(targetMultihash.bytes)})`)
+    base58btc(${base58btc.encode(targetMultihash.bytes)})`
+  )
+
   try {
     const records = await all(
       client.index.reader.findRecords(targetMultihash, {
@@ -169,22 +186,37 @@ export const indexFindRecords = async (
 /**
  * @param {{
  *   _: string[],
- *   'index-writer'?: 'single-level' | 'multiple-level'
+ *   'index-writer'?: 'single-level' | 'multiple-level',
+ *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
 export const indexClear = async (
-  opts = { 'index-writer': 'multiple-level', _: [] }
+  opts = { 'index-writer': 'multiple-level', 'store-backend': undefined, _: [] }
 ) => {
+  const storeBackend = resolveStoreBackend(opts['store-backend'])
+  if (storeBackend === 's3') {
+    console.error(`Error clearing ${storeBackend}: Not supported`)
+    process.exit(1)
+  }
+
   const indexWriterImplementationName = validateIndexWriter(
     opts['index-writer']
   )
-  const client = await getClient({ indexWriterImplementationName })
+  const client = await getClient({
+    indexWriterImplementationName,
+    storeBackend,
+  })
   if (!client.index.writer || !client.index.reader || !client.index.store) {
     console.error('Error: Index is not available.')
     process.exit(1)
   }
 
+  // @ts-expect-error not existing in s3 store
   const directoryPath = client.index.store.directory
+  if (!directoryPath) {
+    console.error('Error: Directory path is not available.')
+    process.exit(1)
+  }
 
   try {
     const files = await fs.promises.readdir(directoryPath)

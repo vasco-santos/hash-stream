@@ -7,7 +7,7 @@ import { code as RawCode } from 'multiformats/codecs/raw'
 import { base58btc } from 'multiformats/bases/base58'
 
 import { getClient } from './lib.js'
-import { getFileStream } from './utils.js'
+import { getFileStream, resolveStoreBackend } from './utils.js'
 
 // 128MiB that is 134217728 bytes
 export const MAX_PACK_SIZE = 133_169_152
@@ -19,6 +19,7 @@ export const MAX_PACK_SIZE = 133_169_152
  *   'index-writer': 'single-level' | 'multiple-level' | 'none',
  *   format: 'car',
  *   'pack-size': number,
+ *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
 export const packWrite = async (
@@ -27,16 +28,21 @@ export const packWrite = async (
     'index-writer': 'multiple-level',
     format: 'car',
     'pack-size': MAX_PACK_SIZE,
+    'store-backend': undefined,
     _: [],
   }
 ) => {
+  const storeBackend = resolveStoreBackend(opts['store-backend'])
   const indexWriterImplementationName = validateIndexWriter(
     opts['index-writer']
   )
 
   validateFormat(opts.format)
 
-  const client = await getClient({ indexWriterImplementationName })
+  const client = await getClient({
+    indexWriterImplementationName,
+    storeBackend,
+  })
   const fileStream = await getFileStream(filePath)
   /** @type {Map<string, import('multiformats').MultihashDigest[]>} */
   const packBlobsMap = new Map()
@@ -44,7 +50,8 @@ export const packWrite = async (
   console.info(
     `\nPacking file: ${filePath}
     Pack Max Size: ${opts['pack-size']} bytes
-    Index Writer: ${indexWriterImplementationName}`
+    Index Writer: ${indexWriterImplementationName}
+    Store backend: ${storeBackend}`
   )
   const { containingMultihash, packsMultihashes } =
     await client.pack.writer.write(
@@ -104,14 +111,16 @@ export const packWrite = async (
  * @param {{
  *   _: string[],
  *   format: 'car',
+ *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
 export const packExtract = async (
   targetCid,
   filePath,
-  opts = { format: 'car', _: [] }
+  opts = { format: 'car', 'store-backend': undefined, _: [] }
 ) => {
   validateFormat(opts.format)
+  const storeBackend = resolveStoreBackend(opts['store-backend'])
 
   let targetMultihash
   try {
@@ -131,7 +140,10 @@ export const packExtract = async (
     resolvedPath = process.cwd()
   }
 
-  const client = await getClient()
+  const client = await getClient({
+    indexWriterImplementationName: 'none',
+    storeBackend,
+  })
 
   // Currenty only car is supported
   const entries = []
@@ -153,10 +165,32 @@ export const packExtract = async (
   )
 }
 
-export const packClear = async () => {
-  const client = await getClient()
+/**
+ * @param {{
+ *   _: string[],
+ *   'store-backend'?: 'fs' | 's3'
+ * }} [opts]
+ */
+export const packClear = async (
+  opts = { 'store-backend': undefined, _: [] }
+) => {
+  const storeBackend = resolveStoreBackend(opts['store-backend'])
+  if (storeBackend === 's3') {
+    console.error(`Error clearing ${storeBackend}: Not supported`)
+    process.exit(1)
+  }
 
-  const directoryPath = client.pack.store.directory
+  const client = await getClient({
+    indexWriterImplementationName: 'none',
+    storeBackend,
+  })
+
+  // @ts-expect-error not existing in s3 store
+  const directoryPath = client.index.store.directory
+  if (!directoryPath) {
+    console.error('Error: Directory path is not available.')
+    process.exit(1)
+  }
 
   try {
     const files = await fs.promises.readdir(directoryPath)

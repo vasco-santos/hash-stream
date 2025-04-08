@@ -6,9 +6,10 @@ import { CarWriter } from '@ipld/car/writer'
 import { CID } from 'multiformats/cid'
 import { code as RawCode } from 'multiformats/codecs/raw'
 import { base58btc } from 'multiformats/bases/base58'
+import { equals } from 'uint8arrays/equals'
 
 import { getClient } from './lib.js'
-import { equals } from 'uint8arrays/equals'
+import { resolveStoreBackend } from './utils.js'
 
 const dagPbCode = 0x70
 
@@ -18,16 +19,23 @@ const dagPbCode = 0x70
  * @param {string} [containingCid]
  * @param {{
  *   _: string[],
- * 'index-writer': 'single-level' | 'multiple-level',
+ *   'index-writer': 'single-level' | 'multiple-level',
  *   format: 'car',
+ *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
 export const streamerDump = async (
   targetCid,
   filePath,
   containingCid,
-  opts = { 'index-writer': 'multiple-level', format: 'car', _: [] }
+  opts = {
+    'index-writer': 'multiple-level',
+    format: 'car',
+    'store-backend': undefined,
+    _: [],
+  }
 ) => {
+  const storeBackend = resolveStoreBackend(opts['store-backend'])
   const indexWriterImplementationName = validateIndexWriter(
     opts['index-writer']
   )
@@ -73,7 +81,10 @@ export const streamerDump = async (
   }
 
   // get client
-  const client = await getClient({ indexWriterImplementationName })
+  const client = await getClient({
+    indexWriterImplementationName,
+    storeBackend,
+  })
   if (!client.streamer) {
     console.error('Error: Streamer not available.')
     process.exit(1)

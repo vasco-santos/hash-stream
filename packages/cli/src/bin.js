@@ -28,6 +28,10 @@ cli
   )
   .example('streamer dump bafy... /usr/dumps/baf...car')
   .option('-f, --format', 'Pack format: "car"', 'car')
+  .option(
+    '-sb, --store-backend',
+    'Which storage backend to use: "fs" (default) or "s3" for S3-like storage'
+  )
   .action(streamerDump)
 
 // Pack commands
@@ -46,6 +50,10 @@ cli
     'Indexing writer implementation: "single-level" or "multiple-level"',
     'multiple-level'
   )
+  .option(
+    '-sb, --store-backend',
+    'Which storage backend to use: "fs" (default) or "s3" for S3-like storage'
+  )
   .action(packWrite)
 
 // Command: Extract Packs
@@ -56,6 +64,10 @@ cli
   )
   .example('pack extract bag... some-file.car')
   .option('-f, --format', 'Pack format: "car"', 'car')
+  .option(
+    '-sb, --store-backend',
+    'Which storage backend to use: "fs" (default) or "s3" for S3-like storage'
+  )
   .action(packExtract)
 
 // Command: Clear packs
@@ -63,6 +75,10 @@ cli
   .command('pack clear')
   .describe('Clear all packs stored.')
   .example('pack clear')
+  .option(
+    '-sb, --store-backend',
+    'Which storage backend to use: "fs" (default) or "s3" for S3-like storage'
+  )
   .action(packClear)
 
 // Index commands
@@ -80,6 +96,10 @@ cli
     'Indexing writer implementation: "single-level" or "multiple-level"',
     'multiple-level'
   )
+  .option(
+    '-sb, --store-backend',
+    'Which storage backend to use: "fs" (default) or "s3" for S3-like storage'
+  )
   .action(indexAdd)
 
 // Command: Find index records for a given target
@@ -95,6 +115,10 @@ cli
     'Indexing writer implementation: "single-level" or "multiple-level"',
     'multiple-level'
   )
+  .option(
+    '-sb, --store-backend',
+    'Which storage backend to use: "fs" (default) or "s3" for S3-like storage'
+  )
   .action(indexFindRecords)
 
 // Command: Clear Index
@@ -107,6 +131,10 @@ cli
     '-iw, --index-writer',
     'Indexing writer implementation: "single-level" or "multiple-level"',
     'multiple-level'
+  )
+  .option(
+    '-sb, --store-backend',
+    'Which storage backend to use: "fs" (default) or "s3" for S3-like storage'
   )
   .action(indexClear)
 
