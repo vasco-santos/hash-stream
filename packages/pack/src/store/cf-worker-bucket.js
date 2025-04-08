@@ -12,7 +12,7 @@ export class CloudflareWorkerBucketPackStore {
    * @param {import('@cloudflare/workers-types').R2Bucket} config.bucket - R2 bucket instance of a worker.
    * @param {string} [config.prefix] - Optional prefix for stored objects.
    */
-  constructor({ bucket, prefix }) {
+  constructor({ bucket, prefix = '' }) {
     this.bucket = bucket
     this.prefix = prefix
   }
