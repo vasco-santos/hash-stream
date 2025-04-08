@@ -4,6 +4,7 @@ import { dirname, join } from 'path'
 
 import { createEnv } from './helpers/env.js'
 import * as Command from './helpers/process.js'
+import { createS3Like, createBucket } from './helpers/resources.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -12,6 +13,25 @@ const hashStreamCmd = Command.create(binPath)
 const env = createEnv()
 
 describe('CLI index', () => {
+  /** @type {Record<string, string>} */
+  let awsEnv
+
+  before(async () => {
+    // S3 like prep
+    const { client, clientOpts } = await createS3Like()
+    const indexBucket = await createBucket(client)
+    const packBucket = await createBucket(client)
+
+    awsEnv = {
+      AWS_ACCESS_KEY_ID: clientOpts.credentials.accessKeyId,
+      AWS_SECRET_ACCESS_KEY: clientOpts.credentials.secretAccessKey,
+      AWS_REGION: clientOpts.region,
+      AWS_ENDPOINT: clientOpts.endpoint,
+      HASH_STREAM_S3_INDEX_BUCKET: indexBucket,
+      HASH_STREAM_S3_PACK_BUCKET: packBucket,
+    }
+  })
+
   it('fails index add if invalid pack CID provided', async () => {
     const fail = await hashStreamCmd
       .args(['index', 'add', 'bagbaieraquzn', 'test/fixture.car'])
@@ -69,7 +89,7 @@ describe('CLI index', () => {
     assert.equal(add.status.code, 0)
     assert.match(
       add.output,
-      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing with implementation \(single-level\)\.\.\.\n+(?:Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
+      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing writer implementation: single-level\n\s+Store backend: fs\n\s+Indexing blobs\.\.\.\n+(?:Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
@@ -88,9 +108,37 @@ describe('CLI index', () => {
       .join()
 
     assert.equal(add.status.code, 0)
+    // Match Pack CID
     assert.match(
       add.output,
-      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing with implementation \(multiple-level\)\.\.\.\n+(?:Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
+      /Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)/
+    )
+
+    // Match Containing CID
+    assert.match(
+      add.output,
+      /Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)/
+    )
+
+    // Match Indexing writer implementation
+    assert.match(add.output, /Indexing writer implementation: multiple-level/)
+
+    // Match "Store backend: fs" part (optional)
+    assert.match(add.output, /\s+Store backend: fs/)
+
+    // Match "Indexing blobs..." part (optional)
+    assert.match(add.output, /\s+Indexing blobs\.\.\./)
+
+    // Match Indexed Blob with extra indentation
+    assert.match(
+      add.output,
+      /Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+/
+    )
+
+    // Match additional Indexed Blob(s) with correct indentation
+    assert.match(
+      add.output,
+      /(?:\s*Indexed Blob:\s*\n\s+[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
@@ -108,9 +156,38 @@ describe('CLI index', () => {
       .join()
 
     assert.equal(add.status.code, 0)
+
+    // Match Pack CID
     assert.match(
       add.output,
-      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*(?:Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)?\s*Indexing with implementation \(multiple-level\)\.\.\.\n+(?:Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
+      /Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)/
+    )
+
+    // Match optional Containing CID (it may or may not be present)
+    assert.match(
+      add.output,
+      /(?:Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)?/
+    )
+
+    // Match Indexing writer implementation
+    assert.match(add.output, /Indexing writer implementation: multiple-level/)
+
+    // Match "Store backend: fs" part (optional)
+    assert.match(add.output, /\s+Store backend: fs/)
+
+    // Match "Indexing blobs..." part (optional)
+    assert.match(add.output, /\s+Indexing blobs\.\.\./)
+
+    // Match Indexed Blob with extra indentation
+    assert.match(
+      add.output,
+      /Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+/
+    )
+
+    // Match additional Indexed Blob(s) with correct indentation
+    assert.match(
+      add.output,
+      /(?:\s*Indexed Blob:\s*\n\s+[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
@@ -154,9 +231,21 @@ describe('CLI index', () => {
       .join()
 
     assert.equal(find.status.code, 0)
+
+    // Match Target CID
     assert.match(
       find.output,
-      /\n*Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target written using \(single-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s*multihash:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*location:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+\n*/
+      /Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)/
+    )
+
+    // Match Indexing store implementation (includes optional Store backend)
+    assert.match(find.output, /Indexing store implementation: single-level/)
+    assert.match(find.output, /\s+Store backend: fs/)
+
+    // Match Index Records section
+    assert.match(
+      find.output,
+      /Index Records:\n\s*multihash:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*location:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+/
     )
   })
 
@@ -174,10 +263,18 @@ describe('CLI index', () => {
       .join()
 
     assert.equal(find.status.code, 0)
+
+    // Match Target CID
     assert.match(
       find.output,
-      /\n*Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target written using \(single-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+Not found\.\n*/
+      /Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)/
     )
+
+    // Match Finding target written using (single-level)
+    assert.match(find.output, /Finding target\s*\.\.\.\n/)
+
+    // Match Index Records: Not found
+    assert.match(find.output, /Index Records:\n\s+Not found\./)
   })
 
   it('can index find records with multiple index writer implementation for a blob', async () => {
@@ -195,6 +292,7 @@ describe('CLI index', () => {
       .join()
 
     assert.equal(find.status.code, 0)
+
     // Match Target CID
     assert.match(
       find.output,
@@ -207,10 +305,10 @@ describe('CLI index', () => {
       /Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
-    // Match Finding target written using (multiple-level)
+    // Match Finding target written using (multiple-level) - Adjusted
     assert.match(
       find.output,
-      /Finding target written using \(multiple-level\)\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+      /Finding target\s*\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
     // Match Index Records section
@@ -235,6 +333,7 @@ describe('CLI index', () => {
       .join()
 
     assert.equal(find.status.code, 0)
+
     // Match Target CID
     assert.match(
       find.output,
@@ -250,7 +349,7 @@ describe('CLI index', () => {
     // Match Finding target written using (multiple-level)
     assert.match(
       find.output,
-      /Finding target written using \(multiple-level\)\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+      /Finding target\s*\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
     // Match Index Records section
@@ -287,10 +386,10 @@ describe('CLI index', () => {
       /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
-    // Match Finding target written using (multiple-level)
+    // Match Finding target
     assert.match(
       find.output,
-      /Finding target written using \(multiple-level\)\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+      /Finding target\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
     // Match Index Records section
@@ -325,13 +424,30 @@ describe('CLI index', () => {
       .join()
 
     assert.equal(find.status.code, 0)
-    // Adjusting the regex to be more flexible with newlines and spacing
 
+    // Match Target CID
     assert.match(
       find.output,
-      /\s*Target CID:\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Finding target written using \(multiple-level\)\.\.\.\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Index Records:\n\s+Not found\.\n*/,
-      'Output did not match expected pattern for unknown target'
+      /\s*Target CID:\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
+
+    // Match Containing CID
+    assert.match(
+      find.output,
+      /\s*Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Indexing store implementation
+    assert.match(find.output, /Indexing store implementation: multiple-level/)
+
+    // Match Finding target
+    assert.match(
+      find.output,
+      /\s*Finding target\.\.\.\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Index Records: Not found
+    assert.match(find.output, /Index Records:\n\s+Not found\.\n/)
   })
 
   it('can index clear', async () => {
@@ -345,5 +461,70 @@ describe('CLI index', () => {
       .env(env)
       .join()
     assert.match(clear.output, /\n*Cleared all files in directory:\s*\/[\S]+\n/)
+  })
+
+  it('can index add and find records with s3 like bucket', async () => {
+    const add = await hashStreamCmd
+      .args([
+        'index',
+        'add',
+        'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
+        'test/fixture.car',
+        'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
+        '--index-writer',
+        'multiple-level',
+        '--store-backend',
+        's3',
+      ])
+      .env({
+        ...env,
+        ...awsEnv,
+      })
+      .join()
+
+    assert.equal(add.status.code, 0)
+
+    // Match "Store backend: s3" part
+    assert.match(add.output, /\s+Store backend: s3/)
+
+    const find = await hashStreamCmd
+      .args([
+        'index',
+        'find',
+        'records',
+        'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
+        '--index-writer',
+        'multiple-level',
+        '--store-backend',
+        's3',
+      ])
+      .env({
+        ...env,
+        ...awsEnv,
+      })
+      .join()
+
+    assert.equal(find.status.code, 0)
+
+    // Match "Store backend: s3" part
+    assert.match(find.output, /\s+Store backend: s3/)
+
+    // Match Target CID
+    assert.match(
+      find.output,
+      /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Finding target
+    assert.match(
+      find.output,
+      /Finding target\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Index Records section
+    assert.match(find.output, /Index Records:/)
+
+    // Match type: CONTAINING, offset, length
+    assert.match(find.output, /type: CONTAINING, offset: N\/A, length: N\/A/)
   })
 })

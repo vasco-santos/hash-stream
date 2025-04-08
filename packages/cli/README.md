@@ -16,6 +16,7 @@ There are a few Usage guides provided in this repository:
 
 - Basic [Usage Guide](./BASIC_USAGE.md)
 - [Index previously generated CAR files](./PREVIOUSLY_GENERATED_CAR_INDEXING_USAGE.md)
+- [Custom store backend](./STORE_BACKEND_USAGE.md)
 
 ## Commands
 
@@ -48,6 +49,7 @@ pack write some-file.ext -iw single-level
 - `-f, --format` Specifies the pack format (default: `"car"`).
 - `-ps, --pack-size` Defines the maximum pack size in bytes (default: `MAX_PACK_SIZE`).
 - `-iw, --index-writer` Specifies the indexing writer implementation, which can be `"single-level"` or `"multiple-level"` (default: `"multiple-level"`).
+- `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
 
 ---
 
@@ -64,6 +66,7 @@ pack extract bafk... some-file.car
 #### Options:
 
 - `-f, --format` Specifies the pack format (default: `"car"`).
+- `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
 
 ---
 
@@ -93,6 +96,7 @@ index add bag... pack.car -iw single-level
 #### Options:
 
 - `-iw, --index-writer` Indexing writer implementation: "single-level" or "multiple-level" (default: `multiple-level`)
+- `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
 
 ---
 
@@ -110,6 +114,7 @@ index find records bafk... bafy... -iw multiple-level
 #### Options:
 
 - `-iw, --index-writer` Indexing writer implementation: "single-level" or "multiple-level" (default: `multiple-level`)
+- `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
 
 ---
 
@@ -144,6 +149,35 @@ streamer dump bafy... /usr/dumps/baf...car
 #### Options:
 
 - `-f, --format` Specifies the pack format (default: "car").
+- `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
+
+## Store Backend Configuration
+
+`hash-stream` supports two types of storage backends for storing and retrieving Packs and Indexes:
+
+- `fs` (default): local filesystem-based storage
+- `s3`: S3-like remote storage
+
+You can configure the backend either via CLI flags or environment variables.
+
+### Choosing a Store Backend
+
+You can set the backend using the `--store-backend` flag on commands that support it:
+
+```sh
+pack write file.ext --store-backend fs     # use filesystem (default)
+pack write file.ext --store-backend s3     # use S3-like remote storage
+```
+
+Or by setting the environment variable globally:
+
+```sh
+export HASH_STREAM_STORE_BACKEND=s3
+```
+
+If both are provided, the CLI flag takes precedence.
+
+See [STORE_BACKEND_USAGE](./STORE_BACKEND_USAGE.md) for usage help.
 
 ## FAQ
 
