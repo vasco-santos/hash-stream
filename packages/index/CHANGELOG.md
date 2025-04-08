@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/vasco-santos/hash-stream/compare/index-v1.1.0...index-v1.1.1) (2025-04-08)
+
+
+### Fixes
+
+* default empty prefix to empty string ([#50](https://github.com/vasco-santos/hash-stream/issues/50)) ([6caa3ce](https://github.com/vasco-santos/hash-stream/commit/6caa3cea54d99cedc4ef375b3cf726a8cfa72f9d))
+
 ## [1.1.0](https://github.com/vasco-santos/hash-stream/compare/index-v1.0.0...index-v1.1.0) (2025-04-07)
 
 
