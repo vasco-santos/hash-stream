@@ -34,17 +34,17 @@ const verifiableBlobsAsyncIterable = hashStreamer.stream(
 )
 
 const rawUint8Array = streamer.asRawUint8Array(
-  CID.createV1(RawCode, targetMultihash),
+  targetMultihash,
   verifiableBlobsAsyncIterable
 )
 ```
 
 **Parameters:**
 
-- `cid` (`CID`) – The target CID.
-- `stream` (`AsyncIterable<VerifiableBlob>`) – Stream of blobs to search through.
+- `multihashDigest` (`MultihashDigest`) – The target multihash digest to look for in the stream.
+- `stream` (`AsyncIterable<VerifiableBlob>`) – The stream of blobs to search through.
 
-**Returns:** `Promise<Uint8Array | undefined>`
+**Returns:** `Promise<Uint8Array | undefined>` – A `Uint8Array` containing the data from the stream, or `undefined` if no matching CID is found.
 
 ### `streamer.asCarReadableStream`
 
@@ -68,19 +68,20 @@ const verifiableBlobsAsyncIterable = hashStreamer.stream(
 )
 
 const rawUint8Array = streamer.asCarReadableStream(
-  CID.createV1(dagPbCode, containingMultihash),
+  containingMultihash,
   verifiableBlobsAsyncIterable
 )
 ```
 
 **Parameters:**
 
-- `cid` (`CID`) – The containing CID or the pack CID of the CAR file.
-- `stream` (`AsyncIterable<VerifiableBlob>`) – Stream of verifiable blobs.
+- `multihashDigest` (`MultihashDigest`) – The target multihash digest to look for in the stream.
+- `stream` (`AsyncIterable<VerifiableBlob>`) – The stream of verifiable blobs to search through.
 - `options` (optional):
+  - `roots` (`CID[] | CID`) – The roots of the CAR file. If omitted, it defaults to an empty array.
   - `targetMultihashCodec` (`number`) – CID codec to use for the matching blob. Defaults to `DAGPB` (0x70).
 
-**Returns:** `Promise<ReadableStream<Uint8Array> | undefined>`
+**Returns:** `Promise<ReadableStream<Uint8Array> | undefined>` – A `ReadableStream` containing the data from the stream, or `undefined` if no matching content is found.
 
 ---
 
