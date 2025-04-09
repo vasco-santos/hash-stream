@@ -127,8 +127,6 @@ export function runHashStreamTests(
         assert(equals(verifiableBlob.multihash.bytes, blobMultihash.bytes))
         const computedHash = await sha256.digest(verifiableBlob.bytes)
         assert(equals(verifiableBlob.multihash.bytes, computedHash.bytes))
-
-        break
       }
     })
     it('reads stream of verifiable pack from a written pack with multiple blobs', async () => {

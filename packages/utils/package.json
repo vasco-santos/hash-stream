@@ -1,11 +1,11 @@
 {
-  "name": "@hash-stream/streamer",
-  "version": "1.0.0",
-  "description": "The streamer client for hash-stream",
+  "name": "@hash-stream/utils",
+  "version": "0.0.0",
+  "description": "Utils for using hash-stream",
   "repository": {
     "type": "git",
     "url": "https://github.com/vasco-santos/hash-stream.git",
-    "directory": "packages/streamer"
+    "directory": "packages/utils"
   },
   "author": "Vasco Santos",
   "license": "Apache-2.0 OR MIT",
@@ -24,13 +24,20 @@
     "rc": "npm version prerelease --preid rc"
   },
   "exports": {
-    ".": "./dist/src/index.js",
-    "./types": "./dist/src/api.js"
+    "./types": "./dist/src/api.js",
+    "./trustless-ipfs-gateway": "./dist/src/trustless-ipfs-gateway/index.js",
+    "./trustless-ipfs-gateway/types": "./dist/src/trustless-ipfs-gateway/api.js"
   },
   "typesVersions": {
     "*": {
       "types": [
         "dist/src/api"
+      ],
+      "trustless-ipfs-gateway": [
+        "dist/src/trustless-ipfs-gateway/index.d.ts"
+      ],
+      "trustless-ipfs-gateway/types": [
+        "dist/src/trustless-ipfs-gateway/api.d.ts"
       ]
     }
   },
@@ -41,15 +48,16 @@
     "dist/src/**/*.d.ts.map"
   ],
   "dependencies": {
-    "@hash-stream/index": "workspace:^",
-    "@hash-stream/pack": "workspace:^",
+    "@hash-stream/streamer": "workspace:^",
+    "ipfs-core-utils": "^0.18.1",
     "multiformats": "^13.3.2",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@aws-sdk/client-s3": "^3.779.0",
     "@ipld/car": "^5.4.0",
     "@hash-stream/eslint-config": "workspace:^",
+    "@hash-stream/index": "workspace:^",
+    "@hash-stream/pack": "workspace:^",
     "@storacha/one-webcrypto": "^1.0.1",
     "@types/assert": "^1.5.11",
     "@types/mocha": "^10.0.10",
@@ -63,8 +71,6 @@
     "nanoid": "^5.1.5",
     "npm-run-all": "^4.1.5",
     "playwright-test": "^14.1.9",
-    "p-retry": "^6.2.1",
-    "testcontainers": "^10.24.0",
     "typescript": "^5.8.2"
   },
   "eslintConfig": {
