@@ -17,6 +17,9 @@
     },
     "packages/pack": {
       "release-type": "node"
+    },
+    "packages/utils": {
+      "release-type": "node"
     }
   },
   "monorepo-tags": true

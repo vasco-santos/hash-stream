@@ -1,0 +1,39 @@
+name: Utils
+env:
+  CI: true
+  FORCE_COLOR: 1
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/utils/**'
+      - 'packages/eslint-config/**'
+      - '.github/workflows/utils.yml'
+      - 'pnpm-lock.yaml'
+  pull_request:
+    paths:
+      - 'packages/utils/**'
+      - 'packages/eslint-config/**'
+      - '.github/workflows/utils.yml'
+      - 'pnpm-lock.yaml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version:
+          - 18
+          - 20
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm run build
+      - run: pnpm -r --filter @hash-stream/utils run lint
+      - run: pnpm -r --filter @hash-stream/utils run attw
+      - run: pnpm -r --filter @hash-stream/utils test
