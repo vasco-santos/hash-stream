@@ -32,7 +32,8 @@ jobs:
       contains(fromJson(needs.release.outputs.paths_released), 'packages/cli') ||
       contains(fromJson(needs.release.outputs.paths_released), 'packages/index') ||
       contains(fromJson(needs.release.outputs.paths_released), 'packages/pack') ||
-      contains(fromJson(needs.release.outputs.paths_released), 'packages/streamer')
+      contains(fromJson(needs.release.outputs.paths_released), 'packages/streamer') ||
+      contains(fromJson(needs.release.outputs.paths_released), 'packages/utils')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
