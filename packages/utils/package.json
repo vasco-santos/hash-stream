@@ -1,6 +1,6 @@
 {
   "name": "@hash-stream/utils",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Utils for using hash-stream",
   "repository": {
     "type": "git",
