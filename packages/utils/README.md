@@ -33,7 +33,7 @@ const verifiableBlobsAsyncIterable = hashStreamer.stream(
   { containingMultihash }
 )
 
-const rawUint8Array = streamer.asRawUint8Array(
+const rawUint8Array = await streamer.asRawUint8Array(
   targetMultihash,
   verifiableBlobsAsyncIterable
 )
@@ -67,7 +67,7 @@ const verifiableBlobsAsyncIterable = hashStreamer.stream(
   containingMultihash
 )
 
-const rawUint8Array = streamer.asCarReadableStream(
+const rawUint8Array = await streamer.asCarReadableStream(
   containingMultihash,
   verifiableBlobsAsyncIterable
 )
@@ -85,12 +85,71 @@ const rawUint8Array = streamer.asCarReadableStream(
 
 ---
 
+### `http.ipfsGet`
+
+Handles a trustless IPFS HTTP request by detecting the requested format (`car` or `raw`) and delegating to the appropriate handler.
+
+```js
+import { http } from '@hash-stream/utils/trustless-ipfs-gateway'
+
+const response = await http.ipfsGet(request, context)
+```
+
+**Parameters:**
+
+- `request` (`Request`) – The incoming HTTP request.
+- `context` (`{ hashStreamer: HashStreamer }`) – Context object providing the hash streamer.
+
+**Returns:** `Promise<Response>` – HTTP Response containing either a CAR or raw IPLD content, or an error.
+
+---
+
+### `http.httpCarGet`
+
+Gets trustless content behind IPFS CID as a CAR file.
+
+```js
+import { http } from '@hash-stream/utils/trustless-ipfs-gateway'
+
+const response = await http.httpCarGet(request, context)
+```
+
+**Parameters:**
+
+- `request` (`Request`) – The incoming HTTP request.
+- `context` (`{ hashStreamer: HashStreamer }`) – Context object providing the hash streamer.
+
+**Returns:** `Promise<Response>` – HTTP Response containing the CAR stream or an error.
+
+---
+
+### `http.httpRawGet`
+
+Gets trustless content behind IPFS CID as raw bytes.
+
+```js
+import { http } from '@hash-stream/utils/trustless-ipfs-gateway'
+
+const response = await http.httpRawGet(request, context)
+```
+
+**Parameters:**
+
+- `request` (`Request`) – The incoming HTTP request.
+- `context` (`{ hashStreamer: HashStreamer }`) – Context object providing the hash streamer.
+
+**Returns:** `Promise<Response>` – HTTP Response containing the raw content or an error.
+
+---
+
 ### `http.buildCarHTTPResponse`
 
 Generates an HTTP `Response` object with headers set to serve a CAR file download.
 
 ```ts
-import { http: { buildCarHTTPResponse } } from '@hash-stream/utils/trustless-ipfs-gateway'
+import { http } from '@hash-stream/utils/trustless-ipfs-gateway'
+
+const httpResponse = http.buildCarHTTPResponse(cid, body, options)
 ```
 
 **Parameters:**
@@ -112,7 +171,9 @@ import { http: { buildCarHTTPResponse } } from '@hash-stream/utils/trustless-ipf
 Generates an HTTP `Response` object with headers set to serve raw IPLD data.
 
 ```ts
-import { http: { buildRawHTTPResponse } } from '@hash-stream/utils/trustless-ipfs-gateway'
+import { http } from '@hash-stream/utils/trustless-ipfs-gateway'
+
+const httpResponse = http.buildRawHTTPResponse(cid, body, options)
 ```
 
 **Parameters:**
@@ -123,6 +184,30 @@ import { http: { buildRawHTTPResponse } } from '@hash-stream/utils/trustless-ipf
   - `fileName?` (`string`) – Suggested filename.
 
 **Returns:** `Response`
+
+---
+
+### `http.getCarAcceptParams`
+
+Parses the Accept header from an HTTP request to extract CAR format parameters like version, block order, and duplicates. Defaults to CARv1 with unknown order and duplicates allowed if no or invalid parameters are provided.
+
+```ts
+import { http } from '@hash-stream/utils/trustless-ipfs-gateway'
+
+const carParams = http.getCarAcceptParams(request.headers)
+```
+
+**Parameters:**
+
+- headers (`Headers`) – The Headers object from the HTTP request.
+
+**Returns**: `CarParams`
+
+- `version (1)` – The CAR format version (only 1 supported).
+- `order? ('dfs' | 'unk')` – Block traversal order.
+- `dups (true)` – Whether duplicates are allowed (only true supported).
+
+**Throws:** Error – If the client requests an unsupported version, order, or duplicate flag.
 
 ---
 

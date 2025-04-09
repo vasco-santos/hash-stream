@@ -1,5 +1,110 @@
-import * as API from './api.js'
 import { CID } from 'multiformats/cid'
+import * as API from './api.js'
+import * as streamer from './streamer.js'
+import * as cidUtils from './cid.js'
+
+/**
+ * Get trustless content behind IPFS CID depending on requested format.
+ *
+ * @param {Request} request - The incoming HTTP request.
+ * @param {{ hashStreamer: import('@hash-stream/streamer').HashStreamer }} context - Context object providing the hash streamer.
+ * @returns {Promise<Response>} HTTP Response containing the CAR stream or error.
+ */
+export async function httpipfsGet(request, context) {
+  const format = resolveRequestedFormat(request)
+
+  switch (format) {
+    case 'car':
+      return await httpCarGet(request, context)
+    case 'raw':
+      return await httpRawGet(request, context)
+    default:
+      return new Response('not acceptable format', { status: 406 })
+  }
+}
+
+/**
+ * Get trustless content behind IPFS CID as a CAR file.
+ *
+ * @param {Request} request - The incoming HTTP request.
+ * @param {{ hashStreamer: import('@hash-stream/streamer').HashStreamer }} context - Context object providing the hash streamer.
+ * @returns {Promise<Response>} HTTP Response containing the CAR stream or error.
+ */
+export async function httpCarGet(request, context) {
+  let cid
+  let carResponseOptions
+
+  const fileName = extractFileNameFromRequest(request)
+
+  try {
+    cid = await extractCidFromRequest(request)
+  } catch (/** @type {any} */ err) {
+    return new Response(err.message, { status: 400 })
+  }
+
+  try {
+    carResponseOptions = getCarAcceptParams(request.headers)
+  } catch (/** @type {any} */ err) {
+    return new Response(err.message, { status: 400 })
+  }
+
+  const verifiableBlobsAsyncIterable = context.hashStreamer.stream(
+    cid.multihash
+  )
+  const carReadableStream = await streamer.asCarReadableStream(
+    cid.multihash,
+    verifiableBlobsAsyncIterable,
+    {
+      roots: [cid],
+    }
+  )
+
+  if (!carReadableStream) {
+    return new Response(undefined, { status: 404 })
+  }
+
+  return buildCarHTTPResponse(cid, carReadableStream, {
+    ...carResponseOptions,
+    fileName,
+  })
+}
+
+/**
+ * Get trustless content behind IPFS CID as raw bytes.
+ *
+ * @param {Request} request - The incoming HTTP request.
+ * @param {{ hashStreamer: import('@hash-stream/streamer').HashStreamer }} context - Context object providing the hash streamer.
+ * @returns {Promise<Response>} HTTP Response containing the raw content or an error.
+ */
+export async function httpRawGet(request, context) {
+  const fileName = extractFileNameFromRequest(request)
+
+  /** @type {import('multiformats').CID} */
+  let cid
+  try {
+    cid = await extractCidFromRequest(request)
+  } catch (/** @type {any} */ err) {
+    return new Response(err.message, { status: 400 })
+  }
+
+  // Get Raw Uint8Array for response
+  const verifiableBlobsAsyncIterable = context.hashStreamer.stream(
+    cid.multihash
+  )
+  const rawUint8Array = await streamer.asRawUint8Array(
+    cid.multihash,
+    verifiableBlobsAsyncIterable
+  )
+
+  // Return response as either not found or raw Uint8Array
+  if (!rawUint8Array) {
+    return new Response(undefined, { status: 404 })
+  }
+
+  return buildRawHTTPResponse(cid, rawUint8Array, {
+    fileName,
+  })
+}
 
 /**
  * Build a HTTP response with the content behind a given CID in CAR format.
@@ -106,4 +211,67 @@ const defaultCarParams = {
   version: 1,
   order: 'unk',
   dups: true,
+}
+
+/**
+ * MIME types for supported response formats.
+ */
+export const FormatMime = {
+  car: 'application/vnd.ipld.car',
+  raw: 'application/vnd.ipld.raw',
+}
+
+/**
+ * Resolves the requested format (either 'car' or 'raw') based on query param or Accept header.
+ *
+ * @param {Request} request - The incoming HTTP request.
+ * @returns {'car' | 'raw' | undefined} The resolved format or undefined if none matched.
+ */
+export function resolveRequestedFormat(request) {
+  const { searchParams } = new URL(request.url)
+  const formatParam = searchParams.get('format') ?? ''
+  const acceptHeader = request.headers.get('Accept') ?? ''
+
+  if (formatParam === 'car' || acceptHeader.includes(FormatMime.car)) {
+    return 'car'
+  } else if (formatParam === 'raw' || acceptHeader.includes(FormatMime.raw)) {
+    return 'raw'
+  }
+  return undefined
+}
+
+/**
+ * Extracts the file name from the request's `filename` query parameter.
+ *
+ * @param {Request} request - The incoming HTTP request.
+ * @returns {string|undefined} The filename if provided, or null.
+ */
+export function extractFileNameFromRequest(request) {
+  const url = new URL(request.url)
+  return url.searchParams.get('filename') || undefined
+}
+
+/**
+ * Extracts and normalizes a CID from the request params.
+ *
+ * @param {Request} request - Request with potential `cid` in `params`.
+ * @returns {Promise<CID>} The normalized CID.
+ * @throws {Error} If CID is missing or invalid.
+ */
+export async function extractCidFromRequest(request) {
+  const url = new URL(request.url)
+  const parts = url.pathname.split('/')
+  if (parts.length < 3 || parts[1] !== 'ipfs') {
+    throw new Error('CID not found in URL path. Expected format: /ipfs/<cid>')
+  }
+  const cidStr = parts[2]
+  if (!cidStr) {
+    throw new Error('cid path param is not provided')
+  }
+
+  try {
+    return await cidUtils.normalizeCid(cidStr)
+  } catch (e) {
+    throw new Error('cid path param is invalid')
+  }
 }
