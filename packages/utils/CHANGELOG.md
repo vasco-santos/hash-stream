@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/vasco-santos/hash-stream/compare/utils-v1.1.0...utils-v1.2.0) (2025-04-09)
+
+
+### Features
+
+* add higher level utils for handling http requests ([#61](https://github.com/vasco-santos/hash-stream/issues/61)) ([6884e9d](https://github.com/vasco-santos/hash-stream/commit/6884e9de91ee195f8403cb309f1fc90291452e37))
+
 ## [1.1.0](https://github.com/vasco-santos/hash-stream/compare/utils-v1.0.0...utils-v1.1.0) (2025-04-09)
 
 
