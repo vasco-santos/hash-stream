@@ -148,7 +148,7 @@ streamer dump bafy... /usr/dumps/baf...car
 
 #### Options:
 
-- `-f, --format` Specifies the pack format (default: "car").
+- `-f, --format` Specifies the pack format to use: "car" or "raw" (default: "car").
 - `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
 
 ## Store Backend Configuration

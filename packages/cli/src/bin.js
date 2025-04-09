@@ -27,7 +27,7 @@ cli
     The data is extracted and written to the specified file path in the selected Pack format.`
   )
   .example('streamer dump bafy... /usr/dumps/baf...car')
-  .option('-f, --format', 'Pack format: "car"', 'car')
+  .option('-f, --format', 'Pack format: "car" or "raw"', 'car')
   .option(
     '-sb, --store-backend',
     'Which storage backend to use: "fs" (default) or "s3" for S3-like storage'
