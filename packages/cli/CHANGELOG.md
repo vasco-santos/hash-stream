@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/vasco-santos/hash-stream/compare/cli-v1.1.0...cli-v1.2.0) (2025-04-09)
+
+
+### Features
+
+* cli uses trustless ipfs util for streamer dump and supports raw ([#57](https://github.com/vasco-santos/hash-stream/issues/57)) ([2613f76](https://github.com/vasco-santos/hash-stream/commit/2613f76ced81c98bd042dc1ab0f37c554d7afdf0))
+
 ## [1.1.0](https://github.com/vasco-santos/hash-stream/compare/cli-v1.0.0...cli-v1.1.0) (2025-04-08)
 
 
