@@ -50,6 +50,7 @@
     "@hash-stream/streamer": "workspace:^",
     "@hash-stream/index": "workspace:^",
     "@hash-stream/pack": "workspace:^",
+    "@hash-stream/utils": "workspace:^",
     "@ipld/car": "^5.4.0",
     "conf": "^11.0.2",
     "multiformats": "^13.3.2",

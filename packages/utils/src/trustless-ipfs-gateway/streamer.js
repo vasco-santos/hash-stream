@@ -8,14 +8,14 @@ export const DAGPB_CODE = 0x70
 /**
  * Transforms a stream of VerifiableBlobs into a Raw bytes.
  *
- * @param {import('multiformats').CID} cid
+ * @param {import('multiformats').MultihashDigest} multihashDigest
  * @param {AsyncIterable<import('@hash-stream/streamer/types').VerifiableBlob>} stream
  * @returns {Promise<Uint8Array | undefined>} A ReadableStream containing the data from the stream, or null if no data was written.
  */
-export async function asRawUint8Array(cid, stream) {
+export async function asRawUint8Array(multihashDigest, stream) {
   let rawBytes
   for await (const { multihash, bytes } of stream) {
-    if (equals(multihash.bytes, cid.multihash.bytes)) {
+    if (equals(multihash.bytes, multihashDigest.bytes)) {
       rawBytes = bytes
       break
     }
@@ -31,14 +31,19 @@ export async function asRawUint8Array(cid, stream) {
 /**
  * Transforms a stream of VerifiableBlobs into a CARv1 ReadableStream.
  *
- * @param {import('multiformats').CID} cid
+ * @param {import('multiformats').MultihashDigest} multihashDigest
  * @param {AsyncIterable<import('@hash-stream/streamer/types').VerifiableBlob>} stream
  * @param {object} [options]
+ * @param {CID[] | CID} [options.roots]
  * @param {number} [options.targetMultihashCodec]
  * @returns {Promise<ReadableStream<Uint8Array> | undefined>} A ReadableStream containing the data from the stream, or null if no data was written.
  */
-export async function asCarReadableStream(cid, stream, options = {}) {
-  const { writer, out } = CarWriter.create(cid)
+export async function asCarReadableStream(
+  multihashDigest,
+  stream,
+  options = {}
+) {
+  const { writer, out } = CarWriter.create(options.roots)
 
   let wroteSomething = false
   /* c8 ignore next 2 */
@@ -59,7 +64,7 @@ export async function asCarReadableStream(cid, stream, options = {}) {
           resolveFirstWrite()
         }
 
-        if (equals(multihash.bytes, cid.multihash.bytes)) {
+        if (equals(multihash.bytes, multihashDigest.bytes)) {
           await writer.put({
             cid: CID.createV1(
               options.targetMultihashCodec || DAGPB_CODE,
@@ -68,7 +73,8 @@ export async function asCarReadableStream(cid, stream, options = {}) {
             bytes,
           })
         } else {
-          await writer.put({ cid: CID.createV1(RawCode, multihash), bytes })
+          const rawCid = CID.createV1(RawCode, multihash)
+          await writer.put({ cid: rawCid, bytes })
         }
       }
     } finally {

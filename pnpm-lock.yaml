@@ -57,6 +57,9 @@ importers:
       '@hash-stream/streamer':
         specifier: workspace:^
         version: link:../streamer
+      '@hash-stream/utils':
+        specifier: workspace:^
+        version: link:../utils
       '@ipld/car':
         specifier: ^5.4.0
         version: 5.4.0

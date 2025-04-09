@@ -2,11 +2,11 @@ import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
 
-import { CarWriter } from '@ipld/car/writer'
 import { CID } from 'multiformats/cid'
 import { code as RawCode } from 'multiformats/codecs/raw'
 import { base58btc } from 'multiformats/bases/base58'
 import { equals } from 'uint8arrays/equals'
+import { streamer } from '@hash-stream/utils/trustless-ipfs-gateway'
 
 import { getClient } from './lib.js'
 import { resolveStoreBackend } from './utils.js'
@@ -20,7 +20,7 @@ const dagPbCode = 0x70
  * @param {{
  *   _: string[],
  *   'index-writer': 'single-level' | 'multiple-level',
- *   format: 'car',
+ *   format: 'car' | 'raw',
  *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
@@ -95,39 +95,68 @@ export const streamerDump = async (
   if (!containingMultihash) {
     roots.push(CID.createV1(dagPbCode, targetMultihash))
   }
-  const { writer: carWriter, out } = await CarWriter.create(roots)
-  Readable.from(out).pipe(fs.createWriteStream(resolvedPath))
 
-  let hasEntries = false
-  for await (const { multihash, bytes } of client.streamer.stream(
-    targetMultihash,
-    { containingMultihash }
-  )) {
-    hasEntries = true
-    if (equals(multihash.bytes, targetMultihash.bytes)) {
-      const cid = CID.createV1(dagPbCode, multihash)
-      carWriter.put({ cid, bytes })
+  // Get the verifiable blobs from the blob async iterable
+  const verifiableBlobsAsyncIterable = client.streamer.stream(targetMultihash, {
+    containingMultihash,
+  })
+
+  if (opts.format === 'car') {
+    // transform it into a CAR ReadableStream
+    const readableStream = await streamer.asCarReadableStream(
+      targetMultihash,
+      verifiableBlobsAsyncIterable,
+      {
+        roots,
+        targetMultihashCodec:
+          containingMultihash &&
+          !equals(containingMultihash.bytes, targetMultihash.bytes)
+            ? RawCode
+            : dagPbCode,
+      }
+    )
+
+    if (!readableStream) {
+      await fs.promises.rm(resolvedPath, { force: true })
+      console.info(`\nNo entries for ${targetCid} were found`)
+      return
     }
-    const cid = CID.createV1(RawCode, multihash)
-    carWriter.put({ cid, bytes })
-  }
-  await carWriter.close()
+    // Write the CAR to a file
+    // @ts-expect-error web stream and node stream types are not compatible
+    Readable.fromWeb(readableStream).pipe(fs.createWriteStream(resolvedPath))
 
-  if (!hasEntries) {
-    await fs.promises.rm(resolvedPath, { force: true })
-    console.info(`\nNo entries for ${targetCid} were found`)
-    return
-  }
+    console.info(
+      `\nSuccessfully wrote ${targetCid} bytes as CAR to ${resolvedPath}`
+    )
+  } else {
+    // transform it into a RAW Uint8Array
+    const rawUint8Array = await streamer.asRawUint8Array(
+      targetMultihash,
+      verifiableBlobsAsyncIterable
+    )
 
-  console.info(`\nSuccessfully wrote ${targetCid} bytes to ${resolvedPath}`)
+    if (!rawUint8Array) {
+      await fs.promises.rm(resolvedPath, { force: true })
+      console.info(`\nNo entries for ${targetCid} were found`)
+      return
+    }
+    // Write the RAW to a file
+    await fs.promises.writeFile(resolvedPath, rawUint8Array)
+
+    console.info(
+      `\nSuccessfully wrote ${targetCid} bytes as RAW to ${resolvedPath}`
+    )
+  }
 }
 
 /**
  * @param {string} type
  */
 function validateFormat(type) {
-  if (type !== 'car') {
-    console.error(`Error: Invalid type "${type}". Only "car" is supported.`)
+  if (type !== 'car' && type !== 'raw') {
+    console.error(
+      `Error: Invalid type "${type}". Only "car" and "raw" are supported.`
+    )
     process.exit(1)
   }
 }

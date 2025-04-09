@@ -95,7 +95,7 @@ describe(`trustless ipfs gateway utils`, () => {
         )
         // transform the verifiable blobs async iterable into a Raw uint8array
         const rawUint8Array = await asRawUint8Array(
-          CID.createV1(RawCode, blobMultihash),
+          blobMultihash,
           verifiableBlobsAsyncIterable
         )
         assert(rawUint8Array)
@@ -138,9 +138,13 @@ describe(`trustless ipfs gateway utils`, () => {
       })
 
       // transform the verifiable blobs async iterable into a CAR readable stream
+      const containingCid = CID.createV1(dagPbCode, containingMultihash)
       const carReadableStream = await asCarReadableStream(
-        CID.createV1(dagPbCode, containingMultihash),
-        verifiableBlobsAsyncIterable
+        containingMultihash,
+        verifiableBlobsAsyncIterable,
+        {
+          roots: [containingCid],
+        }
       )
       assert(carReadableStream)
       const readBytes = await readAllBytes(carReadableStream)
@@ -189,9 +193,13 @@ describe(`trustless ipfs gateway utils`, () => {
         hashStreamer.stream(containingMultihash)
 
       // transform the verifiable blobs async iterable into a CAR readable stream
+      const containingCid = CID.createV1(dagPbCode, containingMultihash)
       const carReadableStream = await asCarReadableStream(
-        CID.createV1(dagPbCode, containingMultihash),
-        verifiableBlobsAsyncIterable
+        containingMultihash,
+        verifiableBlobsAsyncIterable,
+        {
+          roots: [containingCid],
+        }
       )
       assert(carReadableStream)
 
@@ -230,7 +238,7 @@ describe(`trustless ipfs gateway utils`, () => {
       const verifiableBlobsAsyncIterable = hashStreamer.stream(blobMultihash)
       // transform the verifiable blobs async iterable into a Raw uint8array
       const rawUint8Array = await asRawUint8Array(
-        CID.createV1(RawCode, blobMultihash),
+        blobMultihash,
         verifiableBlobsAsyncIterable
       )
       assert(!rawUint8Array)
@@ -244,7 +252,7 @@ describe(`trustless ipfs gateway utils`, () => {
       const verifiableBlobsAsyncIterable = hashStreamer.stream(blobMultihash)
       // transform the verifiable blobs async iterable into a Raw uint8array
       const rawUint8Array = await asCarReadableStream(
-        CID.createV1(RawCode, blobMultihash),
+        blobMultihash,
         verifiableBlobsAsyncIterable
       )
       assert(!rawUint8Array)
@@ -301,7 +309,7 @@ describe(`trustless ipfs gateway utils`, () => {
         // transform the verifiable blobs async iterable into a Raw uint8array
         const cid = CID.createV1(RawCode, blobMultihash)
         const rawUint8Array = await asRawUint8Array(
-          cid,
+          blobMultihash,
           verifiableBlobsAsyncIterable
         )
         assert(rawUint8Array)
@@ -363,19 +371,26 @@ describe(`trustless ipfs gateway utils`, () => {
       })
 
       // transform the verifiable blobs async iterable into a CAR readable stream
-      const cid = CID.createV1(dagPbCode, containingMultihash)
+      const containingCid = CID.createV1(dagPbCode, containingMultihash)
       const carReadableStream = await asCarReadableStream(
-        cid,
-        verifiableBlobsAsyncIterable
+        containingMultihash,
+        verifiableBlobsAsyncIterable,
+        {
+          roots: [containingCid],
+        }
       )
       assert(carReadableStream)
 
       // Build HTTP response
-      const httpResponse = buildCarHTTPResponse(cid, carReadableStream, {
-        version: 1,
-        dups: true,
-        fileName: 'test.car',
-      })
+      const httpResponse = buildCarHTTPResponse(
+        containingCid,
+        carReadableStream,
+        {
+          version: 1,
+          dups: true,
+          fileName: 'test.car',
+        }
+      )
       assert(httpResponse)
       assert.strictEqual(httpResponse.status, 200)
       assert.strictEqual(
@@ -386,7 +401,10 @@ describe(`trustless ipfs gateway utils`, () => {
         httpResponse.headers.get('Content-Disposition'),
         'attachment; filename="test.car"; filename*=UTF-8\'\'test.car'
       )
-      assert.strictEqual(httpResponse.headers.get('Etag'), `W/"${cid}.car"`)
+      assert.strictEqual(
+        httpResponse.headers.get('Etag'),
+        `W/"${containingCid}.car"`
+      )
       assert.strictEqual(httpResponse.headers.get('Accept-Ranges'), 'none')
 
       // Verify body
