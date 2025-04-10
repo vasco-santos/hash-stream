@@ -81,7 +81,7 @@ Packing file: IMG_9528.mov
     Store backend: s3
 
 Containing CID:
-    bafkreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+    bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
     base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
 Packs:

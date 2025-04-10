@@ -12,6 +12,8 @@ import { getFileStream, resolveStoreBackend } from './utils.js'
 // 128MiB that is 134217728 bytes
 export const MAX_PACK_SIZE = 133_169_152
 
+export const DAGPB_CODE = 0x70
+
 /**
  * @param {string} filePath
  * @param {{
@@ -72,7 +74,7 @@ export const packWrite = async (
       }
     )
 
-  const containingCid = CID.create(1, RawCode, containingMultihash)
+  const containingCid = CID.create(1, DAGPB_CODE, containingMultihash)
   console.info(
     `\nContaining CID:
     ${containingCid}
