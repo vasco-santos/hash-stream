@@ -1,6 +1,6 @@
 {
   "name": "@hash-stream/cli",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "The CLI to use hash-stream building blocks",
   "bin": {
     "hash-stream": "src/bin.js"

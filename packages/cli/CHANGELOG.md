@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1](https://github.com/vasco-santos/hash-stream/compare/cli-v1.2.0...cli-v1.2.1) (2025-04-10)
+
+
+### Fixes
+
+* cli pack with dag pb ([e4b0627](https://github.com/vasco-santos/hash-stream/commit/e4b06270528df493238084f44dec0471ee92c7c0))
+* cli pack with dag pb ([#63](https://github.com/vasco-santos/hash-stream/issues/63)) ([1ee93e3](https://github.com/vasco-santos/hash-stream/commit/1ee93e35d7326d6675a1de3a24d1a567af342873))
+
 ## [1.2.0](https://github.com/vasco-santos/hash-stream/compare/cli-v1.1.0...cli-v1.2.0) (2025-04-09)
 
 
