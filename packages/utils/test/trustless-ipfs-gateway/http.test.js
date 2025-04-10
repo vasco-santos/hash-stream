@@ -27,6 +27,7 @@ import {
   httpRawGet,
   httpCarGet,
 } from '../../src/trustless-ipfs-gateway/http.js'
+import { identityCid } from '../../src/trustless-ipfs-gateway/cid.js'
 
 import { randomBytes, randomCID } from '../helpers/random.js'
 
@@ -158,6 +159,58 @@ describe(`trustless ipfs gateway http utils`, () => {
     const response = await httpipfsGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 406)
+  })
+
+  it('handles a RAW format ipfs get identity probe http request', async () => {
+    const request = new Request(`https://example.com/ipfs/${identityCid}`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/vnd.ipld.raw',
+      },
+    })
+
+    const response = await httpipfsGet(request, { hashStreamer })
+    assert(response)
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(
+      response.headers.get('Content-Type'),
+      'application/vnd.ipld.raw'
+    )
+    assert.strictEqual((await response.arrayBuffer()).byteLength, 0)
+  })
+
+  it('handles a CAR format ipfs get identity probe http request', async () => {
+    const request = new Request(`https://example.com/ipfs/${identityCid}`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/vnd.ipld.car',
+      },
+    })
+
+    const response = await httpipfsGet(request, { hashStreamer })
+    assert(response)
+    assert.strictEqual(response.status, 200)
+    assert.strictEqual(
+      response.headers.get('Content-Type'),
+      'application/vnd.ipld.car; version=1; order=1; dups=y'
+    )
+
+    // Get Body
+    const body = await response.arrayBuffer()
+    assert(body)
+    const bodyBytes = new Uint8Array(body)
+
+    // Check root has identity and there is no blocks
+    const car = await CarReader.fromBytes(bodyBytes)
+    const roots = await car.getRoots()
+    assert(roots.length === 1)
+    assert(equals(roots[0].multihash.bytes, identityCid.multihash.bytes))
+
+    let blocks = []
+    for await (let block of car.blocks()) {
+      blocks.push(block)
+    }
+    assert(blocks.length === 0)
   })
 
   it('handles a RAW format http request', async () => {

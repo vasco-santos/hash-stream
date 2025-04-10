@@ -1,4 +1,6 @@
 import { CID } from 'multiformats/cid'
+import { CarWriter } from '@ipld/car'
+
 import * as API from './api.js'
 import * as streamer from './streamer.js'
 import * as cidUtils from './cid.js'
@@ -34,8 +36,6 @@ export async function httpCarGet(request, context) {
   let cid
   let carResponseOptions
 
-  const fileName = extractFileNameFromRequest(request)
-
   try {
     cid = await extractCidFromRequest(request)
   } catch (/** @type {any} */ err) {
@@ -48,6 +48,15 @@ export async function httpCarGet(request, context) {
     return new Response(err.message, { status: 400 })
   }
 
+  // Check dedicated probe paths
+  if (cid.equals(cidUtils.identityCid)) {
+    const identityCar = await httpCarIdentityCidGet()
+    return buildCarHTTPResponse(cid, identityCar, carResponseOptions)
+  }
+
+  const fileName = extractFileNameFromRequest(request)
+
+  // Get CARv1 ReadableStream for response
   const verifiableBlobsAsyncIterable = context.hashStreamer.stream(
     cid.multihash
   )
@@ -69,6 +78,41 @@ export async function httpCarGet(request, context) {
   })
 }
 
+async function httpCarIdentityCidGet() {
+  const { writer, out } = CarWriter.create(cidUtils.identityCid)
+  const collection = collector(out)
+  await writer.close()
+  return collection
+}
+
+/**
+ * @param {AsyncIterable<Uint8Array>} iterable
+ */
+function collector(iterable) {
+  const chunks = []
+  const cfn = (async () => {
+    for await (const chunk of iterable) {
+      chunks.push(chunk)
+    }
+    return concatBytes(chunks)
+  })()
+  return cfn
+}
+
+/**
+ * @param {Uint8Array[]} chunks
+ */
+function concatBytes(chunks) {
+  const length = chunks.reduce((p, c) => p + c.length, 0)
+  const bytes = new Uint8Array(length)
+  let off = 0
+  for (const chunk of chunks) {
+    bytes.set(chunk, off)
+    off += chunk.length
+  }
+  return bytes
+}
+
 /**
  * Get trustless content behind IPFS CID as raw bytes.
  *
@@ -77,14 +121,21 @@ export async function httpCarGet(request, context) {
  * @returns {Promise<Response>} HTTP Response containing the raw content or an error.
  */
 export async function httpRawGet(request, context) {
-  const fileName = extractFileNameFromRequest(request)
-
   /** @type {import('multiformats').CID} */
   let cid
   try {
     cid = await extractCidFromRequest(request)
   } catch (/** @type {any} */ err) {
     return new Response(err.message, { status: 400 })
+  }
+
+  const fileName = extractFileNameFromRequest(request)
+
+  // Check dedicated probe paths
+  if (cid.equals(cidUtils.identityCid)) {
+    return buildRawHTTPResponse(cid, new Uint8Array(), {
+      fileName,
+    })
   }
 
   // Get Raw Uint8Array for response
@@ -110,7 +161,7 @@ export async function httpRawGet(request, context) {
  * Build a HTTP response with the content behind a given CID in CAR format.
  *
  * @param {CID} cid - The CID of the content to serve.
- * @param {ReadableStream<Uint8Array>} body - The body of data to serve.
+ * @param {ReadableStream<Uint8Array> | Uint8Array} body - The body of data to serve.
  * @param {API.CarResponseOptions} options - Options for the CAR response.
  */
 export function buildCarHTTPResponse(cid, body, options) {

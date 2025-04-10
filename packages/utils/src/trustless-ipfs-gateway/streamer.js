@@ -100,7 +100,7 @@ export async function asCarReadableStream(
  * @param {AsyncIterable<T>} iterable - An async iterable to be streamed.
  * @returns {ReadableStream<T>} A ReadableStream that yields values from the iterable.
  */
-function toReadableStream(iterable) {
+export function toReadableStream(iterable) {
   /** @type {AsyncIterator<T>} */
   let iterator
 
