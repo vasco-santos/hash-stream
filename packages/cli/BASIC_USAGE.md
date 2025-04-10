@@ -21,7 +21,7 @@ Packing file: IMG_9528.mov
     Store backend: fs
 
 Containing CID:
-    bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+    bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
     base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
 Packs:
@@ -91,13 +91,13 @@ Packs:
 ```sh
 # find target index records stored in the index
 # index find records <targetCid> <containingCid>
-$ hash-stream index find records bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+$ hash-stream index find records bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
 
 Target CID:
     bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy
     base58btc(zQmbsmZzmMc9kAEfjnh8s2wh9CAKR25op2eDLnNpkdSxJSh)
 Containing CID:
-    bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+    bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
     base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
 Finding target written using (multiple-level)...
@@ -115,12 +115,12 @@ Index Records:
 ```sh
 # find target index records stored in the index
 # index find records <targetCid> <containingCid>
-$ hash-stream index find records bafkreigvylk6q2vmti3i7z6c2rv5b3jk52btod4epse5dl2ni2kxu4wdte bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+$ hash-stream index find records bafkreigvylk6q2vmti3i7z6c2rv5b3jk52btod4epse5dl2ni2kxu4wdte bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
 Target CID:
     bafkreigvylk6q2vmti3i7z6c2rv5b3jk52btod4epse5dl2ni2kxu4wdte
     base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
 Containing CID:
-    bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+    bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
     base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
 Finding target written using (multiple-level)...
@@ -175,14 +175,14 @@ Index Records:
 ```sh
 # find target index records stored in the index for containing
 # index find records <targetCid>
-$ hash-stream index find records bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+$ hash-stream index find records bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
 
 Packing file: IMG_9528.mov
     Pack Max Size: 10000000 bytes
     Index Writer: multiple-level
 
 Target CID:
-    bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+    bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
     base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
 Packs:
@@ -259,13 +259,13 @@ npm install -g ipfs-car
 ```sh
 # Dump the blob data associated with the given target CID into the file system
 # streamer dump <targetCid> <filePath> [containingCid]
-$ hash-stream streamer dump bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy blob.car bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+$ hash-stream streamer dump bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy blob.car bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
 
 Target CID:
       bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy
       base58btc(zQmbsmZzmMc9kAEfjnh8s2wh9CAKR25op2eDLnNpkdSxJSh)
 Containing CID:
-      bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+      bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
       base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
 Successfully wrote bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy bytes to /Users/vcs/work/github/hash-stream/blob.car
@@ -280,13 +280,13 @@ bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy
 ```sh
 # Dump the pack data associated with the given target CID into the file system
 # streamer dump <targetCid> <filePath> [containingCid]
-$ hash-stream streamer dump bafkreicsn43ropajl3vgtgqcfq6r6qidwgxarbzbtgnungzshv2ui3s7fe pack.car bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+$ hash-stream streamer dump bafkreicsn43ropajl3vgtgqcfq6r6qidwgxarbzbtgnungzshv2ui3s7fe pack.car bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
 
 Target CID:
       bafkreicsn43ropajl3vgtgqcfq6r6qidwgxarbzbtgnungzshv2ui3s7fe
       base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
 Containing CID:
-      bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+      bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
       base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
 Successfully wrote bafkreicsn43ropajl3vgtgqcfq6r6qidwgxarbzbtgnungzshv2ui3s7fe bytes to /Users/vcs/work/github/hash-stream/pack.car
@@ -308,13 +308,13 @@ bafkreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
 ```sh
 # Dump the pack data associated with the given containing CID as target CID into the file system
 # streamer dump <targetCid> <filePath> [containingCid]
-$ hash-stream streamer dump bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m containing.car
+$ hash-stream streamer dump bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m containing.car
 
 Target CID:
-      bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+      bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
       base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
-Successfully wrote bafyreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m bytes to /Users/vcs/work/github/hash-stream/containing.car
+Successfully wrote bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m bytes to /Users/vcs/work/github/hash-stream/containing.car
 
 # Listing blocks of written CAR file, it should contain the blob CIDs previously listed on the index records for both packs, together with a root CID
 $ ipfs-car blocks containing.car
