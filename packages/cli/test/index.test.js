@@ -32,6 +32,11 @@ describe('CLI index', () => {
     }
   })
 
+  after(async () => {
+    const clear = await hashStreamCmd.args(['index', 'clear']).env(env).join()
+    assert.match(clear.output, /\n*Cleared all files in directory:\s*\/[\S]+\n/)
+  })
+
   it('fails index add if invalid pack CID provided', async () => {
     const fail = await hashStreamCmd
       .args(['index', 'add', 'bagbaieraquzn', 'test/fixture.car'])
@@ -217,7 +222,7 @@ describe('CLI index', () => {
     assert.match(fail.error, /Error parsing containing CID/)
   })
 
-  it('can index find records with single index writer implementation', async () => {
+  it('can index find records written with single index writer implementation', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
@@ -239,7 +244,6 @@ describe('CLI index', () => {
     )
 
     // Match Indexing store implementation (includes optional Store backend)
-    assert.match(find.output, /Indexing store implementation: single-level/)
     assert.match(find.output, /\s+Store backend: fs/)
 
     // Match Index Records section
@@ -249,15 +253,13 @@ describe('CLI index', () => {
     )
   })
 
-  it('can not find records with index find records with single index writer implementation for unknown target', async () => {
+  it('can not find records for unknown target', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
         'find',
         'records',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ncm',
-        '--index-writer',
-        'single-level',
       ])
       .env(env)
       .join()
@@ -277,7 +279,7 @@ describe('CLI index', () => {
     assert.match(find.output, /Index Records:\n\s+Not found\./)
   })
 
-  it('can index find records with multiple index writer implementation for a blob', async () => {
+  it('can index find records for a blob written with multiple index writer implementation', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
@@ -285,8 +287,6 @@ describe('CLI index', () => {
         'records',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
-        '--index-writer',
-        'multiple-level',
       ])
       .env(env)
       .join()
@@ -318,7 +318,7 @@ describe('CLI index', () => {
     assert.match(find.output, /type: BLOB,.*offset: \d+,.*length: \d+/)
   })
 
-  it('can index find records with multiple index writer implementation for a pack', async () => {
+  it('can index find records for a pack written with multiple index writer implementation', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
@@ -326,8 +326,6 @@ describe('CLI index', () => {
         'records',
         'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
-        '--index-writer',
-        'multiple-level',
       ])
       .env(env)
       .join()
@@ -365,15 +363,13 @@ describe('CLI index', () => {
     )
   })
 
-  it('can index find records with multiple index writer implementation for a containing', async () => {
+  it('can index find records for a containing written with multiple index writer implementation', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
         'find',
         'records',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
-        '--index-writer',
-        'multiple-level',
       ])
       .env(env)
       .join()
@@ -409,7 +405,7 @@ describe('CLI index', () => {
     )
   })
 
-  it('can not find records with multiple index writer implementation for unknown target', async () => {
+  it('can not find records for unknown target', async () => {
     const find = await hashStreamCmd
       .args([
         'index',
@@ -417,8 +413,6 @@ describe('CLI index', () => {
         'records',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua2yprewa',
         'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
-        '--index-writer',
-        'multiple-level',
       ])
       .env(env)
       .join()
@@ -437,9 +431,6 @@ describe('CLI index', () => {
       /\s*Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
     )
 
-    // Match Indexing store implementation
-    assert.match(find.output, /Indexing store implementation: multiple-level/)
-
     // Match Finding target
     assert.match(
       find.output,
@@ -452,14 +443,6 @@ describe('CLI index', () => {
 
   it('can index clear', async () => {
     const clear = await hashStreamCmd.args(['index', 'clear']).env(env).join()
-    assert.match(clear.output, /\n*Cleared all files in directory:\s*\/[\S]+\n/)
-  })
-
-  it('can index clear for index writer implementation', async () => {
-    const clear = await hashStreamCmd
-      .args(['index', 'clear', '--index-writer', 'multiple-level'])
-      .env(env)
-      .join()
     assert.match(clear.output, /\n*Cleared all files in directory:\s*\/[\S]+\n/)
   })
 
@@ -493,8 +476,6 @@ describe('CLI index', () => {
         'find',
         'records',
         'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
-        '--index-writer',
-        'multiple-level',
         '--store-backend',
         's3',
       ])
@@ -526,5 +507,96 @@ describe('CLI index', () => {
 
     // Match type: CONTAINING, offset, length
     assert.match(find.output, /type: CONTAINING, offset: N\/A, length: N\/A/)
+  })
+
+  it('can index add and find records with all index writers', async () => {
+    const add = await hashStreamCmd
+      .args([
+        'index',
+        'add',
+        'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
+        'test/fixture.car',
+        'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
+        '--index-writer',
+        'all',
+      ])
+      .env(env)
+      .join()
+
+    assert.equal(add.status.code, 0)
+
+    // find containing
+    const findContaining = await hashStreamCmd
+      .args([
+        'index',
+        'find',
+        'records',
+        'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
+      ])
+      .env(env)
+      .join()
+
+    assert.equal(findContaining.status.code, 0)
+
+    // Match Target CID
+    assert.match(
+      findContaining.output,
+      /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Finding target
+    assert.match(
+      findContaining.output,
+      /Finding target\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Index Records section
+    assert.match(findContaining.output, /Index Records:/)
+
+    // Match type: CONTAINING, offset, length
+    assert.match(
+      findContaining.output,
+      /type: CONTAINING, offset: N\/A, length: N\/A/
+    )
+
+    // Find pack without containing CID
+    const findPack = await hashStreamCmd
+      .args([
+        'index',
+        'find',
+        'records',
+        'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
+      ])
+      .env(env)
+      .join()
+
+    assert.equal(findPack.status.code, 0)
+    assert.match(
+      findPack.output,
+      /Target CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+    // Match type: PACK, offset, length
+    assert.match(findPack.output, /type: PACK, offset: N\/A, length: N\/A/)
+
+    // Find containing blob without containing CID
+    const findBlob = await hashStreamCmd
+      .args([
+        'index',
+        'find',
+        'records',
+        'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
+      ])
+      .env(env)
+      .join()
+    assert.equal(findBlob.status.code, 0)
+
+    // Match Target CID
+    assert.match(
+      findBlob.output,
+      /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match type: BLOB
+    assert.match(findBlob.output, /type: BLOB, offset: 96, length: 26/)
   })
 })

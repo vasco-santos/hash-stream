@@ -63,7 +63,7 @@ export function runPackReaderTests(
         // Create Pack Writer
         packStore = await createPackStore()
         packWriter = new PackWriter(packStore, {
-          indexWriter,
+          indexWriters: [indexWriter],
         })
 
         // Create Pack Reader

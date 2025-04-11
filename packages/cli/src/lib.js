@@ -39,7 +39,7 @@ export function getStore() {
  * Get a new hash-stream client configured from configuration.
  *
  * @param {object} [options]
- * @param {'single-level' | 'multiple-level' | 'none'} options.indexWriterImplementationName
+ * @param {'single-level' | 'multiple-level' | 'all' | 'none'} options.indexWriterImplementationName
  * @param {'fs' | 's3'} options.storeBackend
  */
 export async function getClient(
@@ -73,20 +73,14 @@ export async function getClient(
     const hashStreamDir = path.join(os.homedir(), `.${getProfile()}`)
     raw = {
       index: {
-        singleLevelIndex: {
-          storeDir: path.join(hashStreamDir, 'single-level-index'),
-        },
-        multipleLevelIndex: {
-          storeDir: path.join(hashStreamDir, 'multiple-level-index'),
-        },
+        storeDir: path.join(hashStreamDir, 'index'),
       },
       pack: {
         storeDir: path.join(hashStreamDir, 'pack'),
       },
     }
     // Create directories
-    fs.mkdirSync(raw.index.singleLevelIndex.storeDir, { recursive: true })
-    fs.mkdirSync(raw.index.multipleLevelIndex.storeDir, { recursive: true })
+    fs.mkdirSync(raw.index.storeDir, { recursive: true })
     fs.mkdirSync(raw.pack.storeDir, { recursive: true })
 
     agentData = new AgentData(raw)
@@ -120,34 +114,33 @@ export async function getClient(
       client: packS3Client,
     })
   } else {
-    indexStore = new FSIndexStore(
-      options.indexWriterImplementationName === 'single-level'
-        ? agentData.data.index.singleLevelIndex.storeDir
-        : agentData.data.index.multipleLevelIndex.storeDir
-    )
+    indexStore = new FSIndexStore(agentData.data.index.storeDir)
     packStore = new FSPackStore(agentData.data.pack.storeDir)
   }
 
   // Get index based on strategy
-  let indexWriter, indexReader
+  let indexWriters = []
+  let indexReader
   if (options.indexWriterImplementationName === 'single-level') {
-    indexWriter = new SingleLevelIndexWriter(indexStore)
-    indexReader = new IndexReader(indexStore)
+    indexWriters.push(new SingleLevelIndexWriter(indexStore))
   } else if (options.indexWriterImplementationName === 'multiple-level') {
-    indexWriter = new MultipleLevelIndexWriter(indexStore)
-    indexReader = new IndexReader(indexStore)
+    indexWriters.push(new MultipleLevelIndexWriter(indexStore))
+  } else if (options.indexWriterImplementationName === 'all') {
+    indexWriters.push(new SingleLevelIndexWriter(indexStore))
+    indexWriters.push(new MultipleLevelIndexWriter(indexStore))
   }
+  indexReader = new IndexReader(indexStore)
 
   // Get pack store
   const packWriter = new PackWriter(packStore, {
-    indexWriter,
+    indexWriters,
   })
   const packReader = new PackReader(packStore)
 
   return {
     index: {
       store: indexStore,
-      writer: indexWriter,
+      writers: indexWriters,
       reader: indexReader,
     },
     pack: {

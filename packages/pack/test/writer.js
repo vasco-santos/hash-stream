@@ -10,6 +10,7 @@ import { base58btc } from 'multiformats/bases/base58'
 
 import { IndexReader } from '@hash-stream/index/reader'
 import { MultipleLevelIndexWriter } from '@hash-stream/index/writer/multiple-level'
+import { SingleLevelIndexWriter } from '@hash-stream/index/writer/single-level'
 import { Type as IndexRecordType } from '@hash-stream/index/record'
 
 import { PackWriter } from '../src/writer.js'
@@ -127,7 +128,7 @@ export function runPackWriterTests(
         // Create Pack Writer
         packStore = await createPackStore()
         packWriter = new PackWriter(packStore, {
-          indexWriter,
+          indexWriters: [indexWriter],
         })
       })
 
@@ -418,6 +419,207 @@ export function runPackWriterTests(
           writeOffset += blobBytes.length
           count += 1
         }
+      })
+    })
+
+    describe(`write pack in ${storeName} store and index them with multiple index writers`, () => {
+      /** @type {DestroyableIndexStore} */
+      let indexStore
+      /** @type {import('@hash-stream/index/types').IndexReader} */
+      let indexReader
+      /** @type {import('@hash-stream/index/types').IndexWriter} */
+      let indexWriter1
+      /** @type {import('@hash-stream/index/types').IndexWriter} */
+      let indexWriter2
+      /** @type {DestroyablePackStore} */
+      let packStore
+      /** @type {PackWriter} */
+      let packWriter
+
+      beforeEach(async () => {
+        // Create Index
+        indexStore = await createIndexStore()
+        indexReader = new IndexReader(indexStore)
+        indexWriter1 = new MultipleLevelIndexWriter(indexStore)
+        indexWriter2 = new SingleLevelIndexWriter(indexStore)
+
+        // Create Pack Writer
+        packStore = await createPackStore()
+        packWriter = new PackWriter(packStore, {
+          indexWriters: [indexWriter1, indexWriter2],
+        })
+      })
+
+      afterEach(() => {
+        indexStore.destroy()
+        packStore.destroy()
+      })
+
+      it('should write packs from a blob and index them', async () => {
+        const byteLength = 5_000_000
+        const bytes = await randomBytes(byteLength)
+        const blob = new Blob([bytes])
+        /** @type {Map<string, API.MultihashDigest[]>} */
+        const packBlobsMap = new Map()
+
+        /** @typedef {API.PackWriterWriteOptions} */
+        const createPackOptions = {
+          type: /** @type {'car'} */ ('car'),
+          /**
+           * @type {import('@hash-stream/pack/types').PackWriterWriteOptions['onPackWrite']}
+           */
+          onPackWrite: (packMultihash, blobMultihashes) => {
+            const encodedPackMultihash = base58btc.encode(packMultihash.bytes)
+            packBlobsMap.set(encodedPackMultihash, blobMultihashes)
+          },
+        }
+
+        const { containingMultihash } = await packWriter.write(
+          blob,
+          createPackOptions
+        )
+
+        assert(packBlobsMap.size === 1)
+        const blobMultihashes = packBlobsMap.values().next().value || []
+
+        const containingIndexRecords = await all(
+          indexReader.findRecords(containingMultihash)
+        )
+        assert(containingIndexRecords.length >= 1)
+        const containingIndexRecord = containingIndexRecords.find(
+          (r) => r.type === IndexRecordType.CONTAINING
+        )
+        assert(containingIndexRecord)
+        // Check they have same number of subrecords
+        assert(
+          blobMultihashes.length ===
+            containingIndexRecord.subRecords[0].subRecords.length
+        )
+
+        // Check if all blobs are in the containing index record
+        for (const blobMultihash of blobMultihashes) {
+          const indexRecords = await all(
+            indexReader.findRecords(blobMultihash, { containingMultihash })
+          )
+          assert(indexRecords.length > 0)
+
+          const indexRecord = indexRecords[0]
+          assert(indexRecord)
+          assert.strictEqual(
+            indexRecord.multihash.toString(),
+            blobMultihash.toString()
+          )
+          assert.strictEqual(
+            indexRecord.location.toString(),
+            containingIndexRecord.subRecords[0].multihash.toString()
+          )
+        }
+
+        // Check if all blobs are in the single level index record
+        for (const blobMultihash of blobMultihashes) {
+          const indexRecords = await all(indexReader.findRecords(blobMultihash))
+          assert(indexRecords.length > 0)
+          const indexRecord = indexRecords[0]
+          assert(indexRecord)
+          assert.strictEqual(
+            indexRecord.multihash.toString(),
+            blobMultihash.toString()
+          )
+        }
+      })
+
+      it('should write packs from a blob and index them without containing', async () => {
+        const byteLength = 30_000_000
+        const chunkSize = byteLength / 3
+        const bytes = await randomBytes(byteLength)
+        const blob = new Blob([bytes])
+        /** @type {Map<string, API.MultihashDigest[]>} */
+        const packBlobsMap = new Map()
+        /** @typedef {API.PackWriterWriteOptions} */
+        const createPackOptions = {
+          shardSize: chunkSize,
+          type: /** @type {'car'} */ ('car'),
+          notIndexContaining: true,
+          /**
+           * @type {API.PackWriterWriteOptions['onPackWrite']}
+           */
+          onPackWrite: (packMultihash, blobMultihashes) => {
+            const encodedPackMultihash = base58btc.encode(packMultihash.bytes)
+            packBlobsMap.set(encodedPackMultihash, blobMultihashes)
+          },
+        }
+
+        // Write blob with pack writer
+        const { containingMultihash, packsMultihashes } =
+          await packWriter.write(blob, createPackOptions)
+        assert(packsMultihashes.length > 1)
+        assert(containingMultihash)
+
+        assert.strictEqual(packsMultihashes.length, packBlobsMap.size)
+
+        // Find Records for each pack and verify they have sub-records
+        for (const multihash of packsMultihashes) {
+          // Should find records with containing even if not indexed that way
+          const recordsWithContaining = await all(
+            indexReader.findRecords(multihash, {
+              containingMultihash,
+            })
+          )
+          assert(recordsWithContaining.length)
+
+          // Should find records without containing
+          const records = await all(indexReader.findRecords(multihash))
+          assert(records.length === 1)
+          const packRecord = records[0]
+          assert(packRecord)
+          assert.strictEqual(
+            packRecord.multihash.toString(),
+            multihash.toString()
+          )
+          assert.strictEqual(
+            packRecord.location.toString(),
+            multihash.toString()
+          )
+          assert(!packRecord.offset)
+          assert(!packRecord.length)
+          assert.strictEqual(packRecord.type, IndexRecordType.PACK)
+          assert(packRecord.subRecords.length > 0)
+
+          // Validate the subrecords blobs content
+          const packBytes = await packStore.get(multihash)
+          assert(packBytes)
+          const packIterable = await CarIndexer.fromBytes(packBytes)
+          const packBlobs = await all(packIterable)
+
+          // Pack multihash was reported in onPackWrite
+          const encodedPackMultihash = base58btc.encode(multihash.bytes)
+          const packBlobsMultihashes = packBlobsMap.get(encodedPackMultihash)
+          assert(packBlobsMultihashes?.length)
+
+          // Validate subrecords
+          for (const record of packRecord.subRecords) {
+            const blob = packBlobs.find((blob) =>
+              equals(blob.cid.multihash.bytes, record.multihash.bytes)
+            )
+            assert(blob)
+            const packBlobMultihashReported = packBlobsMultihashes.find((mh) =>
+              equals(mh.bytes, record.multihash.bytes)
+            )
+            assert(packBlobMultihashReported)
+            assert(record.type === IndexRecordType.BLOB)
+            assert.strictEqual(blob.blockOffset, record.offset)
+            assert.strictEqual(blob.blockLength, record.length)
+          }
+        }
+
+        // Check if containing multihash is indexed, but not as containing record
+        const containingMultihashRecords = await all(
+          indexReader.findRecords(containingMultihash)
+        )
+        assert.strictEqual(containingMultihashRecords.length, 1)
+        const containingMultihashRecord = containingMultihashRecords[0]
+        assert(containingMultihashRecord)
+        assert(containingMultihashRecord.type === IndexRecordType.BLOB)
       })
     })
   })

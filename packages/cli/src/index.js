@@ -7,7 +7,11 @@ import { CID } from 'multiformats/cid'
 import { base58btc } from 'multiformats/bases/base58'
 
 import { getClient } from './lib.js'
-import { getFileStream, resolveStoreBackend } from './utils.js'
+import {
+  getFileStream,
+  resolveStoreBackend,
+  fanOutAsyncIterator,
+} from './utils.js'
 
 /**
  * @param {string} packCid
@@ -15,7 +19,7 @@ import { getFileStream, resolveStoreBackend } from './utils.js'
  * @param {string} [containingCid]
  * @param {{
  *   _: string[],
- *   'index-writer': 'single-level' | 'multiple-level',
+ *   'index-writer': 'single-level' | 'multiple-level' | 'all',
  *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
@@ -33,7 +37,11 @@ export const indexAdd = async (
     indexWriterImplementationName,
     storeBackend,
   })
-  if (!client.index.writer || !client.index.reader || !client.index.store) {
+  if (
+    !client.index.writers.length ||
+    !client.index.reader ||
+    !client.index.store
+  ) {
     console.error('Error: Index is not available.')
     process.exit(1)
   }
@@ -96,9 +104,22 @@ export const indexAdd = async (
     Store backend: ${storeBackend}
     Indexing blobs...`
   )
-  await client.index.writer.addBlobs(wrappedBlobIndexIterable, {
-    containingMultihash: containingCidLink?.multihash,
-  })
+
+  // Multiplex streams to each index writer
+  const streams = fanOutAsyncIterator(
+    wrappedBlobIndexIterable,
+    client.index.writers.length
+  )
+  for (let i = 0; i < client.index.writers.length; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    await client.index.writers[i].addBlobs(streams[i], {
+      containingMultihash: containingCidLink?.multihash,
+    })
+  }
+
+  // await client.index.writers[0].addBlobs(wrappedBlobIndexIterable, {
+  //   containingMultihash: containingCidLink?.multihash,
+  // })
 }
 
 /**
@@ -106,27 +127,19 @@ export const indexAdd = async (
  * @param {string} [containingCid]
  * @param {{
  *   _: string[],
- *   'index-writer'?: 'single-level' | 'multiple-level',
  *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
 export const indexFindRecords = async (
   targetCid,
   containingCid,
-  opts = { 'index-writer': 'multiple-level', 'store-backend': undefined, _: [] }
+  opts = { 'store-backend': undefined, _: [] }
 ) => {
-  const indexWriterImplementationName = validateIndexWriter(
-    opts['index-writer']
-  )
   const storeBackend = resolveStoreBackend(opts['store-backend'])
   const client = await getClient({
-    indexWriterImplementationName,
+    indexWriterImplementationName: 'none',
     storeBackend,
   })
-  if (!client.index.writer || !client.index.reader || !client.index.store) {
-    console.error('Error: Index is not available.')
-    process.exit(1)
-  }
 
   let targetMultihash
   try {
@@ -158,8 +171,7 @@ export const indexFindRecords = async (
   }
 
   console.info(
-    `\nIndexing store implementation: ${indexWriterImplementationName}
-    Store backend: ${storeBackend}
+    `\nStore backend: ${storeBackend}
     Finding target...
     ${targetCid}
     base58btc(${base58btc.encode(targetMultihash.bytes)})`
@@ -186,12 +198,11 @@ export const indexFindRecords = async (
 /**
  * @param {{
  *   _: string[],
- *   'index-writer'?: 'single-level' | 'multiple-level',
  *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
 export const indexClear = async (
-  opts = { 'index-writer': 'multiple-level', 'store-backend': undefined, _: [] }
+  opts = { 'store-backend': undefined, _: [] }
 ) => {
   const storeBackend = resolveStoreBackend(opts['store-backend'])
   if (storeBackend === 's3') {
@@ -199,17 +210,10 @@ export const indexClear = async (
     process.exit(1)
   }
 
-  const indexWriterImplementationName = validateIndexWriter(
-    opts['index-writer']
-  )
   const client = await getClient({
-    indexWriterImplementationName,
+    indexWriterImplementationName: 'none',
     storeBackend,
   })
-  if (!client.index.writer || !client.index.reader || !client.index.store) {
-    console.error('Error: Index is not available.')
-    process.exit(1)
-  }
 
   // @ts-expect-error not existing in s3 store
   const directoryPath = client.index.store.directory
@@ -240,13 +244,13 @@ export const indexClear = async (
 }
 
 // Allowed strategies
-const VALID_INDEX_WRITERS = ['single-level', 'multiple-level']
+const VALID_INDEX_WRITERS = ['single-level', 'multiple-level', 'all']
 
 /**
  * Validates the given index writer implementation.
  *
  * @param {string} [strategy]
- * @returns {'single-level' | 'multiple-level'}
+ * @returns {'single-level' | 'multiple-level' | 'all'}
  */
 function validateIndexWriter(strategy) {
   if (!strategy) {

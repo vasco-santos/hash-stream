@@ -57,14 +57,14 @@ Indexed Blob:
     offset: 159 length: 67
 
 # find target index records stored in the index
-# index find records <targetCid> --iw single-level
-$ hash-stream index find records bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm --iw single-level
+# index find records <targetCid>
+$ hash-stream index find records bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm
 
 Target CID:
     bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm
     base58btc(zQmRFEnQEBhu3Vi4Zfw82D57vzFa9vQTQP1wTH2PzspYRLW)
 
-Finding target written using (single-level)...
+Finding target...
     bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm
     base58btc(zQmRFEnQEBhu3Vi4Zfw82D57vzFa9vQTQP1wTH2PzspYRLW)
 
@@ -73,13 +73,13 @@ Index Records:
     location: base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
     type: BLOB, offset: 96, length: 26
 
-$ hash-stream index find records bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa --iw single-level
+$ hash-stream index find records bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
 
 Target CID:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
-Finding target written using (single-level)...
+Finding target...
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
@@ -88,13 +88,13 @@ Index Records:
     location: base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
     type: BLOB, offset: 159, length: 67
 
-$ hash-stream index find records bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra --iw single-level
+$ hash-stream index find records bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
 
 Target CID:
     bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
     base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
 
-Finding target written using (single-level)...
+Finding target...
     bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
     base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
 
@@ -131,8 +131,8 @@ Indexed Blob:
     offset: 159 length: 67
 
 # find index records of a given blob/pack/containing stored using the associated index writer store
-# index find records <targetCid> [containingCid] --iw multiple-level
-$ hash-stream index find records bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa --iw multiple-level
+# index find records <targetCid> [containingCid]
+$ hash-stream index find records bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
 
 Target CID:
     bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm
@@ -141,7 +141,7 @@ Containing CID:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
-Finding target written using (multiple-level)...
+Finding target...
     bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm
     base58btc(zQmRFEnQEBhu3Vi4Zfw82D57vzFa9vQTQP1wTH2PzspYRLW)
 
@@ -150,7 +150,7 @@ Index Records:
     location: base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
     type: BLOB, offset: 96, length: 26
 
-$ hash-stream index find records bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa --iw multiple-level
+$ hash-stream index find records bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
 
 Target CID:
     bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
@@ -159,7 +159,7 @@ Containing CID:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
-Finding target written using (multiple-level)...
+Finding target...
     bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra
     base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
 
@@ -176,13 +176,13 @@ Index Records:
         location: base58btc(zQmXJbuPcsVPKuWeky6npZdAgB7CVRjEKCmaKynuWxRweNV)
         type: BLOB, offset: 159, length: 67
 
-$ hash-stream index find records bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa --iw multiple-level
+$ hash-stream index find records bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
 
 Target CID:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
-Finding target written using (multiple-level)...
+Finding target...
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
@@ -226,7 +226,7 @@ Indexed Blob:
     offset: 176778 length: 64
 
 # Find index records for new pack
-$ hash-stream index find records bagbaierasjalv5zwihm24bgtnjwepcte2hwh76355olccz4el5pd6vj7zafq bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa --iw multiple-level
+$ hash-stream index find records bagbaierasjalv5zwihm24bgtnjwepcte2hwh76355olccz4el5pd6vj7zafq bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
 
 Target CID:
     bagbaierasjalv5zwihm24bgtnjwepcte2hwh76355olccz4el5pd6vj7zafq
@@ -235,7 +235,7 @@ Containing CID:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
-Finding target written using (multiple-level)...
+Finding target...
     bagbaierasjalv5zwihm24bgtnjwepcte2hwh76355olccz4el5pd6vj7zafq
     base58btc(zQmYBZUsAjCMW4yvAEW2r1K4qMd9voXuaeF9RHLgukLKiq8)
 
@@ -252,13 +252,13 @@ Index Records:
         type: BLOB, offset: 176778, length: 64
 
 # Find index records for containing
-$ hash-stream index find records bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa --iw multiple-level
+$ hash-stream index find records bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
 
 Target CID:
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 
-Finding target written using (multiple-level)...
+Finding targets...
     bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa
     base58btc(zQmduxLcjFFwH8AEJcnG4h2VCg592WUqLubitVfXtq7bAzK)
 

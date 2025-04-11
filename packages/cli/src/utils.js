@@ -110,3 +110,73 @@ export function getS3ConfigFromEnv() {
     packPrefix: HASH_STREAM_S3_PACK_PREFIX || '',
   }
 }
+
+/**
+ * Fans out an async iterator to N consumers, ensuring all get the same items in order.
+ *
+ * @template T
+ * @param {AsyncIterable<T>} source - The source async iterable to fan out.
+ * @param {number} n - The number of consumers to fan out to.
+ * @returns {AsyncIterable<T>[]} - An array of async iterables, each receiving the same data.
+ */
+export function fanOutAsyncIterator(source, n) {
+  /** @type {AsyncIterable<T>[]} */
+  const readers = []
+
+  /** @type {T[]} */
+  const buffer = []
+
+  /** @type {boolean} */
+  let done = false
+
+  /** @type {{ resolve: (result: { value: T } | { done: true }) => void }[]} */
+  let waiters = []
+
+  /**
+   * Fills the buffer with the next value from the source and notifies all waiters.
+   */
+  async function fillBuffer() {
+    /* c8 ignore next 1 */
+    if (done) return
+
+    const iter = source[Symbol.asyncIterator]()
+    const { value, done: isDone } = await iter.next()
+
+    if (isDone) {
+      done = true
+      waiters.forEach(({ resolve }) => resolve({ done: true }))
+      return
+    }
+
+    buffer.push(value)
+    waiters.forEach(({ resolve }) => resolve({ value }))
+    waiters = []
+  }
+
+  for (let i = 0; i < n; i++) {
+    readers.push(
+      (async function* () {
+        let index = 0
+        while (!done || index < buffer.length) {
+          if (index < buffer.length) {
+            yield buffer[index++]
+          } else if (!done) {
+            await new Promise((resolve) => waiters.push({ resolve }))
+            if (index < buffer.length) {
+              yield buffer[index++]
+            }
+          }
+        }
+      })()
+    )
+  }
+
+  // eslint-disable-next-line no-extra-semi
+  ;(async () => {
+    while (!done) {
+      await fillBuffer()
+    }
+  })()
+
+  return readers
+}

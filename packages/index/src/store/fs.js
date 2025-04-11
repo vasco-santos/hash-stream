@@ -113,8 +113,10 @@ export class FSIndexStore {
 
     // Merge subRecords similar to the in-memory implementation
     const mergedRecords = records.reduce((acc, val) => {
-      const entry = acc.find((entry) =>
-        equals(entry.multihash.bytes, val.multihash.bytes)
+      const entry = acc.find(
+        (entry) =>
+          equals(entry.multihash.bytes, val.multihash.bytes) &&
+          entry.type === val.type
       )
       if (entry) {
         entry.subRecords.push(...val.subRecords)

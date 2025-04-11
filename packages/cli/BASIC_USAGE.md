@@ -100,7 +100,8 @@ Containing CID:
     bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
     base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
-Finding target written using (multiple-level)...
+Store backend: fs
+    Finding target...
     bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy
     base58btc(zQmbsmZzmMc9kAEfjnh8s2wh9CAKR25op2eDLnNpkdSxJSh)
 
@@ -123,7 +124,8 @@ Containing CID:
     bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
     base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
-Finding target written using (multiple-level)...
+Store backend: fs
+    Finding target...
     bafkreigvylk6q2vmti3i7z6c2rv5b3jk52btod4epse5dl2ni2kxu4wdte
     base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
 
@@ -177,73 +179,98 @@ Index Records:
 # index find records <targetCid>
 $ hash-stream index find records bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
 
-Packing file: IMG_9528.mov
-    Pack Max Size: 10000000 bytes
-    Index Writer: multiple-level
-
 Target CID:
     bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
     base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
-Packs:
-    bafkreigvylk6q2vmti3i7z6c2rv5b3jk52btod4epse5dl2ni2kxu4wdte
-    base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
-        Blobs:
-            bafkreidjbm25tjpzg66ddnitlogc2bifbbji4rcxfzuep5llfnpa7hui2e
-            base58btc(zQmVQhS2Vd13wumFjMkvXd1gHX1DnZ846kRJSo6zKS64AAU)
+Store backend: fs
+    Finding target...
+    bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+    base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
-            bafkreihkwlpvy46rbd7do6oa7l7gp2urxazp5lk3onakixbon2gvvsavna
-            base58btc(zQme8pJjXuAbxweudkYJwn6v4mCZke5xSQhWJYqXoKPrEbR)
+Index Records:
+    multihash: base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
+    location: base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
+    type: CONTAINING, offset: N/A, length: N/A
 
-            bafkreig2k2hhgvie7pxcfktkctvn72bw2dgg6wsu4cemixyiqdhznrv3ce
-            base58btc(zQmd2x8zYEeec2fkqGyEYXPSUKaFTZ4SS1QsRGuUozdmoHz)
+    Sub-Records:
+        multihash: base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
+        location: base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
+        type: PACK, offset: N/A, length: N/A
 
-            bafkreicxbwgntwtizqqewws3xtwkt32sjjypbhqwvg6bki3u6kx52yiz4y
-            base58btc(zQmUCUAQwxQHZRaWcojDLSnyFp2RaUWcB6gDksvauqtmZkR)
+        Sub-Records:
+            multihash: base58btc(zQmVQhS2Vd13wumFjMkvXd1gHX1DnZ846kRJSo6zKS64AAU)
+            location: base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
+            type: BLOB, offset: 57, length: 1048576
 
-            bafkreibrq22eilaj5pvoc6luqeycfc2t6opjlbhpinasisxmxgcv2yfrgu
-            base58btc(zQmRfypVyXqzqreHyD3y9MKmSzNrb2K86fU9Cttap162q8g)
+            multihash: base58btc(zQme8pJjXuAbxweudkYJwn6v4mCZke5xSQhWJYqXoKPrEbR)
+            location: base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
+            type: BLOB, offset: 1048672, length: 1048576
 
-            bafkreidfmitzyypu3hdxglewmfiqcies67dosbgepnpudwnydlr67kkgri
-            base58btc(zQmVAQhJ6HK5sWD21p3k4X75MicfQMjq8eqSU1xgBVkFrB3)
+            multihash: base58btc(zQmd2x8zYEeec2fkqGyEYXPSUKaFTZ4SS1QsRGuUozdmoHz)
+            location: base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
+            type: BLOB, offset: 2097287, length: 1048576
 
-            bafkreidptaxd2uubepctq5wr5yepze7serf524alvadctpjv7su6ug2egy
-            base58btc(zQmVrGZ3ZtT9MT2F6KwHTSvBGW6QWjDvB3xQjVYVbw91btZ)
+            multihash: base58btc(zQmUCUAQwxQHZRaWcojDLSnyFp2RaUWcB6gDksvauqtmZkR)
+            location: base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
+            type: BLOB, offset: 3145902, length: 1048576
 
-            bafkreigmy4pwdap6fia6veb3od6zacqlsk6oxozlsodgtqyxi63h3z2zem
-            base58btc(zQmc81z5TnsrKQPgmtmc63bDDjXeDeF4GxiMV7W46pf9e6E)
+            multihash: base58btc(zQmRfypVyXqzqreHyD3y9MKmSzNrb2K86fU9Cttap162q8g)
+            location: base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
+            type: BLOB, offset: 4194517, length: 1048576
 
-            bafkreieeaoo6ewyigodpvzlu66rg7qi7pgeve7lh7osdd7mtv66c5g23vq
-            base58btc(zQmXDyixoWSEWDJijus7UPNZUGcdeURLc7DxXkE3vtBX3JT)
+            multihash: base58btc(zQmVAQhJ6HK5sWD21p3k4X75MicfQMjq8eqSU1xgBVkFrB3)
+            location: base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
+            type: BLOB, offset: 5243132, length: 1048576
 
+            multihash: base58btc(zQmVrGZ3ZtT9MT2F6KwHTSvBGW6QWjDvB3xQjVYVbw91btZ)
+            location: base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
+            type: BLOB, offset: 6291747, length: 1048576
 
+            multihash: base58btc(zQmc81z5TnsrKQPgmtmc63bDDjXeDeF4GxiMV7W46pf9e6E)
+            location: base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
+            type: BLOB, offset: 7340362, length: 1048576
 
-    bafkreicsn43ropajl3vgtgqcfq6r6qidwgxarbzbtgnungzshv2ui3s7fe
-    base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
-        Blobs:
-            bafkreiaayh53fuqf53onxchkn23oxcebai2mp63dzwjojrbqgwnyiblsnq
-            base58btc(zQmNPcGa3ggpDXkThp1itG7qSgUDoJTi6q9kbW1HogqueKd)
+            multihash: base58btc(zQmXDyixoWSEWDJijus7UPNZUGcdeURLc7DxXkE3vtBX3JT)
+            location: base58btc(zQmcj5rzVKBfKz4rWCKRVfr6TmJPMhPjEjvyALTNKZd1Sba)
+            type: BLOB, offset: 8388977, length: 1048576
 
-            bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy
-            base58btc(zQmbsmZzmMc9kAEfjnh8s2wh9CAKR25op2eDLnNpkdSxJSh)
+        multihash: base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
+        location: base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
+        type: PACK, offset: N/A, length: N/A
 
-            bafkreieto3xhqg6bezukenranjbacuu6jxodgofk2znttpfkszzvpjnjhe
-            base58btc(zQmYGHpnhuFKgyZ1ZSkztapH8F2aRGM44PdmdXB8YRqHAPz)
+        Sub-Records:
+            multihash: base58btc(zQmNPcGa3ggpDXkThp1itG7qSgUDoJTi6q9kbW1HogqueKd)
+            location: base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
+            type: BLOB, offset: 98, length: 1048576
 
-            bafkreiej7pqfd6pbp4m2syk552ttfliw4dhpwf22n43qsvwgwkdap6iave
-            base58btc(zQmXdHKnm3fB7GsJ5P49XML6e5XYJevZvG8XqS18ViTRiQp)
+            multihash: base58btc(zQmbsmZzmMc9kAEfjnh8s2wh9CAKR25op2eDLnNpkdSxJSh)
+            location: base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
+            type: BLOB, offset: 1048713, length: 1048576
 
-            bafkreib46iztegkgtltbbkl2vb7qt7fphuqsnysh6fn6ef56bwrk7rtp6a
-            base58btc(zQmSSZNfPNkEoRneDk7fTVhVuv8mQzxp23Z3cqdoGHYHo6f)
+            multihash: base58btc(zQmYGHpnhuFKgyZ1ZSkztapH8F2aRGM44PdmdXB8YRqHAPz)
+            location: base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
+            type: BLOB, offset: 2097328, length: 1048576
 
-            bafkreiezhrrjvecdls7pc5xjx2eywcleeohvayenhvvkgpqlzeszy4llby
-            base58btc(zQmYepVWAsFdSs3CjmYCsnMKfJovPt46QoCAF6tQ5ykYyKK)
+            multihash: base58btc(zQmXdHKnm3fB7GsJ5P49XML6e5XYJevZvG8XqS18ViTRiQp)
+            location: base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
+            type: BLOB, offset: 3145943, length: 1048576
 
-            bafkreieq4fw4arrhvq3fvbpenijwh4uurrimcq3oylx24y5tj6xxn42jjq
-            base58btc(zQmY6Cng99RXNktnD3pAcv7MAgpzw5krmJ83coRLSWTXD2s)
+            multihash: base58btc(zQmSSZNfPNkEoRneDk7fTVhVuv8mQzxp23Z3cqdoGHYHo6f)
+            location: base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
+            type: BLOB, offset: 4194558, length: 1048576
 
-            bafkreiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
-            base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
+            multihash: base58btc(zQmYepVWAsFdSs3CjmYCsnMKfJovPt46QoCAF6tQ5ykYyKK)
+            location: base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
+            type: BLOB, offset: 5243173, length: 1048576
+
+            multihash: base58btc(zQmY6Cng99RXNktnD3pAcv7MAgpzw5krmJ83coRLSWTXD2s)
+            location: base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
+            type: BLOB, offset: 6291788, length: 393848
+
+            multihash: base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
+            location: base58btc(zQmTtSVxPLQs4AgqsrZqdocT9Hzom1h93E75JJpYFEfn2RE)
+            type: BLOB, offset: 6685674, length: 809
 ```
 
 ## Streamer dump written packs
@@ -254,7 +281,7 @@ Install the CLI for `ipfs-car` to inspect written packs content:
 npm install -g ipfs-car
 ```
 
-### Streamer dump blob within a containing
+### Streamer dump blob within a containing as RAW
 
 ```sh
 # Dump the blob data associated with the given target CID into the file system
@@ -269,6 +296,23 @@ Containing CID:
       base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
 Successfully wrote bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy bytes to /Users/vcs/work/github/hash-stream/blob.raw
+```
+
+### Streamer dump blob within a containing as CAR
+
+```sh
+# Dump the blob data associated with the given target CID into the file system
+# streamer dump <targetCid> <filePath> [containingCid] --format car
+$ hash-stream streamer dump bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy blob.car bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m --format car
+
+Target CID:
+      bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy
+      base58btc(zQmbsmZzmMc9kAEfjnh8s2wh9CAKR25op2eDLnNpkdSxJSh)
+Containing CID:
+      bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+      base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
+
+Successfully wrote bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy bytes to /Users/vcs/work/github/hash-stream/blob.car
 
 # Listing blocks of written CAR file, it should contain the CID of the fetched blob
 $ ipfs-car blocks blob.car

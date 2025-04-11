@@ -43,11 +43,12 @@ cli
   )
   .example('pack write some-file.ext -iw multiple-level')
   .example('pack write some-file.ext -iw single-level')
+  .example('pack write some-file.ext -iw all')
   .option('-f, --format', 'Pack format: "car"', 'car')
   .option('-ps, --pack-size', 'Pack size in bytes', MAX_PACK_SIZE)
   .option(
     '-iw, --index-writer',
-    'Indexing writer implementation: "single-level" or "multiple-level"',
+    'Indexing writer implementation: "single-level" or "multiple-level" or "all"',
     'multiple-level'
   )
   .option(
@@ -90,10 +91,11 @@ cli
     'Adds an index for a given verifiable pack (CAR file) using the specified writer.'
   )
   .example('index add bag... pack.car bafy... -iw multiple-level')
+  .example('index add bag... pack.car bafy... -iw all')
   .example('index add bag... pack.car -iw single-level')
   .option(
     '-iw, --index-writer',
-    'Indexing writer implementation: "single-level" or "multiple-level"',
+    'Indexing writer implementation: "single-level" or "multiple-level" or "all"',
     'multiple-level'
   )
   .option(
@@ -105,16 +107,9 @@ cli
 // Command: Find index records for a given target
 cli
   .command('index find records <targetCid> [containingCid]')
-  .describe(
-    'Find index records of a given blob/pack/containing by its CID, written using a specified index writer.'
-  )
-  .example('index find records bafk... -iws single-level')
-  .example('index find records bafk... bafy... -iws multiple-level')
-  .option(
-    '-iw, --index-writer',
-    'Indexing writer implementation: "single-level" or "multiple-level"',
-    'multiple-level'
-  )
+  .describe('Find index records of a given blob/pack/containing by its CID.')
+  .example('index find records bafk...')
+  .example('index find records bafk... bafy...')
   .option(
     '-sb, --store-backend',
     'Which storage backend to use: "fs" (default) or "s3" for S3-like storage'
@@ -124,14 +119,8 @@ cli
 // Command: Clear Index
 cli
   .command('index clear')
-  .describe('Clear all indexes within a index writer store.')
-  .example('index clear -s multiple-level')
-  .example('index clear -s single-level')
-  .option(
-    '-iw, --index-writer',
-    'Indexing writer implementation: "single-level" or "multiple-level"',
-    'multiple-level'
-  )
+  .describe('Clear all indexes within a stored.')
+  .example('index clear')
   .option(
     '-sb, --store-backend',
     'Which storage backend to use: "fs" (default) or "s3" for S3-like storage'

@@ -28,13 +28,8 @@ export interface ConfigDriver<T> {
  * Data schema used internally by the agent.
  */
 export interface AgentDataModel {
-  index: IndexDataModel
+  index: StoreDataModel
   pack: StoreDataModel
-}
-
-interface IndexDataModel {
-  singleLevelIndex: StoreDataModel
-  multipleLevelIndex: StoreDataModel
 }
 
 interface StoreDataModel {
