@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/vasco-santos/hash-stream/compare/cli-v1.2.1...cli-v1.3.0) (2025-04-11)
+
+
+### Features
+
+* add identity probe resolution per spec ([#65](https://github.com/vasco-santos/hash-stream/issues/65)) ([ab31c7f](https://github.com/vasco-santos/hash-stream/commit/ab31c7f005508223ad647ef1a9df30aa8a55eb7a))
+* add support for pack writer with multiple index writer ([#68](https://github.com/vasco-santos/hash-stream/issues/68)) ([26b7d80](https://github.com/vasco-santos/hash-stream/commit/26b7d80d64d3f6402096c191ed486d1b7431c892))
+
 ## [1.2.1](https://github.com/vasco-santos/hash-stream/compare/cli-v1.2.0...cli-v1.2.1) (2025-04-10)
 
 
