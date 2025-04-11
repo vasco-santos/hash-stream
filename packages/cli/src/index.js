@@ -7,7 +7,11 @@ import { CID } from 'multiformats/cid'
 import { base58btc } from 'multiformats/bases/base58'
 
 import { getClient } from './lib.js'
-import { getFileStream, resolveStoreBackend } from './utils.js'
+import {
+  getFileStream,
+  resolveStoreBackend,
+  fanOutAsyncIterator,
+} from './utils.js'
 
 /**
  * @param {string} packCid
@@ -15,7 +19,7 @@ import { getFileStream, resolveStoreBackend } from './utils.js'
  * @param {string} [containingCid]
  * @param {{
  *   _: string[],
- *   'index-writer': 'single-level' | 'multiple-level',
+ *   'index-writer': 'single-level' | 'multiple-level' | 'all',
  *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
@@ -33,7 +37,11 @@ export const indexAdd = async (
     indexWriterImplementationName,
     storeBackend,
   })
-  if (!client.index.writer || !client.index.reader || !client.index.store) {
+  if (
+    !client.index.writers.length ||
+    !client.index.reader ||
+    !client.index.store
+  ) {
     console.error('Error: Index is not available.')
     process.exit(1)
   }
@@ -96,9 +104,22 @@ export const indexAdd = async (
     Store backend: ${storeBackend}
     Indexing blobs...`
   )
-  await client.index.writer.addBlobs(wrappedBlobIndexIterable, {
-    containingMultihash: containingCidLink?.multihash,
-  })
+
+  // Multiplex streams to each index writer
+  const streams = fanOutAsyncIterator(
+    wrappedBlobIndexIterable,
+    client.index.writers.length
+  )
+  for (let i = 0; i < client.index.writers.length; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    await client.index.writers[i].addBlobs(streams[i], {
+      containingMultihash: containingCidLink?.multihash,
+    })
+  }
+
+  // await client.index.writers[0].addBlobs(wrappedBlobIndexIterable, {
+  //   containingMultihash: containingCidLink?.multihash,
+  // })
 }
 
 /**
@@ -223,13 +244,13 @@ export const indexClear = async (
 }
 
 // Allowed strategies
-const VALID_INDEX_WRITERS = ['single-level', 'multiple-level']
+const VALID_INDEX_WRITERS = ['single-level', 'multiple-level', 'all']
 
 /**
  * Validates the given index writer implementation.
  *
  * @param {string} [strategy]
- * @returns {'single-level' | 'multiple-level'}
+ * @returns {'single-level' | 'multiple-level' | 'all'}
  */
 function validateIndexWriter(strategy) {
   if (!strategy) {

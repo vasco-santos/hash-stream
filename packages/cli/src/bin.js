@@ -43,11 +43,12 @@ cli
   )
   .example('pack write some-file.ext -iw multiple-level')
   .example('pack write some-file.ext -iw single-level')
+  .example('pack write some-file.ext -iw all')
   .option('-f, --format', 'Pack format: "car"', 'car')
   .option('-ps, --pack-size', 'Pack size in bytes', MAX_PACK_SIZE)
   .option(
     '-iw, --index-writer',
-    'Indexing writer implementation: "single-level" or "multiple-level"',
+    'Indexing writer implementation: "single-level" or "multiple-level" or "all"',
     'multiple-level'
   )
   .option(
@@ -90,10 +91,11 @@ cli
     'Adds an index for a given verifiable pack (CAR file) using the specified writer.'
   )
   .example('index add bag... pack.car bafy... -iw multiple-level')
+  .example('index add bag... pack.car bafy... -iw all')
   .example('index add bag... pack.car -iw single-level')
   .option(
     '-iw, --index-writer',
-    'Indexing writer implementation: "single-level" or "multiple-level"',
+    'Indexing writer implementation: "single-level" or "multiple-level" or "all"',
     'multiple-level'
   )
   .option(

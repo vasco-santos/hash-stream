@@ -18,7 +18,7 @@ export const DAGPB_CODE = 0x70
  * @param {string} filePath
  * @param {{
  *   _: string[],
- *   'index-writer': 'single-level' | 'multiple-level' | 'none',
+ *   'index-writer': 'single-level' | 'multiple-level' | 'all' | 'none',
  *   format: 'car',
  *   'pack-size': number,
  *   'store-backend'?: 'fs' | 's3'
@@ -216,13 +216,13 @@ export const packClear = async (
 }
 
 // Allowed strategies
-const VALID_INDEX_WRITERS = ['single-level', 'multiple-level', 'none']
+const VALID_INDEX_WRITERS = ['single-level', 'multiple-level', 'all', 'none']
 
 /**
  * Validates the given index strategy.
  *
  * @param {string} [strategy]
- * @returns {'single-level' | 'multiple-level' | 'none'}
+ * @returns {'single-level' | 'multiple-level' | 'all' | 'none'}
  */
 function validateIndexWriter(strategy) {
   if (!strategy) {

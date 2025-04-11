@@ -140,7 +140,7 @@ export async function getClient(
   return {
     index: {
       store: indexStore,
-      writer: indexWriters[0],
+      writers: indexWriters,
       reader: indexReader,
     },
     pack: {

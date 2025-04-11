@@ -32,6 +32,11 @@ describe('CLI index', () => {
     }
   })
 
+  after(async () => {
+    const clear = await hashStreamCmd.args(['index', 'clear']).env(env).join()
+    assert.match(clear.output, /\n*Cleared all files in directory:\s*\/[\S]+\n/)
+  })
+
   it('fails index add if invalid pack CID provided', async () => {
     const fail = await hashStreamCmd
       .args(['index', 'add', 'bagbaieraquzn', 'test/fixture.car'])
@@ -502,5 +507,96 @@ describe('CLI index', () => {
 
     // Match type: CONTAINING, offset, length
     assert.match(find.output, /type: CONTAINING, offset: N\/A, length: N\/A/)
+  })
+
+  it('can index add and find records with all index writers', async () => {
+    const add = await hashStreamCmd
+      .args([
+        'index',
+        'add',
+        'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
+        'test/fixture.car',
+        'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
+        '--index-writer',
+        'all',
+      ])
+      .env(env)
+      .join()
+
+    assert.equal(add.status.code, 0)
+
+    // find containing
+    const findContaining = await hashStreamCmd
+      .args([
+        'index',
+        'find',
+        'records',
+        'bafybeihhm5tycyw4jxheqviebxkkt5jpjaxgkfihsinxuardpua4yprewa',
+      ])
+      .env(env)
+      .join()
+
+    assert.equal(findContaining.status.code, 0)
+
+    // Match Target CID
+    assert.match(
+      findContaining.output,
+      /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Finding target
+    assert.match(
+      findContaining.output,
+      /Finding target\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match Index Records section
+    assert.match(findContaining.output, /Index Records:/)
+
+    // Match type: CONTAINING, offset, length
+    assert.match(
+      findContaining.output,
+      /type: CONTAINING, offset: N\/A, length: N\/A/
+    )
+
+    // Find pack without containing CID
+    const findPack = await hashStreamCmd
+      .args([
+        'index',
+        'find',
+        'records',
+        'bagbaieraquznspkkfr4hckm2vho7udiy33zk7anb3g732k27lab33tfkwkra',
+      ])
+      .env(env)
+      .join()
+
+    assert.equal(findPack.status.code, 0)
+    assert.match(
+      findPack.output,
+      /Target CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+    // Match type: PACK, offset, length
+    assert.match(findPack.output, /type: PACK, offset: N\/A, length: N\/A/)
+
+    // Find containing blob without containing CID
+    const findBlob = await hashStreamCmd
+      .args([
+        'index',
+        'find',
+        'records',
+        'bafkreiblganihhs4tqyasd3ies5zise6rmxbusn67qz3tv27ad32z56ocm',
+      ])
+      .env(env)
+      .join()
+    assert.equal(findBlob.status.code, 0)
+
+    // Match Target CID
+    assert.match(
+      findBlob.output,
+      /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+    )
+
+    // Match type: BLOB
+    assert.match(findBlob.output, /type: BLOB, offset: 96, length: 26/)
   })
 })

@@ -48,7 +48,7 @@ pack write some-file.ext -iw single-level
 
 - `-f, --format` Specifies the pack format (default: `"car"`).
 - `-ps, --pack-size` Defines the maximum pack size in bytes (default: `MAX_PACK_SIZE`).
-- `-iw, --index-writer` Specifies the indexing writer implementation, which can be `"single-level"` or `"multiple-level"` (default: `"multiple-level"`).
+- `-iw, --index-writer` Specifies the indexing writer implementation, which can be `"single-level"` or `"multiple-level"` or `"all"` (default: `"multiple-level"`).
 - `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
 
 ---
@@ -95,7 +95,7 @@ index add bag... pack.car -iw single-level
 
 #### Options:
 
-- `-iw, --index-writer` Indexing writer implementation: "single-level" or "multiple-level" (default: `multiple-level`)
+- `-iw, --index-writer` Indexing writer implementation: "single-level" or "multiple-level" or "all" (default: `multiple-level`)
 - `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
 
 ---
