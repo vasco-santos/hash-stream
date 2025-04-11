@@ -73,20 +73,14 @@ export async function getClient(
     const hashStreamDir = path.join(os.homedir(), `.${getProfile()}`)
     raw = {
       index: {
-        singleLevelIndex: {
-          storeDir: path.join(hashStreamDir, 'single-level-index'),
-        },
-        multipleLevelIndex: {
-          storeDir: path.join(hashStreamDir, 'multiple-level-index'),
-        },
+        storeDir: path.join(hashStreamDir, 'index'),
       },
       pack: {
         storeDir: path.join(hashStreamDir, 'pack'),
       },
     }
     // Create directories
-    fs.mkdirSync(raw.index.singleLevelIndex.storeDir, { recursive: true })
-    fs.mkdirSync(raw.index.multipleLevelIndex.storeDir, { recursive: true })
+    fs.mkdirSync(raw.index.storeDir, { recursive: true })
     fs.mkdirSync(raw.pack.storeDir, { recursive: true })
 
     agentData = new AgentData(raw)
@@ -120,11 +114,7 @@ export async function getClient(
       client: packS3Client,
     })
   } else {
-    indexStore = new FSIndexStore(
-      options.indexWriterImplementationName === 'single-level'
-        ? agentData.data.index.singleLevelIndex.storeDir
-        : agentData.data.index.multipleLevelIndex.storeDir
-    )
+    indexStore = new FSIndexStore(agentData.data.index.storeDir)
     packStore = new FSPackStore(agentData.data.pack.storeDir)
   }
 
@@ -140,7 +130,7 @@ export async function getClient(
 
   // Get pack store
   const packWriter = new PackWriter(packStore, {
-    indexWriter,
+    indexWriters: indexWriter && [indexWriter],
   })
   const packReader = new PackReader(packStore)
 

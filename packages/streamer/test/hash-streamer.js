@@ -71,7 +71,7 @@ export function runHashStreamTests(
       indexWriter = new MultipleLevelIndexWriter(indexStore)
 
       packStore = await createPackStore()
-      packWriter = new PackWriter(packStore, { indexWriter })
+      packWriter = new PackWriter(packStore, { indexWriters: [indexWriter] })
 
       packReader = new PackReader(packStore)
       hashStreamer = new HashStreamer(indexReader, packReader)

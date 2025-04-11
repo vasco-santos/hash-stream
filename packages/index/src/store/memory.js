@@ -59,8 +59,10 @@ export class MemoryIndexStore {
     const entries = encodedData
       .map((data) => this.decodeData(data))
       .reduce((acc, val) => {
-        const entry = acc.find((entry) =>
-          equals(entry.multihash.bytes, val.multihash.bytes)
+        const entry = acc.find(
+          (entry) =>
+            equals(entry.multihash.bytes, val.multihash.bytes) &&
+            entry.type === val.type
         )
 
         // Update subrecords

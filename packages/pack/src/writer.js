@@ -16,11 +16,11 @@ export class PackWriter {
    *
    * @param {API.PackStore} storeWriter
    * @param {object} [options]
-   * @param {API.IndexWriter} [options.indexWriter]
+   * @param {API.IndexWriter[]} [options.indexWriters]
    */
-  constructor(storeWriter, { indexWriter } = {}) {
+  constructor(storeWriter, { indexWriters } = {}) {
     this.storeWriter = storeWriter
-    this.indexWriter = indexWriter
+    this.indexWriters = indexWriters
   }
 
   /**
@@ -104,17 +104,24 @@ export class PackWriter {
    * @param {API.PackWriterWriteOptions} [options]
    */
   async #storeIndex(readable, containingPromise, options) {
-    if (!this.indexWriter) {
+    if (!this.indexWriters || this.indexWriters.length === 0) {
       await drainStream(readable)
       return
     }
 
-    const reader = readable.getReader()
-
     if (options?.notIndexContaining) {
-      await this.indexWriter.addBlobs(streamIndexData(reader))
+      // Tee the stream for multiple writers
+      const teedStreams = teeMultipleStreams(readable, this.indexWriters.length)
+      for (let i = 0; i < this.indexWriters.length; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await this.indexWriters[i].addBlobs(
+          streamIndexData(teedStreams[i].getReader())
+        )
+      }
       return
     }
+
+    const reader = readable.getReader()
 
     /** @type {import('@hash-stream/index/types').BlobIndexRecord[]} */
     const buffer = []
@@ -166,7 +173,15 @@ export class PackWriter {
       }
     }
 
-    await this.indexWriter.addBlobs(bufferedStream(), { containingMultihash })
+    // Multiplex streams to each index writer
+    const streams = fanOutAsyncIterator(
+      bufferedStream(),
+      this.indexWriters.length
+    )
+    for (let i = 0; i < this.indexWriters.length; i++) {
+      // eslint-disable-next-line no-await-in-loop
+      await this.indexWriters[i].addBlobs(streams[i], { containingMultihash })
+    }
   }
 }
 
@@ -194,4 +209,103 @@ async function* streamIndexData(reader) {
     if (done) break
     yield value
   }
+}
+
+/**
+ * Tee a ReadableStream into multiple streams.
+ *
+ * @param {ReadableStream} readable
+ * @param {number} n - The number of teed streams to create
+ * @returns {ReadableStream[]} - Array of teed ReadableStreams
+ */
+function teeMultipleStreams(readable, n) {
+  if (n <= 1) return [readable]
+
+  // Use tee to split the stream into two
+  let [first, second] = readable.tee()
+  const streams = [first]
+
+  // If n is greater than 2, tee the second stream and continue
+  let currentStream = second
+  /* c8 ignore next 5 */
+  for (let i = 1; i < n - 1; i++) {
+    const [newStream, remaining] = currentStream.tee()
+    streams.push(newStream)
+    currentStream = remaining
+  }
+
+  // Only push the last stream when we have more than two streams
+  streams.push(currentStream)
+
+  return streams
+}
+
+/**
+ * Fans out an async iterator to N consumers, ensuring all get the same items in order.
+ *
+ * @template T
+ * @param {AsyncIterable<T>} source - The source async iterable to fan out.
+ * @param {number} n - The number of consumers to fan out to.
+ * @returns {AsyncIterable<T>[]} - An array of async iterables, each receiving the same data.
+ */
+function fanOutAsyncIterator(source, n) {
+  /** @type {AsyncIterable<T>[]} */
+  const readers = []
+
+  /** @type {T[]} */
+  const buffer = []
+
+  /** @type {boolean} */
+  let done = false
+
+  /** @type {{ resolve: (result: { value: T } | { done: true }) => void }[]} */
+  let waiters = []
+
+  /**
+   * Fills the buffer with the next value from the source and notifies all waiters.
+   */
+  async function fillBuffer() {
+    /* c8 ignore next 1 */
+    if (done) return
+
+    const iter = source[Symbol.asyncIterator]()
+    const { value, done: isDone } = await iter.next()
+
+    if (isDone) {
+      done = true
+      waiters.forEach(({ resolve }) => resolve({ done: true }))
+      return
+    }
+
+    buffer.push(value)
+    waiters.forEach(({ resolve }) => resolve({ value }))
+    waiters = []
+  }
+
+  for (let i = 0; i < n; i++) {
+    readers.push(
+      (async function* () {
+        let index = 0
+        while (!done || index < buffer.length) {
+          if (index < buffer.length) {
+            yield buffer[index++]
+          } else if (!done) {
+            await new Promise((resolve) => waiters.push({ resolve }))
+            if (index < buffer.length) {
+              yield buffer[index++]
+            }
+          }
+        }
+      })()
+    )
+  }
+
+  // eslint-disable-next-line no-extra-semi
+  ;(async () => {
+    while (!done) {
+      await fillBuffer()
+    }
+  })()
+
+  return readers
 }
