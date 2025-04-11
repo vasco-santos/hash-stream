@@ -258,8 +258,8 @@ npm install -g ipfs-car
 
 ```sh
 # Dump the blob data associated with the given target CID into the file system
-# streamer dump <targetCid> <filePath> [containingCid]
-$ hash-stream streamer dump bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy blob.car bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
+# streamer dump <targetCid> <filePath> [containingCid] --format raw
+$ hash-stream streamer dump bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy blob.raw bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m --format raw
 
 Target CID:
       bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy
@@ -268,7 +268,7 @@ Containing CID:
       bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m
       base58btc(zQmPtd4BkLdfLC8k1TcWeWQvgE7LMPxrp3ipHV5iDUp53WA)
 
-Successfully wrote bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy bytes to /Users/vcs/work/github/hash-stream/blob.car
+Successfully wrote bafkreigjecysg76hvjoaw4t4fj7aggbhojsw327jiwzyasnrfh43kxrsdy bytes to /Users/vcs/work/github/hash-stream/blob.raw
 
 # Listing blocks of written CAR file, it should contain the CID of the fetched blob
 $ ipfs-car blocks blob.car

@@ -31,3 +31,5 @@ async function getMultibaseDecoder(cidString) {
 
   return base.decoder
 }
+
+export const identityCid = CID.parse(`bafkqaaa`)
