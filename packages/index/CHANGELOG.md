@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/vasco-santos/hash-stream/compare/index-v1.1.1...index-v1.2.0) (2025-04-11)
+
+
+### Features
+
+* add support for pack writer with multiple index writer ([#68](https://github.com/vasco-santos/hash-stream/issues/68)) ([26b7d80](https://github.com/vasco-santos/hash-stream/commit/26b7d80d64d3f6402096c191ed486d1b7431c892))
+
 ## [1.1.1](https://github.com/vasco-santos/hash-stream/compare/index-v1.1.0...index-v1.1.1) (2025-04-08)
 
 
