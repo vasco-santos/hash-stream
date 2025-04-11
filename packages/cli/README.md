@@ -107,13 +107,12 @@ Find index records of a given blob/pack/containing by its CID, written using a s
 #### Examples:
 
 ```sh
-index find records bafk... -iw single-level
-index find records bafk... bafy... -iw multiple-level
+index find records bafk...
+index find records bafk... bafy...
 ```
 
 #### Options:
 
-- `-iw, --index-writer` Indexing writer implementation: "single-level" or "multiple-level" (default: `multiple-level`)
 - `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
 
 ---
@@ -125,13 +124,8 @@ Clear all indexes within a writer.
 #### Examples:
 
 ```sh
-index clear -iw multiple-level
-index clear -iw single-level
+index clear
 ```
-
-#### Options:
-
-- `-iw, --index-writer` Indexing writer implementation: "single-level" or "multiple-level" (default: `multiple-level`)
 
 ---
 

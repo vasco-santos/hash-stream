@@ -39,7 +39,7 @@ export function getStore() {
  * Get a new hash-stream client configured from configuration.
  *
  * @param {object} [options]
- * @param {'single-level' | 'multiple-level' | 'none'} options.indexWriterImplementationName
+ * @param {'single-level' | 'multiple-level' | 'all' | 'none'} options.indexWriterImplementationName
  * @param {'fs' | 's3'} options.storeBackend
  */
 export async function getClient(
@@ -119,25 +119,28 @@ export async function getClient(
   }
 
   // Get index based on strategy
-  let indexWriter, indexReader
+  let indexWriters = []
+  let indexReader
   if (options.indexWriterImplementationName === 'single-level') {
-    indexWriter = new SingleLevelIndexWriter(indexStore)
-    indexReader = new IndexReader(indexStore)
+    indexWriters.push(new SingleLevelIndexWriter(indexStore))
   } else if (options.indexWriterImplementationName === 'multiple-level') {
-    indexWriter = new MultipleLevelIndexWriter(indexStore)
-    indexReader = new IndexReader(indexStore)
+    indexWriters.push(new MultipleLevelIndexWriter(indexStore))
+  } else if (options.indexWriterImplementationName === 'all') {
+    indexWriters.push(new SingleLevelIndexWriter(indexStore))
+    indexWriters.push(new MultipleLevelIndexWriter(indexStore))
   }
+  indexReader = new IndexReader(indexStore)
 
   // Get pack store
   const packWriter = new PackWriter(packStore, {
-    indexWriters: indexWriter && [indexWriter],
+    indexWriters,
   })
   const packReader = new PackReader(packStore)
 
   return {
     index: {
       store: indexStore,
-      writer: indexWriter,
+      writer: indexWriters[0],
       reader: indexReader,
     },
     pack: {

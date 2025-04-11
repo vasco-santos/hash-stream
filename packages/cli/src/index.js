@@ -106,27 +106,19 @@ export const indexAdd = async (
  * @param {string} [containingCid]
  * @param {{
  *   _: string[],
- *   'index-writer'?: 'single-level' | 'multiple-level',
  *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
 export const indexFindRecords = async (
   targetCid,
   containingCid,
-  opts = { 'index-writer': 'multiple-level', 'store-backend': undefined, _: [] }
+  opts = { 'store-backend': undefined, _: [] }
 ) => {
-  const indexWriterImplementationName = validateIndexWriter(
-    opts['index-writer']
-  )
   const storeBackend = resolveStoreBackend(opts['store-backend'])
   const client = await getClient({
-    indexWriterImplementationName,
+    indexWriterImplementationName: 'none',
     storeBackend,
   })
-  if (!client.index.writer || !client.index.reader || !client.index.store) {
-    console.error('Error: Index is not available.')
-    process.exit(1)
-  }
 
   let targetMultihash
   try {
@@ -158,8 +150,7 @@ export const indexFindRecords = async (
   }
 
   console.info(
-    `\nIndexing store implementation: ${indexWriterImplementationName}
-    Store backend: ${storeBackend}
+    `\nStore backend: ${storeBackend}
     Finding target...
     ${targetCid}
     base58btc(${base58btc.encode(targetMultihash.bytes)})`
@@ -186,12 +177,11 @@ export const indexFindRecords = async (
 /**
  * @param {{
  *   _: string[],
- *   'index-writer'?: 'single-level' | 'multiple-level',
  *   'store-backend'?: 'fs' | 's3'
  * }} [opts]
  */
 export const indexClear = async (
-  opts = { 'index-writer': 'multiple-level', 'store-backend': undefined, _: [] }
+  opts = { 'store-backend': undefined, _: [] }
 ) => {
   const storeBackend = resolveStoreBackend(opts['store-backend'])
   if (storeBackend === 's3') {
@@ -199,17 +189,10 @@ export const indexClear = async (
     process.exit(1)
   }
 
-  const indexWriterImplementationName = validateIndexWriter(
-    opts['index-writer']
-  )
   const client = await getClient({
-    indexWriterImplementationName,
+    indexWriterImplementationName: 'none',
     storeBackend,
   })
-  if (!client.index.writer || !client.index.reader || !client.index.store) {
-    console.error('Error: Index is not available.')
-    process.exit(1)
-  }
 
   // @ts-expect-error not existing in s3 store
   const directoryPath = client.index.store.directory
