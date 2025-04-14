@@ -4,7 +4,7 @@ import assert from 'assert'
 import all from 'it-all'
 
 import { CarIndexer } from '@ipld/car'
-import { sha256 } from 'multiformats/hashes/sha2'
+import { sha256, sha512 } from 'multiformats/hashes/sha2'
 import { equals } from 'uint8arrays/equals'
 import { base58btc } from 'multiformats/bases/base58'
 
@@ -81,6 +81,36 @@ export function runPackWriterTests(
           assert(fetchedPackBytes)
           // Verify fetched pack bytes
           const fetchedPackDigest = await sha256.digest(fetchedPackBytes)
+          assert(equals(fetchedPackDigest.bytes, multihash.bytes))
+        }
+      })
+
+      it('should write sharded packs from a blob with other hasher', async () => {
+        const byteLength = 30_000_000
+        const chunkSize = byteLength / 3
+        const bytes = await randomBytes(byteLength)
+        const blob = new Blob([bytes])
+        /** @typedef {API.CreateOptions} */
+        const createPackOptions = {
+          shardSize: chunkSize,
+          type: /** @type {'car'} */ ('car'),
+          hasher: sha512,
+        }
+
+        const { containingMultihash, packsMultihashes } = await writer.write(
+          blob,
+          createPackOptions
+        )
+
+        assert(packsMultihashes.length > 1)
+        assert(containingMultihash)
+
+        // Get packs from store and verify its bytes to hash
+        for (const multihash of packsMultihashes) {
+          const fetchedPackBytes = await store.get(multihash)
+          assert(fetchedPackBytes)
+          // Verify fetched pack bytes
+          const fetchedPackDigest = await sha512.digest(fetchedPackBytes)
           assert(equals(fetchedPackDigest.bytes, multihash.bytes))
         }
       })

@@ -1,5 +1,6 @@
 import * as API from '../api.js'
 import { base58btc } from 'multiformats/bases/base58'
+import { sha256 } from 'multiformats/hashes/sha2'
 
 /**
  * Cloudflare Worker Bucket R2 implementation of PackStore
@@ -47,7 +48,19 @@ export class CloudflareWorkerBucketPackStore {
    */
   async put(hash, data) {
     const objectKey = this._getObjectKey(hash)
-    await this.bucket.put(objectKey, data)
+    // If it is sha256, we can use the hash directly
+    // Otherwise, we need to calculate the sha256 hash of the data
+    // and use that as the checksum
+    let checksum
+    if (hash.code === sha256.code) {
+      checksum = hash
+    } else {
+      checksum = await sha256.digest(data)
+    }
+    // Store the pack file in R2
+    await this.bucket.put(objectKey, data, {
+      sha256: toHex(checksum.digest),
+    })
   }
 
   /**
@@ -104,4 +117,11 @@ export class CloudflareWorkerBucketPackStore {
       }
     }
   }
+}
+
+/**
+ * @param {Uint8Array} uint8Array
+ */
+function toHex(uint8Array) {
+  return [...uint8Array].map((b) => b.toString(16).padStart(2, '0')).join('')
 }

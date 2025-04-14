@@ -1,6 +1,7 @@
 import * as API from '../api.js'
 import { encode, decode } from '@ipld/dag-json'
 import { base58btc } from 'multiformats/bases/base58'
+import { sha256 } from 'multiformats/hashes/sha2'
 import { equals } from 'uint8arrays'
 import {
   encode as indexRecordEncode,
@@ -155,13 +156,29 @@ export class S3LikeIndexStore {
       }
       const filePath = this.#getFilePath(entry.multihash, subRecordMultihash)
       const encodedData = this.encodeData(entry, recordType)
+      const checksum = await sha256.digest(encodedData)
+
       await this.client.send(
         new PutObjectCommand({
           Bucket: this.bucketName,
           Key: filePath,
           Body: encodedData,
+          ChecksumSHA256: toBase64(checksum.digest),
         })
       )
     }
   }
+}
+
+/**
+ * @param {Uint8Array} uint8Array
+ */
+function toBase64(uint8Array) {
+  // Convert to a binary string, then use btoa
+  let binary = ''
+  for (let i = 0; i < uint8Array.length; i++) {
+    binary += String.fromCharCode(uint8Array[i])
+  }
+  // eslint-disable-next-line no-undef
+  return btoa(binary)
 }
