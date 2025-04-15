@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/vasco-santos/hash-stream/compare/pack-v1.2.0...pack-v1.3.0) (2025-04-15)
+
+
+### Features
+
+* guarantee integrity on cloud object storage ([#72](https://github.com/vasco-santos/hash-stream/issues/72)) ([50ad3d2](https://github.com/vasco-santos/hash-stream/commit/50ad3d2c341682ee8bc759bc78ee5c6456ee9aba))
+
 ## [1.2.0](https://github.com/vasco-santos/hash-stream/compare/pack-v1.1.1...pack-v1.2.0) (2025-04-11)
 
 
