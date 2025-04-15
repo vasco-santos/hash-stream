@@ -1,5 +1,6 @@
 import * as API from '../api.js'
 import { base58btc } from 'multiformats/bases/base58'
+import { sha256 } from 'multiformats/hashes/sha2'
 import {
   S3Client,
   PutObjectCommand,
@@ -54,11 +55,22 @@ export class S3LikePackStore {
    */
   async put(hash, data) {
     const objectKey = this._getObjectKey(hash)
+
+    // If it is sha256, we can use the hash directly
+    // Otherwise, we need to calculate the sha256 hash of the data
+    // and use that as the checksum
+    let checksum
+    if (hash.code === sha256.code) {
+      checksum = hash
+    } else {
+      checksum = await sha256.digest(data)
+    }
     await this.client.send(
       new PutObjectCommand({
         Bucket: this.bucketName,
         Key: objectKey,
         Body: data,
+        ChecksumSHA256: toBase64(checksum.digest),
       })
     )
   }
@@ -143,4 +155,17 @@ export class S3LikePackStore {
       }
     }
   }
+}
+
+/**
+ * @param {Uint8Array} uint8Array
+ */
+function toBase64(uint8Array) {
+  // Convert to a binary string, then use btoa
+  let binary = ''
+  for (let i = 0; i < uint8Array.length; i++) {
+    binary += String.fromCharCode(uint8Array[i])
+  }
+  // eslint-disable-next-line no-undef
+  return btoa(binary)
 }

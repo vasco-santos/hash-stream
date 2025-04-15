@@ -1,6 +1,7 @@
 import * as API from '../api.js'
 import { encode, decode } from '@ipld/dag-json'
 import { base58btc } from 'multiformats/bases/base58'
+import { sha256 } from 'multiformats/hashes/sha2'
 import { equals } from 'uint8arrays'
 import {
   encode as indexRecordEncode,
@@ -140,7 +141,18 @@ export class CloudflareWorkerBucketIndexStore {
       }
       const filePath = this.#getFilePath(entry.multihash, subRecordMultihash)
       const encodedData = this.encodeData(entry, recordType)
-      await this.bucket.put(filePath, new Uint8Array(encodedData))
+      const checksum = await sha256.digest(encodedData)
+
+      await this.bucket.put(filePath, new Uint8Array(encodedData), {
+        sha256: toHex(checksum.digest),
+      })
     }
   }
+}
+
+/**
+ * @param {Uint8Array} uint8Array
+ */
+function toHex(uint8Array) {
+  return [...uint8Array].map((b) => b.toString(16).padStart(2, '0')).join('')
 }
