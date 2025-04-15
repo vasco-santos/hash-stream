@@ -7,6 +7,18 @@
 
 * guarantee integrity on cloud object storage ([#72](https://github.com/vasco-santos/hash-stream/issues/72)) ([50ad3d2](https://github.com/vasco-santos/hash-stream/commit/50ad3d2c341682ee8bc759bc78ee5c6456ee9aba))
 
+
+### Other Changes
+
+* **main:** release pack 1.3.0 ([#74](https://github.com/vasco-santos/hash-stream/issues/74)) ([578a772](https://github.com/vasco-santos/hash-stream/commit/578a7728d010d4caab4c4013d0ac6eb57c019f4d))
+
+## [1.3.0](https://github.com/vasco-santos/hash-stream/compare/pack-v1.2.0...pack-v1.3.0) (2025-04-15)
+
+
+### Features
+
+* guarantee integrity on cloud object storage ([#72](https://github.com/vasco-santos/hash-stream/issues/72)) ([50ad3d2](https://github.com/vasco-santos/hash-stream/commit/50ad3d2c341682ee8bc759bc78ee5c6456ee9aba))
+
 ## [1.2.0](https://github.com/vasco-santos/hash-stream/compare/pack-v1.1.1...pack-v1.2.0) (2025-04-11)
 
 
