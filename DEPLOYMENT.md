@@ -242,6 +242,86 @@ You can customize Hash Stream for your infra:
 - Create a custom HTTP handler wrapping the streamer logic
 - Follow interface contracts to stay interoperable with the ecosystem
 
+## 📦 Prebuilt Docker Images
+
+To simplify deployment, prebuilt Docker images of Hash Stream services may be used or created for various environments.
+
+### Benefits
+
+- 📦 Fast deployment and scaling
+- 🔁 Consistent environments across dev/staging/prod
+- 🔐 Easy to integrate with container-based infrastructure (e.g., ECS, Kubernetes, Nomad)
+
+### Image Contents
+
+A typical image includes:
+
+- Node.js runtime
+- Hash Stream CLI and/or streamer server code
+- Optional configuration to mount or link volume/storage
+
+### Example Dockerfile
+
+```Dockerfile
+# Use Node.js base image
+FROM node:20-alpine
+
+# Create app directory
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install --production
+
+# Copy the rest of your code
+COPY . .
+
+# Expose the server port (adjust if needed)
+EXPOSE 3000
+
+# Start the app (adjust this to your actual start script if changed)
+CMD ["node", "src/index.js"]
+```
+
+### Usage Example
+
+```bash
+docker build -t hash-stream .
+docker run -p 3000:3000 \
+  -e AWS_ACCESS_KEY_ID=... \
+  -e AWS_SECRET_ACCESS_KEY=... \
+  hash-stream
+```
+
+### Docker Compose Example
+
+```yaml
+version: '3.9'
+
+services:
+  hash-stream:
+    build: .
+    ports:
+      - 3000:3000
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      HS_S3_BUCKET: hash-stream-data
+```
+
+### Distribution
+
+Optionally, publish official images to Docker Hub or GitHub Container Registry.
+
+```
+docker tag hash-stream ghcr.io/your-org/hash-stream
+docker push ghcr.io/your-org/hash-stream
+```
+
+### Available Images
+
+- https://hub.docker.com/r/vascosantos10/hash-stream-server
+
 ## Client
 
 For consuming content:
