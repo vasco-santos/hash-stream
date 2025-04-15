@@ -231,6 +231,10 @@ graph LR
     A --> G[Retrieve Verifiable Data from Multihash]
 ```
 
+## Deployment
+
+A Deployment Guide is available [here](./DEPLOYMENT.md).
+
 ## Contributing
 
 All welcome! `hash-stream` is open-source. See the [contributing guide](./CONTRIBUTING.md)

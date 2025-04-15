@@ -182,10 +182,6 @@ const packStore = new MemoryPackStore()
 Stores records using a S3 compatible Cloud Storage solution like S3 or R2.
 
 ```js
-import fs from 'fs'
-import path from 'path'
-import os from 'os'
-
 import { S3Client } from '@aws-sdk/client-s3'
 import { S3LikePackStore } from '@hash-stream/pack/store/s3-like'
 
