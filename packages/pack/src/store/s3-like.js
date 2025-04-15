@@ -143,8 +143,12 @@ export class S3LikePackStore {
             Bucket: this.bucketName,
             Key: objectKey,
             Range: rangeHeader,
+            // Needed because range GET won't be the entire file
+            // @ts-expect-error this mode is not typed
+            ChecksumMode: 'DISABLED',
           })
         )
+        /* c8 ignore next 1 */
         if (!Body) continue
 
         const buffer = new Uint8Array(await Body.transformToByteArray())
