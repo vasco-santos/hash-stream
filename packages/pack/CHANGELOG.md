@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.1](https://github.com/vasco-santos/hash-stream/compare/pack-v1.3.0...pack-v1.3.1) (2025-04-15)
+
+
+### Fixes
+
+* pack s3 store stream with range without checksum ([#76](https://github.com/vasco-santos/hash-stream/issues/76)) ([ed2d10c](https://github.com/vasco-santos/hash-stream/commit/ed2d10c38abe292e787a7a6085cca5d427aed9f9))
+
+
+### Other Changes
+
+* **main:** release pack 1.3.0 ([#75](https://github.com/vasco-santos/hash-stream/issues/75)) ([0054e4c](https://github.com/vasco-santos/hash-stream/commit/0054e4c5f14dae662ea625f8d1dbf22aba22fc69))
+
 ## [1.3.0](https://github.com/vasco-santos/hash-stream/compare/pack-v1.2.0...pack-v1.3.0) (2025-04-15)
 
 
