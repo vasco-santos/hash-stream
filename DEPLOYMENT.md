@@ -322,8 +322,47 @@ docker push ghcr.io/your-org/hash-stream
 
 - https://hub.docker.com/r/vascosantos10/hash-stream-server
 
-## Client
+## 🧪 Use Verified Fetch as a client
 
-For consuming content:
+Hash Stream supports trustless data retrieval using `verified-fetch`—a client library designed to verify content-addressable responses over HTTP.
 
-- [verified-fetch](https://github.com/ipfs/helia-verified-fetch/tree/main/packages/verified-fetch): A fetch-compatible client for trustlessly loading CIDs over HTTP.
+This integration enables applications and services to verify data on the client side by using multihashes or the CAR format, increasing trust and interoperability with IPFS-like ecosystems.
+
+### What is `verified-fetch`?
+
+[`verified-fetch`](https://github.com/ipfs/helia-verified-fetch/tree/main/packages/verified-fetch) is a JavaScript library built for verifying multihash-based content responses over HTTP. It works seamlessly with servers exposing verifiable responses, such as those powered by Hash Stream.
+
+### Benefits
+
+- ✅ End-to-end trust: Client verifies data matches the expected hash
+- ✅ Works with standard fetch API
+- ✅ Integrates with `helia` and other IPFS tooling
+
+### How to Use
+
+You can integrate verified-fetch as follows:
+
+```js
+import { createVerifiedFetch } from 'verified-fetch'
+
+// TODO: Set your server url after deployment
+const serverUrl = ''
+
+const verifiedFetch = await createVerifiedFetch({
+  gateways: [serverUrl],
+})
+
+const res = await verifiedFetch(`ipfs://${cid}`)
+
+const data = await res.blob()
+// data is now verified
+
+await verifiedFetch.stop()
+```
+
+### Requirements
+
+- The HTTP server must stream blobs of data containing the expected CID
+- Hash Stream streamer must support multihash validation (already built-in)
+- Indexes in Hash Stream Index Store MUST be able to respond to block level indexes (for example using the [`SingleLevelIndexWriter`](https://github.com/vasco-santos/hash-stream/tree/main/packages/index#writer))
+- Client must know the expected multihash beforehand
