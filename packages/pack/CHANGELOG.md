@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/vasco-santos/hash-stream/compare/pack-v1.3.1...pack-v1.3.2) (2025-04-17)
+
+
+### Fixes
+
+* pack store keys with raw cid string and extension ([#84](https://github.com/vasco-santos/hash-stream/issues/84)) ([e91f3da](https://github.com/vasco-santos/hash-stream/commit/e91f3da203a1e1a65948cd67d6c7ecd5e6a16b7d))
+
 ## [1.3.1](https://github.com/vasco-santos/hash-stream/compare/pack-v1.3.0...pack-v1.3.1) (2025-04-15)
 
 
