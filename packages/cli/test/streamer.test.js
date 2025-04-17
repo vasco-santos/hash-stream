@@ -83,10 +83,15 @@ describe('CLI streamer', () => {
       .join()
 
     assert.equal(status.code, 0)
-    assert.match(
-      output,
-      /Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Successfully wrote baf[a-z0-9]+ bytes as CAR to .+\.car\n?/
-    )
+    // Split the output regex into parts
+    const targetCidRegex = /Target CID: MH\([a-z0-9]+\)/
+    const containingCidRegex = /Containing CID: MH\([a-z0-9]+\)/
+    const successMessageRegex =
+      /Successfully wrote [a-z0-9]+ bytes as CAR to .+\.car/
+
+    assert.match(output, targetCidRegex)
+    assert.match(output, containingCidRegex)
+    assert.match(output, successMessageRegex)
 
     // Verify the dumped file bytes match the target multihash requested
     const dumpedBytes = await fs.promises.readFile(writePath)
@@ -132,10 +137,15 @@ describe('CLI streamer', () => {
       .join()
 
     assert.equal(status.code, 0)
-    assert.match(
-      output,
-      /Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+Successfully wrote baf[a-z0-9]+ bytes as CAR to .+\.car\n?/
-    )
+    const targetCidRegex = /Target CID: MH\([a-z0-9]+\)/
+    const containingCidRegex = /Containing CID: MH\([a-z0-9]+\)/
+    const successMessageRegex =
+      /Successfully wrote [a-z0-9]+ bytes as CAR to .+\.car/
+
+    // Match the output with the individual regexes
+    assert.match(output, targetCidRegex)
+    assert.match(output, containingCidRegex)
+    assert.match(output, successMessageRegex)
 
     // Check hash of written content
     const dumpedBytes = await fs.promises.readFile(writePath)
@@ -168,10 +178,13 @@ describe('CLI streamer', () => {
 
     assert.equal(status.code, 0)
 
-    assert.match(
-      output,
-      /Target CID:\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\nSuccessfully wrote bafy[a-z0-9]+ bytes as CAR to .+\.car\n?/
-    )
+    const targetCidRegex = /Target CID:\s*MH\((bafy[a-z0-9]+)\)/
+    const successMessageRegex =
+      /Successfully wrote bafy[a-z0-9]+ bytes as CAR to .+\.car/
+
+    // Match the output with the individual regexes
+    assert.match(output, targetCidRegex)
+    assert.match(output, successMessageRegex)
 
     // Verify the dumped contain file unpacked bytes match the written file
     const unpackData = await unpack(writePath, containingCid)
@@ -214,10 +227,18 @@ describe('CLI streamer', () => {
       .join()
 
     assert.equal(status.code, 0)
-    assert.match(
-      output,
-      /Target CID:\n\s{6}baf[a-z0-9]+\n\s{6}base58btc\(zQm[a-zA-Z0-9]+\)\n+Containing CID:\n\s{6}bafy[a-z0-9]+\n\s{6}base58btc\(zQm[a-zA-Z0-9]+\)(?:\n\s*)?\n+Successfully wrote baf[a-z0-9]+ bytes as RAW to .+\.bin\n?/
-    )
+    // 1. Match Target CID with MH()
+    const targetCidRegex = /Target CID:\s+MH\([a-z0-9]+\)/
+    assert.match(output, targetCidRegex)
+
+    // 2. Match Containing CID with MH()
+    const containingCidRegex = /Containing CID:\s+MH\([a-z0-9]+\)/
+    assert.match(output, containingCidRegex)
+
+    // 3. Match the successful write message
+    const successWriteRegex =
+      /Successfully wrote [a-z0-9]+ bytes as RAW to .+\.bin/
+    assert.match(output, successWriteRegex)
 
     // Verify the dumped file bytes match the target multihash requested
     const dumpedBytes = await fs.promises.readFile(writePath)
@@ -236,10 +257,13 @@ describe('CLI streamer', () => {
       .join()
 
     assert.equal(status.code, 0)
-    assert.match(
-      output,
-      /Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\nNo entries for baf[a-z0-9]+ were found\n?/
-    )
+    // 1. Match Target CID with MH()
+    const targetCidRegex = /Target CID:\s+MH\([a-z0-9]+\)/
+    assert.match(output, targetCidRegex)
+
+    // 2. Match the "No entries found" message
+    const noEntriesFoundRegex = /No entries for baf[a-z0-9]+ were found/
+    assert.match(output, noEntriesFoundRegex)
 
     // Verify the dumped file was not written
     assert.rejects(

@@ -4,7 +4,7 @@ import all from 'it-all'
 
 import { CarIndexer } from '@ipld/car'
 import { CID } from 'multiformats/cid'
-import { base58btc } from 'multiformats/bases/base58'
+import { code as RawCode } from 'multiformats/codecs/raw'
 
 import { getClient } from './lib.js'
 import {
@@ -63,9 +63,8 @@ export const indexAdd = async (
       for await (const blobIndex of blobIndexIterable) {
         console.info(
           `Indexed Blob: 
-    ${blobIndex.cid.toString()}
-    base58btc(${base58btc.encode(blobIndex.cid.multihash.bytes)})
-    location: ${base58btc.encode(packMultihash.bytes)}
+    CID: MH(${blobIndex.cid.toString()})
+    location: MH(${CID.createV1(RawCode, packMultihash)})
     offset: ${blobIndex.blockOffset} length: ${blobIndex.blockLength}`
         )
         yield {
@@ -78,11 +77,7 @@ export const indexAdd = async (
     },
   }
 
-  console.info(
-    `\n\nPack CID:
-    ${packCid}
-    base58btc(${base58btc.encode(packMultihash.bytes)})`
-  )
+  console.info(`\n\nPack CID: MH(${packCid})`)
 
   let containingCidLink
   if (containingCid) {
@@ -92,17 +87,13 @@ export const indexAdd = async (
       console.error('Error parsing containing CID:', err)
       process.exit(1)
     }
-    console.log(
-      `Containing CID:
-    ${containingCidLink.toString()}
-    base58btc(${base58btc.encode(containingCidLink.multihash.bytes)})`
-    )
+    console.log(`Containing CID: MH(${containingCidLink.toString()})`)
   }
 
   console.info(
     `\nIndexing writer implementation: ${indexWriterImplementationName}
-    Store backend: ${storeBackend}
-    Indexing blobs...`
+Store backend: ${storeBackend}
+\nIndexing blobs...\n`
   )
 
   // Multiplex streams to each index writer
@@ -149,11 +140,7 @@ export const indexFindRecords = async (
     process.exit(1)
   }
 
-  console.info(
-    `\n\nTarget CID:
-    ${targetCid}
-    base58btc(${base58btc.encode(targetMultihash.bytes)})`
-  )
+  console.info(`\n\nTarget CID: MH(${targetCid})`)
 
   let containingCidLink
   if (containingCid) {
@@ -163,18 +150,12 @@ export const indexFindRecords = async (
       console.error('Error parsing containing CID:', err)
       process.exit(1)
     }
-    console.info(
-      `Containing CID:
-    ${containingCidLink.toString()}
-    base58btc(${base58btc.encode(containingCidLink.multihash.bytes)})`
-    )
+    console.info(`Containing CID: MH(${containingCidLink.toString()})`)
   }
 
   console.info(
-    `\nStore backend: ${storeBackend}
-    Finding target...
-    ${targetCid}
-    base58btc(${base58btc.encode(targetMultihash.bytes)})`
+    `Store backend: ${storeBackend}
+\nFinding target...`
   )
 
   try {
@@ -282,11 +263,13 @@ function logRecords(records, indentLevel = 1) {
 
   for (const record of records) {
     console.info(
-      `${indent}multihash: base58btc(${base58btc.encode(
-        record.multihash.bytes || new Uint8Array()
+      `${indent}CID: MH(${CID.createV1(
+        RawCode,
+        record.multihash || new Uint8Array()
       )})
-${indent}location: base58btc(${base58btc.encode(
-        record.location.bytes || new Uint8Array()
+${indent}location: MH(${CID.createV1(
+        RawCode,
+        record.location || new Uint8Array()
       )})
 ${indent}type: ${TypeStr[record.type]}, offset: ${
         record.offset || 'N/A'

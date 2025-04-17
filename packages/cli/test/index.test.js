@@ -92,9 +92,22 @@ describe('CLI index', () => {
       .join()
 
     assert.equal(add.status.code, 0)
+    // 1. Match Pack CID
+    assert.match(add.output, /Pack CID:\s+MH\(bag[a-z0-9]+\)/)
+
+    // 2. Match Indexing writer implementation
+    assert.match(add.output, /Indexing writer implementation:\s+single-level/)
+
+    // 3. Match Store backend
+    assert.match(add.output, /Store backend:\s+fs/)
+
+    // 4. Match "Indexing blobs..."
+    assert.match(add.output, /Indexing blobs\.\.\./)
+
+    // 5. Match at least one "Indexed Blob"
     assert.match(
       add.output,
-      /\n*Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Indexing writer implementation: single-level\n\s+Store backend: fs\n\s+Indexing blobs\.\.\.\n+(?:Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
+      /Indexed Blob:\s*\n\s*CID: MH\(baf[a-z0-9]+\)\n\s*location: MH\(baf[a-z0-9]+\)\n\s*offset: \d+ length: \d+/
     )
   })
 
@@ -114,16 +127,10 @@ describe('CLI index', () => {
 
     assert.equal(add.status.code, 0)
     // Match Pack CID
-    assert.match(
-      add.output,
-      /Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)/
-    )
+    assert.match(add.output, /Pack CID:\s+MH\(bag[a-z0-9]+\)/)
 
     // Match Containing CID
-    assert.match(
-      add.output,
-      /Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)/
-    )
+    assert.match(add.output, /Containing CID:\s+MH\(baf[a-z0-9]+\)/)
 
     // Match Indexing writer implementation
     assert.match(add.output, /Indexing writer implementation: multiple-level/)
@@ -134,16 +141,16 @@ describe('CLI index', () => {
     // Match "Indexing blobs..." part (optional)
     assert.match(add.output, /\s+Indexing blobs\.\.\./)
 
-    // Match Indexed Blob with extra indentation
+    // Match first Indexed Blob
     assert.match(
       add.output,
-      /Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+/
+      /Indexed Blob:\s*\n\s+CID: MH\(baf[a-z0-9]+\)\n\s+location: MH\(baf[a-z0-9]+\)\n\s+offset: \d+ length: \d+/
     )
 
-    // Match additional Indexed Blob(s) with correct indentation
+    // Match additional Indexed Blob(s) with correct format
     assert.match(
       add.output,
-      /(?:\s*Indexed Blob:\s*\n\s+[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
+      /(?:\s*Indexed Blob:\s*\n\s+CID: MH\(baf[a-z0-9]+\)\n\s+location: MH\(baf[a-z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
@@ -163,16 +170,10 @@ describe('CLI index', () => {
     assert.equal(add.status.code, 0)
 
     // Match Pack CID
-    assert.match(
-      add.output,
-      /Pack CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)/
-    )
+    assert.match(add.output, /Pack CID:\s+MH\(bag[a-z0-9]+\)/)
 
-    // Match optional Containing CID (it may or may not be present)
-    assert.match(
-      add.output,
-      /(?:Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)?/
-    )
+    // Match optional Containing CID (may or may not be present)
+    assert.match(add.output, /(?:Containing CID:\s+MH\(baf[a-z0-9]+\)\n+)?/)
 
     // Match Indexing writer implementation
     assert.match(add.output, /Indexing writer implementation: multiple-level/)
@@ -186,13 +187,13 @@ describe('CLI index', () => {
     // Match Indexed Blob with extra indentation
     assert.match(
       add.output,
-      /Indexed Blob:\s*\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+/
+      /Indexed Blob:\s*\n\s+CID: MH\(baf[a-z0-9]+\)\n\s+location: MH\(baf[a-z0-9]+\)\n\s+offset: \d+ length: \d+/
     )
 
-    // Match additional Indexed Blob(s) with correct indentation
+    // Match additional Indexed Blob(s) with correct format
     assert.match(
       add.output,
-      /(?:\s*Indexed Blob:\s*\n\s+[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s+location: zQm[a-zA-Z0-9]+\n\s+offset: \d+ length: \d+\n*)+/
+      /(?:\s*Indexed Blob:\s*\n\s+CID: MH\(baf[a-z0-9]+\)\n\s+location: MH\(baf[a-z0-9]+\)\n\s+offset: \d+ length: \d+\n*)+/
     )
   })
 
@@ -238,18 +239,18 @@ describe('CLI index', () => {
     assert.equal(find.status.code, 0)
 
     // Match Target CID
-    assert.match(
-      find.output,
-      /Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)/
-    )
+    assert.match(find.output, /Target CID:\s+MH\(baf[a-z0-9]+\)/)
 
     // Match Indexing store implementation (includes optional Store backend)
     assert.match(find.output, /\s+Store backend: fs/)
 
+    // Match Finding Target line
+    assert.match(find.output, /\s+Finding target/)
+
     // Match Index Records section
     assert.match(
       find.output,
-      /Index Records:\n\s*multihash:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*location:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+/
+      /Index Records:\s*\n\s*CID: MH\(baf[a-z0-9]+\)\n\s*location: MH\(baf[a-z0-9]+\)\n\s*type: BLOB, offset: \d+, length: \d+/
     )
   })
 
@@ -266,17 +267,14 @@ describe('CLI index', () => {
 
     assert.equal(find.status.code, 0)
 
-    // Match Target CID
-    assert.match(
-      find.output,
-      /Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)/
-    )
+    // Match Target CID (now using MH(...))
+    assert.match(find.output, /Target CID:\s+MH\(baf[a-z0-9]+\)/)
 
-    // Match Finding target written using (single-level)
-    assert.match(find.output, /Finding target\s*\.\.\.\n/)
+    // Match Finding target line (no "...")
+    assert.match(find.output, /\s+Finding target/)
 
     // Match Index Records: Not found
-    assert.match(find.output, /Index Records:\n\s+Not found\./)
+    assert.match(find.output, /Index Records:\s+Not found\./)
   })
 
   it('can index find records for a blob written with multiple index writer implementation', async () => {
@@ -294,28 +292,22 @@ describe('CLI index', () => {
     assert.equal(find.status.code, 0)
 
     // Match Target CID
-    assert.match(
-      find.output,
-      /Target CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(find.output, /Target CID:\s+MH\(baf[a-z0-9]+\)/)
 
     // Match Containing CID
-    assert.match(
-      find.output,
-      /Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(find.output, /Containing CID:\s+MH\(baf[a-z0-9]+\)/)
 
-    // Match Finding target written using (multiple-level) - Adjusted
-    assert.match(
-      find.output,
-      /Finding target\s*\.\.\.\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    // Match Finding target line
+    assert.match(find.output, /\s+Finding target/)
 
     // Match Index Records section
     assert.match(find.output, /Index Records:/)
 
-    // Match type: BLOB, offset, length
-    assert.match(find.output, /type: BLOB,.*offset: \d+,.*length: \d+/)
+    // Match one Index Record (CID, location, type, offset, length)
+    assert.match(
+      find.output,
+      /CID:\s+MH\(baf[a-z0-9]+\)\s+location:\s+MH\(baf[a-z0-9]+\)\s+type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+/
+    )
   })
 
   it('can index find records for a pack written with multiple index writer implementation', async () => {
@@ -333,33 +325,27 @@ describe('CLI index', () => {
     assert.equal(find.status.code, 0)
 
     // Match Target CID
-    assert.match(
-      find.output,
-      /Target CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(find.output, /Target CID:\s+MH\(bag[a-z0-9]+\)/)
 
     // Match Containing CID
-    assert.match(
-      find.output,
-      /Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(find.output, /Containing CID:\s+MH\(baf[a-z0-9]+\)/)
 
-    // Match Finding target written using (multiple-level)
-    assert.match(
-      find.output,
-      /Finding target\s*\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    // Match Finding target line
+    assert.match(find.output, /Finding target/)
 
     // Match Index Records section
     assert.match(find.output, /Index Records:/)
 
-    // Match type: PACK, offset, length
-    assert.match(find.output, /type: PACK, offset: N\/A, length: N\/A/)
-
-    // Match Sub-Records section (allow multiple sub-records)
+    // Match type: PACK, offset: N/A, length: N/A
     assert.match(
       find.output,
-      /Sub-Records:\n\s*(multihash:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*location:\s+base58btc\(zQm[a-zA-Z0-9]+\)\n\s*type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+\s*)+/
+      /type:\s+PACK,\s+offset:\s+N\/A,\s+length:\s+N\/A/
+    )
+
+    // Match Sub-Records (at least one BLOB record)
+    assert.match(
+      find.output,
+      /Sub-Records:\n\s*CID:\s+MH\(baf[a-z0-9]+\)\n\s*location:\s+MH\(baf[a-z0-9]+\)\n\s*type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+/
     )
   })
 
@@ -377,31 +363,30 @@ describe('CLI index', () => {
     assert.equal(find.status.code, 0)
 
     // Match Target CID
-    assert.match(
-      find.output,
-      /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(find.output, /Target CID:\s+MH\(baf[a-z0-9]+\)/)
 
     // Match Finding target
-    assert.match(
-      find.output,
-      /Finding target\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(find.output, /\s+Finding target/)
 
     // Match Index Records section
     assert.match(find.output, /Index Records:/)
 
-    // Match type: CONTAINING, offset, length
-    assert.match(find.output, /type: CONTAINING, offset: N\/A, length: N\/A/)
-
-    // Match Sub-Records section (allow multiple sub-records, including nested)
+    // Match type: CONTAINING, offset: N/A, length: N/A
     assert.match(
       find.output,
-      /Sub-Records:\s*multihash:\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*location:\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*type:\s*PACK,\s*offset:\s*N\/A,\s*length:\s*N\/A/
+      /type:\s+CONTAINING,\s+offset:\s+N\/A,\s+length:\s+N\/A/
     )
+
+    // Match at least one Sub-Record of type PACK
     assert.match(
       find.output,
-      /Sub-Records:\s*multihash:\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*location:\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*type:\s*BLOB,\s*offset:\s*\d+,\s*length:\s*\d+\s*/
+      /Sub-Records:\s*CID:\s+MH\((bag|baf)[a-z0-9]+\)\s*location:\s+MH\((bag|baf)[a-z0-9]+\)\s*type:\s+PACK,\s*offset:\s+N\/A,\s*length:\s+N\/A/
+    )
+
+    // Match at least one nested Sub-Record of type BLOB
+    assert.match(
+      find.output,
+      /Sub-Records:\s*CID:\s+MH\(baf[a-z0-9]+\)\s*location:\s+MH\(baf[a-z0-9]+\)\s*type:\s+BLOB,\s+offset:\s*\d+,\s+length:\s*\d+/
     )
   })
 
@@ -420,25 +405,16 @@ describe('CLI index', () => {
     assert.equal(find.status.code, 0)
 
     // Match Target CID
-    assert.match(
-      find.output,
-      /\s*Target CID:\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(find.output, /Target CID:\s+MH\(bafy[a-z0-9]+\)/)
 
     // Match Containing CID
-    assert.match(
-      find.output,
-      /\s*Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(find.output, /Containing CID:\s+MH\(baf[a-z0-9]+\)/)
 
     // Match Finding target
-    assert.match(
-      find.output,
-      /\s*Finding target\.\.\.\n\s+bafy[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(find.output, /Finding target/)
 
     // Match Index Records: Not found
-    assert.match(find.output, /Index Records:\n\s+Not found\.\n/)
+    assert.match(find.output, /Index Records:\s+Not found\./)
   })
 
   it('can index clear', async () => {
@@ -467,8 +443,8 @@ describe('CLI index', () => {
 
     assert.equal(add.status.code, 0)
 
-    // Match "Store backend: s3" part
-    assert.match(add.output, /\s+Store backend: s3/)
+    // Match "Store backend: s3"
+    assert.match(add.output, /Store backend: s3/)
 
     const find = await hashStreamCmd
       .args([
@@ -487,26 +463,23 @@ describe('CLI index', () => {
 
     assert.equal(find.status.code, 0)
 
-    // Match "Store backend: s3" part
-    assert.match(find.output, /\s+Store backend: s3/)
+    // Match "Store backend: s3"
+    assert.match(find.output, /Store backend: s3/)
 
     // Match Target CID
-    assert.match(
-      find.output,
-      /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(find.output, /Target CID:\s+MH\(baf[a-z0-9]+\)/)
 
     // Match Finding target
-    assert.match(
-      find.output,
-      /Finding target\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(find.output, /\s+Finding target/)
 
     // Match Index Records section
     assert.match(find.output, /Index Records:/)
 
-    // Match type: CONTAINING, offset, length
-    assert.match(find.output, /type: CONTAINING, offset: N\/A, length: N\/A/)
+    // Match type: CONTAINING, offset: N/A, length: N/A
+    assert.match(
+      find.output,
+      /type:\s+CONTAINING,\s+offset:\s+N\/A,\s+length:\s+N\/A/
+    )
   })
 
   it('can index add and find records with all index writers', async () => {
@@ -539,24 +512,18 @@ describe('CLI index', () => {
     assert.equal(findContaining.status.code, 0)
 
     // Match Target CID
-    assert.match(
-      findContaining.output,
-      /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(findContaining.output, /Target CID:\s+MH\(baf[a-z0-9]+\)/)
 
     // Match Finding target
-    assert.match(
-      findContaining.output,
-      /Finding target\.\.\.\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
-    )
+    assert.match(findContaining.output, /Finding target/)
 
     // Match Index Records section
     assert.match(findContaining.output, /Index Records:/)
 
-    // Match type: CONTAINING, offset, length
+    // Match type: CONTAINING, offset: N/A, length: N/A
     assert.match(
       findContaining.output,
-      /type: CONTAINING, offset: N\/A, length: N\/A/
+      /type:\s+CONTAINING,\s+offset:\s+N\/A,\s+length:\s+N\/A/
     )
 
     // Find pack without containing CID
@@ -571,12 +538,15 @@ describe('CLI index', () => {
       .join()
 
     assert.equal(findPack.status.code, 0)
+
+    // Match Target CID
+    assert.match(findPack.output, /Target CID:\s+MH\(bag[a-z0-9]+\)/)
+
+    // Match type: PACK, offset: N/A, length: N/A
     assert.match(
       findPack.output,
-      /Target CID:\n\s+bag[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+      /type:\s+PACK,\s+offset:\s+N\/A,\s+length:\s+N\/A/
     )
-    // Match type: PACK, offset, length
-    assert.match(findPack.output, /type: PACK, offset: N\/A, length: N\/A/)
 
     // Find containing blob without containing CID
     const findBlob = await hashStreamCmd
@@ -588,15 +558,16 @@ describe('CLI index', () => {
       ])
       .env(env)
       .join()
+
     assert.equal(findBlob.status.code, 0)
 
     // Match Target CID
+    assert.match(findBlob.output, /Target CID:\s+MH\(baf[a-z0-9]+\)/)
+
+    // Match type: BLOB with offset/length
     assert.match(
       findBlob.output,
-      /Target CID:\n\s+(bag|baf)[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+/
+      /type:\s+BLOB,\s+offset:\s+96,\s+length:\s+26/
     )
-
-    // Match type: BLOB
-    assert.match(findBlob.output, /type: BLOB, offset: 96, length: 26/)
   })
 })

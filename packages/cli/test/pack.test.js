@@ -70,15 +70,12 @@ describe('CLI pack', () => {
     )
 
     // Match Containing CID and base58btc
-    assert.match(
-      output,
-      /Containing CID:\s*\n\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n/
-    )
+    assert.match(output, /Containing CID:\s*\n\s*MH\(baf[a-z0-9]+\)\s*\n/)
 
     // Match the "Packs" and "Blobs" structure
     assert.match(
       output,
-      /Packs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n\s*Blobs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\(zQm[a-zA-Z0-9]+\)\s*\n*)+)/
+      /Packs:\s*\n\s*MH\(baf[a-z0-9]+\)\s*\n\s*Blobs:\s*\n(?:\s*MH\(baf[a-z0-9]+\),\s*\n)+/
     )
 
     // Match Store backend
@@ -93,9 +90,19 @@ describe('CLI pack', () => {
 
     assert.equal(status.code, 0)
 
+    // Match Packing file, Max Size, Index Writer, Store backend
     assert.match(
       output,
-      /Packing file: .*\/random\.txt\s*\n\s*Pack Max Size: \d+(?: bytes)?\s*\n\s*Index Writer: none\s*\n\s*Store backend: fs\s*\n\s*Containing CID:\s*\n\s*baf[a-z0-9]+\s*\n\s*base58btc\([a-zA-Z0-9]+\)\s*\n\s*Packs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\([a-zA-Z0-9]+\)\s*\n\s*Blobs:\s*\n(?:\s*baf[a-z0-9]+\s*\n\s*base58btc\([a-zA-Z0-9]+\)\s*\n*)+)/
+      /Packing file: .*\/random\.txt\s*\n\s*Pack Max Size: \d+(?: bytes)?\s*\n\s*Index Writer: none\s*\n\s*Store backend: fs\s*\n/
+    )
+
+    // Match Containing CID
+    assert.match(output, /Containing CID:\s*\n\s*MH\(baf[a-z0-9]+\)\s*\n/)
+
+    // Match Packs and Blobs structure
+    assert.match(
+      output,
+      /Packs:\s*\n\s*MH\(baf[a-z0-9]+\)\s*\n\s*Blobs:\s*\n(?:\s*MH\(baf[a-z0-9]+\),\s*\n)+/
     )
   })
 
@@ -106,10 +113,44 @@ describe('CLI pack', () => {
       .join()
 
     assert.equal(status.code, 0)
+
+    // Match Packing file + Pack Max Size + Index Writer + Store backend
     assert.match(
       output,
-      /\n*Packing file: .*\/random\.txt\n\s+Pack Max Size: 5000000 bytes\n+\s*Index Writer: multiple-level\n\s*(Store backend: fs\n)?\s*Containing CID:\n\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Packs:\n+(?:\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+\s*Blobs:\n(?:\s+baf[a-z0-9]+\n\s+base58btc\(zQm[a-zA-Z0-9]+\)\n+)+)+/
+      /Packing file: .*\/random\.txt\s*\n\s*Pack Max Size: 5000000 bytes\s*\n\s*Index Writer: multiple-level\s*\n\s*Store backend: fs\s*\n/
     )
+
+    // Match Containing CID
+    assert.match(output, /Containing CID:\s*\n\s*MH\(baf[a-z0-9]+\)\s*\n/)
+
+    // Match Packs section
+    assert.match(output, /Packs:\s*\n/)
+
+    // Match at least one Pack with Blobs
+    assert.match(
+      output,
+      /MH\(baf[a-z0-9]+\)\s*\n\s*Blobs:\s*\n(?:\s*MH\(baf[a-z0-9]+\),\s*\n)+/
+    )
+
+    // Check that there are *multiple* Packs
+    const packMatches = [
+      ...output.matchAll(/MH\(baf[a-z0-9]+\)\s*\n\s*Blobs:/g),
+    ]
+    assert(packMatches.length >= 2, 'expected multiple packs with blobs')
+
+    // Check each Pack has multiple Blobs
+    const blobMatches = [
+      ...output.matchAll(/Blobs:\s*\n((?:\s*MH\(baf[a-z0-9]+\),\s*\n)+)/g),
+    ]
+
+    for (const match of blobMatches) {
+      const blobsBlock = match[1]
+      const blobList = blobsBlock
+        .trim()
+        .split(/\n/)
+        .map((line) => line.trim())
+      assert(blobList.length >= 2, 'expected at least 2 blobs per pack')
+    }
   })
 
   it('pack write fails if format is not car', async () => {
@@ -133,15 +174,18 @@ describe('CLI pack', () => {
 
     assert.equal(writeStatus.code, 0)
 
-    const regex = /Packs:\s*\n\s*(baf[a-z0-9]+)/
+    const regex = /Packs:\s*\n\s*MH\((baf[a-z0-9]+)\)/
     const match = writeOutput.match(regex)
 
-    assert(match?.length)
+    assert(match?.[1], 'should capture the first pack CID')
+
+    const cid = match[1]
 
     const { output, status } = await hashStreamCmd
       .env(env)
-      .args(['pack', 'extract', match[1], `${tempDir}/${match[1]}.car`])
+      .args(['pack', 'extract', cid, `${tempDir}/${cid}.car`])
       .join()
+
     assert.equal(status.code, 0)
     assert.match(output, /Successfully wrote \d+ bytes to .*\.car\n?/)
   })
@@ -174,7 +218,7 @@ describe('CLI pack', () => {
     assert.match(writeOutput, /Store backend: s3\s*\n/)
 
     // Match pack CID
-    const regex = /Packs:\s*\n\s*(baf[a-z0-9]+)/
+    const regex = /Packs:\s*\n\s*MH\((baf[a-z0-9]+)\)/
     const match = writeOutput.match(regex)
     assert(match?.length)
 

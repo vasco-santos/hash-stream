@@ -4,7 +4,6 @@ import { Readable } from 'stream'
 
 import { CID } from 'multiformats/cid'
 import { code as RawCode } from 'multiformats/codecs/raw'
-import { base58btc } from 'multiformats/bases/base58'
 import { equals } from 'uint8arrays/equals'
 import { streamer } from '@hash-stream/utils/trustless-ipfs-gateway'
 
@@ -45,11 +44,7 @@ export const streamerDump = async (
   let targetMultihash
   try {
     targetMultihash = CID.parse(targetCid).multihash
-    console.log(
-      `Target CID:
-      ${targetCid}
-      base58btc(${base58btc.encode(targetMultihash.bytes)})`
-    )
+    console.log(`Target CID: MH(${targetCid})`)
   } catch (err) {
     console.error('Error parsing target CID:', err)
     process.exit(1)
@@ -63,11 +58,7 @@ export const streamerDump = async (
       console.error('Error parsing containing CID:', err)
       process.exit(1)
     }
-    console.log(
-      `Containing CID:
-      ${containingCid}
-      base58btc(${base58btc.encode(containingMultihash.bytes)})`
-    )
+    console.log(`Containing CID: MH(${containingCid})`)
   }
 
   let resolvedPath

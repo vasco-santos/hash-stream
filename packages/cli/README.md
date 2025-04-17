@@ -48,7 +48,7 @@ pack write some-file.ext -iw single-level
 
 - `-f, --format` Specifies the pack format (default: `"car"` for [Content Addressable aRchives](https://ipld.io/specs/transport/car/)).
 - `-ps, --pack-size` Defines the maximum pack size in bytes (default: `MAX_PACK_SIZE`).
-- `-iw, --index-writer` Specifies the indexing writer implementation, which can be `"single-level"` or `"multiple-level"` or `"all"` (default: `"multiple-level"`).
+- `-iw, --index-writer` Specifies the indexing writer implementation, which can be `"single-level"`, `"multiple-level"`, `"none"` or `"all"` (default: `"multiple-level"`).
 - `-sb, --store-backend` Selects the pack storage backend to use (`fs` or `s3`).
 
 ---

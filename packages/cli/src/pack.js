@@ -77,8 +77,7 @@ export const packWrite = async (
   const containingCid = CID.create(1, DAGPB_CODE, containingMultihash)
   console.info(
     `\nContaining CID:
-    ${containingCid}
-    base58btc(${base58btc.encode(containingMultihash.bytes)})`
+    MH(${containingCid})`
   )
 
   console.info(`\nPacks:`)
@@ -86,21 +85,19 @@ export const packWrite = async (
   for (const packMultihash of packsMultihashes) {
     const packCid = CID.create(1, RawCode, packMultihash)
     const encodedPackMultihash = base58btc.encode(packMultihash.bytes)
-    console.info(
-      `${indent}${packCid}
-    base58btc(${encodedPackMultihash})`
-    )
+    console.info(`${indent}MH(${packCid})`)
     console.info(`${indent}${indent}Blobs:`)
     const blobs = packBlobsMap.get(encodedPackMultihash)
     if (!blobs) {
       console.error(`No blobs found for pack ${encodedPackMultihash}`)
       continue
     }
-    for (const blob of blobs) {
-      const blobCid = CID.create(1, RawCode, blob)
+    for (let i = 0; i < blobs.length; i++) {
+      const blobCid = CID.create(1, RawCode, blobs[i])
       console.info(
-        `${indent}${indent}${indent}${blobCid}
-            base58btc(${base58btc.encode(blob.bytes)})\n`
+        `${indent}${indent}${indent}MH(${blobCid})${
+          i + 1 === blobs.length ? '' : ','
+        }`
       )
     }
     console.info('\n')
