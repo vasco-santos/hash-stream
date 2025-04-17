@@ -1,5 +1,7 @@
 import * as API from '../api.js'
-import { base58btc } from 'multiformats/bases/base58'
+
+import { CID } from 'multiformats/cid'
+import { code as RawCode } from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 
 /**
@@ -12,10 +14,12 @@ export class CloudflareWorkerBucketPackStore {
    * @param {object} config - Configuration for the R2 client.
    * @param {import('@cloudflare/workers-types').R2Bucket} config.bucket - R2 bucket instance of a worker.
    * @param {string} [config.prefix] - Optional prefix for stored objects.
+   * @param {string} [config.extension] - Optional extension for stored objects, should include '.'.
    */
-  constructor({ bucket, prefix = '' }) {
+  constructor({ bucket, prefix = '', extension = '.car' }) {
     this.bucket = bucket
     this.prefix = prefix
+    this.extension = extension
   }
 
   /**
@@ -25,7 +29,7 @@ export class CloudflareWorkerBucketPackStore {
    * @returns {string}
    */
   static encodeKey(hash) {
-    const encodedMultihash = base58btc.encode(hash.bytes)
+    const encodedMultihash = CID.createV1(RawCode, hash).toString()
     // Cloud storages typically rate limit at the path level, this allows more requests
     return `${encodedMultihash}/${encodedMultihash}`
   }
@@ -37,7 +41,9 @@ export class CloudflareWorkerBucketPackStore {
    * @returns {string}
    */
   _getObjectKey(hash) {
-    return `${this.prefix}${CloudflareWorkerBucketPackStore.encodeKey(hash)}`
+    return `${this.prefix}${CloudflareWorkerBucketPackStore.encodeKey(hash)}${
+      this.extension
+    }`
   }
 
   /**

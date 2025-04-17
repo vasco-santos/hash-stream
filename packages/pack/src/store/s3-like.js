@@ -1,5 +1,6 @@
 import * as API from '../api.js'
-import { base58btc } from 'multiformats/bases/base58'
+import { CID } from 'multiformats/cid'
+import { code as RawCode } from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 import {
   S3Client,
@@ -18,11 +19,13 @@ export class S3LikePackStore {
    * @param {string} config.bucketName - S3 bucket name.
    * @param {S3Client} config.client - S3 client instance.
    * @param {string} [config.prefix] - Optional prefix for stored objects.
+   * @param {string} [config.extension] - Optional extension for stored objects, should include '.'.
    */
-  constructor({ bucketName, client, prefix = '' }) {
+  constructor({ bucketName, client, prefix = '', extension = '.car' }) {
     this.bucketName = bucketName
     this.prefix = prefix
     this.client = client
+    this.extension = extension
   }
 
   /**
@@ -32,7 +35,7 @@ export class S3LikePackStore {
    * @returns {string}
    */
   static encodeKey(hash) {
-    const encodedMultihash = base58btc.encode(hash.bytes)
+    const encodedMultihash = CID.createV1(RawCode, hash).toString()
     // Cloud storages typically rate llimit at the path level, this allows more requests
     return `${encodedMultihash}/${encodedMultihash}`
   }
@@ -44,7 +47,7 @@ export class S3LikePackStore {
    * @returns {string}
    */
   _getObjectKey(hash) {
-    return `${this.prefix}${S3LikePackStore.encodeKey(hash)}`
+    return `${this.prefix}${S3LikePackStore.encodeKey(hash)}${this.extension}`
   }
 
   /**
