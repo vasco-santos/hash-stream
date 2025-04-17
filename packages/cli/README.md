@@ -46,10 +46,10 @@ pack write some-file.ext -iw single-level
 
 #### Options:
 
-- `-f, --format` Specifies the pack format (default: `"car"`).
+- `-f, --format` Specifies the pack format (default: `"car"` for [Content Addressable aRchives](https://ipld.io/specs/transport/car/)).
 - `-ps, --pack-size` Defines the maximum pack size in bytes (default: `MAX_PACK_SIZE`).
 - `-iw, --index-writer` Specifies the indexing writer implementation, which can be `"single-level"` or `"multiple-level"` or `"all"` (default: `"multiple-level"`).
-- `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
+- `-sb, --store-backend` Selects the pack storage backend to use (`fs` or `s3`).
 
 ---
 
@@ -65,8 +65,8 @@ pack extract bafk... some-file.car
 
 #### Options:
 
-- `-f, --format` Specifies the pack format (default: `"car"`).
-- `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
+- `-f, --format` Specifies the pack format (default: `"car"` for [Content Addressable aRchives](https://ipld.io/specs/transport/car/)).
+- `-sb, --store-backend` Selects the pack storage backend to use (`fs` or `s3`).
 
 ---
 
@@ -84,7 +84,7 @@ pack clear
 
 ### `index add <packCid> <filePath> [containingCid]`
 
-Add Index record for the given verifiable pack (CAR file) using the specified index writer.
+Add Index record for the given verifiable pack using the specified index writer.
 
 #### Examples:
 
@@ -96,6 +96,7 @@ index add bag... pack.car -iw single-level
 #### Options:
 
 - `-iw, --index-writer` Indexing writer implementation: "single-level" or "multiple-level" or "all" (default: `multiple-level`)
+- `-f, --format` Specifies the pack format (default: `"car"` for [Content Addressable aRchives](https://ipld.io/specs/transport/car/)).
 - `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
 
 ---
