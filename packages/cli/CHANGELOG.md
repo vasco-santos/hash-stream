@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/vasco-santos/hash-stream/compare/cli-v1.3.0...cli-v1.3.1) (2025-04-17)
+
+
+### Fixes
+
+* pack clear wrong folder ([#81](https://github.com/vasco-santos/hash-stream/issues/81)) ([6649eb5](https://github.com/vasco-santos/hash-stream/commit/6649eb572486e605feccf1cf062a32598c1ae056))
+
 ## [1.3.0](https://github.com/vasco-santos/hash-stream/compare/cli-v1.2.1...cli-v1.3.0) (2025-04-11)
 
 
