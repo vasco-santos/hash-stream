@@ -364,5 +364,46 @@ await verifiedFetch.stop()
 
 - The HTTP server must stream blobs of data containing the expected CID
 - Hash Stream streamer must support multihash validation (already built-in)
-- Indexes in Hash Stream Index Store MUST be able to respond to block level indexes (for example using the [`SingleLevelIndexWriter`](https://github.com/vasco-santos/hash-stream/tree/main/packages/index#writer))
+- Indexes in Hash Stream Index Store MUST be able to respond to block level indexes when relying on `verified-fetch` client. At the time of writing, its implementation traverses a DAG and requests block by block. One can rely on an Index writer like [`SingleLevelIndexWriter`](https://github.com/vasco-santos/hash-stream/tree/main/packages/index#writer).
 - Client must know the expected multihash beforehand
+
+## 🧳 Migrating Data from Legacy Sources
+
+Hash Stream makes it easy to adopt trustless content-addressable data workflows without requiring you to rewrite your entire ingestion pipeline.
+
+This section outlines two common migration paths for existing datasets:
+
+### 1. I Already Have Content-Addressable Files
+
+If your system already produces content-addressable files:
+
+- ✅ You can use the [`IndexWriter`](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/README.md#writer) implementation, or the [`index add` command](https://github.com/vasco-santos/hash-stream/blob/main/packages/cli/README.md#index-add-packcid-filepath-containingcid) to generate the necessary index files for serving with Hash Stream.
+- ✅ The data is ready to be served by a Hash Streamer with no changes required to the pack format.
+
+Example:
+
+```sh
+hash-stream index add <packCID> <filePath>
+```
+
+You may also pass a `containingCID` if your CARs are part of larger containers.
+
+See: [`index` package docs](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/README.md) for an example on how to use a `IndexWriter` programtically.
+
+### 2. I Have Raw Files or Data That Is Not Yet Content-Addressable
+
+If you are starting with raw blobs, files, or other formats:
+
+- Use the [`PackWriter`](https://github.com/vasco-santos/hash-stream/blob/main/packages/pack/README.md#writing-packs) implementation or the [`pack write`](https://github.com/vasco-santos/hash-stream/blob/main/packages/cli/README.md#pack-write-filepath) command to transform data into verifiable packs. If the `PackWriter` implementation has access to an `IndexWriter` it can also create the indexes while transforming the data.
+
+Example:
+
+```sh
+hash-stream pack write ./my-data.ext
+```
+
+See: [`pack` package docs](https://github.com/vasco-santos/hash-stream/blob/main/packages/pack/README.md) for an example on how to use a `PackWriter` programtically.
+
+For advanced use cases (e.g., bulk processing, custom metadata tagging), build custom pipelines using the [pack](https://github.com/vasco-santos/hash-stream/blob/main/packages/pack/README.md) and [index](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/README.md) libraries.
+
+Alternatively, one can implement a new indexing strategy and `PackReader` that enables no data transformation at rest.
