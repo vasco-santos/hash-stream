@@ -188,7 +188,7 @@ export const packClear = async (
   })
 
   // @ts-expect-error not existing in s3 store
-  const directoryPath = client.index.store.directory
+  const directoryPath = client.pack.store.directory
   if (!directoryPath) {
     console.error('Error: Directory path is not available.')
     process.exit(1)
