@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/vasco-santos/hash-stream/compare/index-v1.3.0...index-v1.3.1) (2025-04-17)
+
+
+### Fixes
+
+* index store keys with raw cid string ([#85](https://github.com/vasco-santos/hash-stream/issues/85)) ([7c9b7fe](https://github.com/vasco-santos/hash-stream/commit/7c9b7febcf8630a0bbd3adec2ba4c823517a2f4c))
+
 ## [1.3.0](https://github.com/vasco-santos/hash-stream/compare/index-v1.2.0...index-v1.3.0) (2025-04-15)
 
 
