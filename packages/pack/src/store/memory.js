@@ -1,5 +1,7 @@
 import * as API from '../api.js'
-import { base58btc } from 'multiformats/bases/base58'
+
+import { CID } from 'multiformats/cid'
+import { code as RawCode } from 'multiformats/codecs/raw'
 
 /**
  * In-memory implementation of PackStore.
@@ -7,9 +9,16 @@ import { base58btc } from 'multiformats/bases/base58'
  * @implements {API.PackStore}
  */
 export class MemoryPackStore {
-  constructor() {
+  /**
+   * @param {object} config - Configuration for the memory store.
+   * @param {string} [config.prefix] - Optional prefix for stored objects.
+   * @param {string} [config.extension] - Optional extension for stored objects, should include '.'.
+   */
+  constructor({ prefix = '', extension = '.car' } = {}) {
     /** @type {Map<string, Uint8Array>} */
     this.store = new Map()
+    this.prefix = prefix
+    this.extension = extension
   }
 
   /**
@@ -19,7 +28,17 @@ export class MemoryPackStore {
    * @returns {string}
    */
   static encodeKey(hash) {
-    return base58btc.encode(hash.bytes)
+    return CID.createV1(RawCode, hash).toString()
+  }
+
+  /**
+   * Generate a key for storage.
+   *
+   * @param {API.MultihashDigest} hash
+   * @returns {string}
+   */
+  _getObjectKey(hash) {
+    return `${this.prefix}${MemoryPackStore.encodeKey(hash)}${this.extension}`
   }
 
   /**
@@ -29,7 +48,7 @@ export class MemoryPackStore {
    * @param {Uint8Array} data - The pack file bytes.
    */
   async put(hash, data) {
-    this.store.set(MemoryPackStore.encodeKey(hash), data)
+    this.store.set(this._getObjectKey(hash), data)
   }
 
   /**
@@ -39,7 +58,7 @@ export class MemoryPackStore {
    * @returns {Promise<Uint8Array | null>}
    */
   async get(hash) {
-    return this.store.get(MemoryPackStore.encodeKey(hash)) || null
+    return this.store.get(this._getObjectKey(hash)) || null
   }
 
   /**
@@ -50,7 +69,7 @@ export class MemoryPackStore {
    * @returns {AsyncIterable<API.VerifiableEntry>}
    */
   async *stream(hash, ranges = []) {
-    const key = MemoryPackStore.encodeKey(hash)
+    const key = this._getObjectKey(hash)
     const data = this.store.get(key)
     /* c8 ignore next 1 */
     if (!data) return

@@ -1,6 +1,7 @@
 import * as API from '../api.js'
 
-import { base58btc } from 'multiformats/bases/base58'
+import { CID } from 'multiformats/cid'
+import { code as RawCode } from 'multiformats/codecs/raw'
 
 import { promises as fs, createReadStream } from 'fs'
 import path from 'path'
@@ -13,9 +14,14 @@ import path from 'path'
 export class FSPackStore {
   /**
    * @param {string} directory - Directory to store packs files.
+   * @param {object} config - Configuration for the memory store.
+   * @param {string} [config.prefix] - Optional prefix for stored objects.
+   * @param {string} [config.extension] - Optional extension for stored objects, should include '.'.
    */
-  constructor(directory) {
+  constructor(directory, { prefix = '', extension = '.car' } = {}) {
     this.directory = directory
+    this.prefix = prefix
+    this.extension = extension
   }
 
   /**
@@ -25,7 +31,7 @@ export class FSPackStore {
    * @returns {string}
    */
   static encodeKey(hash) {
-    return base58btc.encode(hash.bytes)
+    return CID.createV1(RawCode, hash).toString()
   }
 
   /**
@@ -35,7 +41,10 @@ export class FSPackStore {
    * @returns {string}
    */
   _getFilePath(hash) {
-    return path.join(this.directory, FSPackStore.encodeKey(hash))
+    return path.join(
+      this.directory,
+      `${this.prefix}${FSPackStore.encodeKey(hash)}${this.extension}`
+    )
   }
 
   /**
