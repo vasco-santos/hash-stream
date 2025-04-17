@@ -1,6 +1,7 @@
 import * as API from '../api.js'
 
-import { base58btc } from 'multiformats/bases/base58'
+import { CID } from 'multiformats/cid'
+import { code as RawCode } from 'multiformats/codecs/raw'
 import { equals } from 'uint8arrays'
 
 import {
@@ -26,7 +27,7 @@ export class MemoryIndexStore {
    * @returns {string}
    */
   static encodeKey(hash) {
-    return base58btc.encode(hash.bytes)
+    return CID.createV1(RawCode, hash).toString()
   }
 
   /**

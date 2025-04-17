@@ -1,6 +1,7 @@
 import * as API from '../api.js'
 import { encode, decode } from '@ipld/dag-json'
-import { base58btc } from 'multiformats/bases/base58'
+import { CID } from 'multiformats/cid'
+import { code as RawCode } from 'multiformats/codecs/raw'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals } from 'uint8arrays'
 import {
@@ -40,7 +41,7 @@ export class S3LikeIndexStore {
    * @returns {string}
    */
   static encodeKey(hash) {
-    const encodedMultihash = base58btc.encode(hash.bytes)
+    const encodedMultihash = CID.createV1(RawCode, hash).toString()
     // Cloud storages typically rate limit at the path level, this allows more requests
     return `${encodedMultihash}/${encodedMultihash}`
   }
