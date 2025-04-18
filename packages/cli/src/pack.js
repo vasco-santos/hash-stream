@@ -21,7 +21,8 @@ export const DAGPB_CODE = 0x70
  *   'index-writer': 'single-level' | 'multiple-level' | 'all' | 'none',
  *   format: 'car',
  *   'pack-size': number,
- *   'store-backend'?: 'fs' | 's3'
+ *   'store-backend'?: 'fs' | 's3',
+ *   verbose: boolean,
  * }} [opts]
  */
 export const packWrite = async (
@@ -31,9 +32,20 @@ export const packWrite = async (
     format: 'car',
     'pack-size': MAX_PACK_SIZE,
     'store-backend': undefined,
+    verbose: false,
     _: [],
   }
 ) => {
+  if (opts.verbose) {
+    console.info(
+      `\n$ hash-stream pack write:
+    1. Creates a set of Packs representing the given file blob (sharded by a maximum defined Pack size).
+    2. For each Pack, creates an index record if an Index Writer implementation is available.
+    3. Writes each Pack to the Pack Store.
+    4. Writes index record to an Index Store using the specified writer.\n`
+    )
+  }
+
   const storeBackend = resolveStoreBackend(opts['store-backend'])
   const indexWriterImplementationName = validateIndexWriter(
     opts['index-writer']
@@ -110,14 +122,21 @@ export const packWrite = async (
  * @param {{
  *   _: string[],
  *   format: 'car',
- *   'store-backend'?: 'fs' | 's3'
+ *   'store-backend'?: 'fs' | 's3',
+ *   verbose: boolean,
  * }} [opts]
  */
 export const packExtract = async (
   targetCid,
   filePath,
-  opts = { format: 'car', 'store-backend': undefined, _: [] }
+  opts = { format: 'car', 'store-backend': undefined, verbose: false, _: [] }
 ) => {
+  if (opts.verbose) {
+    console.info(
+      `\n$ hash-stream pack extract:
+    1. Extracts Packs from the pack store and writes them to a file in the given path.\n`
+    )
+  }
   validateFormat(opts.format)
   const storeBackend = resolveStoreBackend(opts['store-backend'])
 
@@ -167,12 +186,20 @@ export const packExtract = async (
 /**
  * @param {{
  *   _: string[],
- *   'store-backend'?: 'fs' | 's3'
+ *   'store-backend'?: 'fs' | 's3',
+ *   verbose: boolean,
  * }} [opts]
  */
 export const packClear = async (
-  opts = { 'store-backend': undefined, _: [] }
+  opts = { 'store-backend': undefined, verbose: false, _: [] }
 ) => {
+  if (opts.verbose) {
+    console.info(
+      `\n$ hash-stream pack clear:
+    1. clears all pack records stored in the Pack Store.\n`
+    )
+  }
+
   const storeBackend = resolveStoreBackend(opts['store-backend'])
   if (storeBackend === 's3') {
     console.error(`Error clearing ${storeBackend}: Not supported`)
