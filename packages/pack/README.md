@@ -1,6 +1,8 @@
-# @hash-stream/pack
+<p align="center">
+  <img src="../../assets/name-and-logo.png" alt="Hash Stream Logo" width="50%"/>
+</p>
 
-> The pack client to use hash-stream
+<h1 align="center">The pack library to use hash-stream</h1>
 
 ## Install
 

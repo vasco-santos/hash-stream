@@ -1,6 +1,8 @@
-# @hash-stream/index
+<p align="center">
+  <img src="../../assets/name-and-logo.png" alt="Hash Stream Logo" width="50%"/>
+</p>
 
-> The index client to use hash-stream
+<h1 align="center">The index library to use hash-stream</h1>
 
 ## Install
 

@@ -1,6 +1,8 @@
-# @hash-stream/streamer
+<p align="center">
+  <img src="../../assets/name-and-logo.png" alt="Hash Stream Logo" width="50%"/>
+</p>
 
-> The streamer client to use hash-stream
+<h1 align="center">The streamer library to use hash-stream</h1>
 
 ## Install
 
