@@ -20,7 +20,8 @@ const dagPbCode = 0x70
  *   _: string[],
  *   'index-writer': 'single-level' | 'multiple-level',
  *   format: 'car' | 'raw',
- *   'store-backend'?: 'fs' | 's3'
+ *   'store-backend'?: 'fs' | 's3',
+ *    verbose: boolean,
  * }} [opts]
  */
 export const streamerDump = async (
@@ -31,9 +32,21 @@ export const streamerDump = async (
     'index-writer': 'multiple-level',
     format: 'car',
     'store-backend': undefined,
+    verbose: false,
     _: [],
   }
 ) => {
+  if (opts.verbose) {
+    console.info(
+      `\n$ hash-stream streamer dump:
+    1. Queries an IndexReader to look for index records associated with a Target CID (optionally with Containing CID Hint).
+    2. The IndexReader reads from the Index Store and interprets available entries.
+    3. The Streamer groups the entries by Pack CID and queries the Pack Store for each Pack CID.
+    4. The Streamer reads the Pack and extracts the data associated with the Target CID.
+    5. The Streamer writes the data to a file in the specified path.\n`
+    )
+  }
+
   const storeBackend = resolveStoreBackend(opts['store-backend'])
   const indexWriterImplementationName = validateIndexWriter(
     opts['index-writer']

@@ -17,6 +17,7 @@ There are a few Usage guides provided in this repository:
 - Basic [Usage Guide](./BASIC_USAGE.md)
 - [Index previously generated CAR files](./PREVIOUSLY_GENERATED_CAR_INDEXING_USAGE.md)
 - [Custom store backend](./STORE_BACKEND_USAGE.md)
+- Setting the global `--verbose` option in the CLI improves transparency over what happens when each command runs
 
 ## Commands
 
@@ -33,15 +34,15 @@ There are a few Usage guides provided in this repository:
 
 ---
 
-### `pack write <filePath>`
+### `hash-stream pack write <filePath>`
 
 Writes the given file blob into a set of verifiable packs, stores them, and optionally indexes them.
 
 #### Examples:
 
 ```sh
-pack write some-file.ext -iw multiple-level
-pack write some-file.ext -iw single-level
+hash-stream pack write some-file.ext -iw multiple-level
+hash-stream pack write some-file.ext -iw single-level
 ```
 
 #### Options:
@@ -53,14 +54,14 @@ pack write some-file.ext -iw single-level
 
 ---
 
-### `pack extract <targetCid> [filePath]`
+### `hash-stream pack extract <targetCid> [filePath]`
 
 Extracts Packs from the store and writes them to a file in the given path.
 
 #### Examples:
 
 ```sh
-pack extract bafk... some-file.car
+hash-stream pack extract bafk... some-file.car
 ```
 
 #### Options:
@@ -70,27 +71,27 @@ pack extract bafk... some-file.car
 
 ---
 
-### `pack clear`
+### `hash-stream pack clear`
 
 Clear all packs stored.
 
 #### Examples:
 
 ```sh
-pack clear
+hash-stream pack clear
 ```
 
 ---
 
-### `index add <packCid> <filePath> [containingCid]`
+### `hash-stream index add <packCid> <filePath> [containingCid]`
 
 Add Index record for the given verifiable pack using the specified index writer.
 
 #### Examples:
 
 ```sh
-index add bag... pack.car bafy... -iw multiple-level
-index add bag... pack.car -iw single-level
+hash-stream index add bag... pack.car bafy... -iw multiple-level
+hash-stream index add bag... pack.car -iw single-level
 ```
 
 #### Options:
@@ -108,8 +109,8 @@ Find index records of a given blob/pack/containing by its CID, written using a s
 #### Examples:
 
 ```sh
-index find records bafk...
-index find records bafk... bafy...
+hash-stream index find records bafk...
+hash-stream index find records bafk... bafy...
 ```
 
 #### Options:
@@ -118,19 +119,19 @@ index find records bafk... bafy...
 
 ---
 
-### `index clear`
+### `hash-stream index clear`
 
-Clear all indexes within a writer.
+Clear all index records stored.
 
 #### Examples:
 
 ```sh
-index clear
+hash-stream index clear
 ```
 
 ---
 
-### `streamer dump <targetCid> <filePath> [containingCid]`
+### `hash-stream streamer dump <targetCid> <filePath> [containingCid]`
 
 Dump the blob data associated with the given target CID from stored Packs based on the known index records.
 The data is extracted and written to the specified file path in the selected Pack format.
@@ -138,13 +139,30 @@ The data is extracted and written to the specified file path in the selected Pac
 #### Examples:
 
 ```sh
-streamer dump bafy... /usr/dumps/baf...car
+hash-stream streamer dump bafy... /usr/dumps/baf...car
 ```
 
 #### Options:
 
 - `-f, --format` Specifies the pack format to use: "car" or "raw" (default: "car").
 - `-sb, --store-backend` Selects the storage backend to use (`fs` or `s3`).
+
+## Global Options
+
+Some options are available for all commands:
+
+### -v, --verbose
+
+Prints extra information about what the CLI is doing behind the scenes.
+Useful for debugging or better understanding internal operations.
+
+#### Examples:
+
+```sh
+hash-stream pack write some-file.ext --verbose
+```
+
+By default, verbose output is disabled.
 
 ## Store Backend Configuration
 

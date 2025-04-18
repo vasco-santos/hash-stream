@@ -20,15 +20,33 @@ import {
  * @param {{
  *   _: string[],
  *   'index-writer': 'single-level' | 'multiple-level' | 'all',
- *   'store-backend'?: 'fs' | 's3'
+ *   'store-backend'?: 'fs' | 's3',
+ *    format: 'car',
+ *    verbose: boolean,
  * }} [opts]
  */
 export const indexAdd = async (
   packCid,
   filePath,
   containingCid,
-  opts = { 'index-writer': 'multiple-level', 'store-backend': undefined, _: [] }
+  opts = {
+    'index-writer': 'multiple-level',
+    'store-backend': undefined,
+    format: 'car',
+    verbose: false,
+    _: [],
+  }
 ) => {
+  if (opts.verbose) {
+    console.info(
+      `\n$ hash-stream index add:
+    1. Creates an index record for the given pack file.
+    2. Writes index record to an Index Store using the specified writer.\n`
+    )
+  }
+
+  validateFormat(opts.format)
+
   const indexWriterImplementationName = validateIndexWriter(
     opts['index-writer']
   )
@@ -107,10 +125,6 @@ Store backend: ${storeBackend}
       containingMultihash: containingCidLink?.multihash,
     })
   }
-
-  // await client.index.writers[0].addBlobs(wrappedBlobIndexIterable, {
-  //   containingMultihash: containingCidLink?.multihash,
-  // })
 }
 
 /**
@@ -119,13 +133,22 @@ Store backend: ${storeBackend}
  * @param {{
  *   _: string[],
  *   'store-backend'?: 'fs' | 's3'
+ *  verbose: boolean,
  * }} [opts]
  */
 export const indexFindRecords = async (
   targetCid,
   containingCid,
-  opts = { 'store-backend': undefined, _: [] }
+  opts = { 'store-backend': undefined, verbose: false, _: [] }
 ) => {
+  if (opts.verbose) {
+    console.info(
+      `\n$ hash-stream index find records:
+    1. Queries an IndexReader to look for index records associated with a Target CID  (optionally with Containing CID Hint).
+    2. The IndexReader reads from the Index Store and interprets available entries.\n`
+    )
+  }
+
   const storeBackend = resolveStoreBackend(opts['store-backend'])
   const client = await getClient({
     indexWriterImplementationName: 'none',
@@ -179,12 +202,19 @@ export const indexFindRecords = async (
 /**
  * @param {{
  *   _: string[],
- *   'store-backend'?: 'fs' | 's3'
+ *   'store-backend'?: 'fs' | 's3',
+ *   verbose: boolean,
  * }} [opts]
  */
 export const indexClear = async (
-  opts = { 'store-backend': undefined, _: [] }
+  opts = { 'store-backend': undefined, verbose: false, _: [] }
 ) => {
+  if (opts.verbose) {
+    console.info(
+      `\n$ hash-stream index clear:
+    1. clears all index records stored in the Index Store.\n`
+    )
+  }
   const storeBackend = resolveStoreBackend(opts['store-backend'])
   if (storeBackend === 's3') {
     console.error(`Error clearing ${storeBackend}: Not supported`)
@@ -288,3 +318,13 @@ export const TypeStr = Object.freeze({
   1: 'PACK',
   2: 'CONTAINING',
 })
+
+/**
+ * @param {string} format
+ */
+function validateFormat(format) {
+  if (format !== 'car') {
+    console.error(`Error: Invalid format "${format}". Only "car" is supported.`)
+    process.exit(1)
+  }
+}
