@@ -407,3 +407,57 @@ See: [`pack` package docs](https://github.com/vasco-santos/hash-stream/blob/main
 For advanced use cases (e.g., bulk processing, custom metadata tagging), build custom pipelines using the [pack](https://github.com/vasco-santos/hash-stream/blob/main/packages/pack/README.md) and [index](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/README.md) libraries.
 
 Alternatively, one can implement a new indexing strategy and `PackReader` that enables no data transformation at rest.
+
+## 🛠️ Testing Strategies
+
+To ensure robustness, performance, and compatibility of your Hash Stream deployment, a good testing strategy is essential.
+
+### 1. Unit & Integration Tests
+
+Hash Stream modules are modular and testable. You can write unit tests for:
+
+- Pack/Index store implementations (`PackStore`, `IndexStore`)
+- Reader and writer logic
+- HTTP handlers and response formatting
+
+Use your preferred test runner (e.g., Vitest, Jest, or Node’s built-in test runner) to validate:
+
+```sh
+npm test
+```
+
+There are testing suites exported for main interfaces of `Hash Stream`, in order to guarantee full compatibility with the remaining building blocks:
+
+- `@hash-stream/index/test/reader`
+- `@hash-stream/index/test/store`
+- `@hash-stream/pack/test/pack`
+- `@hash-stream/pack/test/reader`
+- `@hash-stream/pack/test/writer`
+- `@hash-stream/streamer/test/hash-streamer`
+
+### 2. Server Smoke Tests
+
+When running streamer instances:
+
+- Perform basic content fetch using tools like `curl`, `wget`, or `verified-fetch`
+- Confirm the response is correct and verifiable
+
+Example:
+
+```sh
+curl http://localhost:3000/ipfs/<cid>
+```
+
+### 3. Load and Performance Testing
+
+For high-throughput or production deployments:
+
+- Use tools like `autocannon`, `wrk`, or `k6` to simulate traffic
+- Test index and pack response latency under load
+- Validate caching layer efficiency
+
+Example:
+
+```sh
+npx autocannon -c 100 -d 30 http://localhost:3000/ipfs/<cid>
+```
