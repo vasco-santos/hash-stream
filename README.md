@@ -1,6 +1,8 @@
-# hash-stream
+<p align="center">
+  <img src="assets/name-and-logo.png" alt="Hash Stream Logo" width="50%"/>
+</p>
 
-> Building blocks for running a off-the-shelf trustless HTTP server for content-addressable data.
+<h1 align="center">Building blocks for running a off-the-shelf trustless HTTP server for content-addressable data.</h1>
 
 ## Table of Contents
 

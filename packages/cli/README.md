@@ -1,6 +1,8 @@
-# `hash-stream`
+<p align="center">
+  <img src="../../assets/name-and-logo.png" alt="Hash Stream Logo" width="50%"/>
+</p>
 
-The `hash-stream` command line interface.
+<h1 align="center">Command line interface</h1>
 
 ## Getting started
 
