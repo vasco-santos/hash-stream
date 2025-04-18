@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/vasco-santos/hash-stream/compare/cli-v1.3.1...cli-v1.4.0) (2025-04-18)
+
+
+### Features
+
+* cli with verbose descriptions ([#91](https://github.com/vasco-santos/hash-stream/issues/91)) ([9627a8e](https://github.com/vasco-santos/hash-stream/commit/9627a8e90136052cd76982abd33409616e776aad))
+
+
+### Fixes
+
+* make cli outputs with mh ([#88](https://github.com/vasco-santos/hash-stream/issues/88)) ([aba5e8d](https://github.com/vasco-santos/hash-stream/commit/aba5e8d0bb02870e40c7162b424a1f3843c57e89))
+
 ## [1.3.1](https://github.com/vasco-santos/hash-stream/compare/cli-v1.3.0...cli-v1.3.1) (2025-04-17)
 
 
