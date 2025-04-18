@@ -235,7 +235,7 @@ graph LR
 
 ## Deployment
 
-A Deployment Guide is available [here](./DEPLOYMENT.md).
+A Deployment Guide is available [here](./DEPLOYMENT_GUIDE.md).
 
 ## Contributing
 
