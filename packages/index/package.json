@@ -1,6 +1,6 @@
 {
   "name": "@hash-stream/index",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "The index client to use hash-stream",
   "repository": {
     "type": "git",
