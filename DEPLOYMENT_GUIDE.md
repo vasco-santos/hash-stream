@@ -461,3 +461,140 @@ Example:
 ```sh
 npx autocannon -c 100 -d 30 http://localhost:3000/ipfs/<cid>
 ```
+
+## 📉 Monitoring & Observability
+
+Visibility into the health and performance of your Hash Stream deployment is crucial.
+
+### Metrics to Track
+
+- Number of requests served
+- Latency per request
+- Cache hits/misses (if applicable)
+- Streaming failures (missing indexes/packs)
+
+### Logging
+
+Use structured logging (e.g., JSON) to enable easy parsing and ingestion by tools like:
+
+- Datadog
+- Loki + Grafana
+- ELK stack
+
+### Instrumentation
+
+Use:
+
+- Prometheus for metrics collection
+- OpenTelemetry for traces
+- Cloud-native tools (AWS CloudWatch, GCP Monitoring, etc.)
+
+#### Example: Prometheus Server Instrumentation
+
+```js
+import { collectDefaultMetrics, Registry } from 'prom-client'
+
+const register = new Registry()
+collectDefaultMetrics({ register })
+
+app.get('/metrics', async (c) => {
+  return c.text(await register.metrics())
+})
+```
+
+### Alerts
+
+Set up alerts for:
+
+- High latency
+- Failed requests
+- Missing data
+- Drops in pack/index fetch success rate
+
+### Deployment Suggestions
+
+- Dockerize exporter containers alongside the streamer
+- Use centralized dashboards for at-a-glance visibility
+
+## 🔐 Security & Access Control
+
+Hash Stream's modular nature allows it to be deployed in a wide variety of environments, from private networks to public-facing APIs. Regardless of the setting, it's important to consider how to restrict unauthorized access and ensure safe, verifiable content delivery.
+
+This section outlines practical tips and strategies for securing deployments.
+
+### ⚡ Threat Model Summary
+
+The core security assumptions for Hash Stream deployments:
+
+- Clients can verify data integrity by multihash (trustless model)
+- Attacks are more likely to be about access (who can serve/read/write), not about data integrity
+- Server-side authorization may be needed when data should not be served publicly
+
+### 🔒 Securing Read APIs (Streamers)
+
+By default, Hash Stream streamers are public read-only interfaces. To restrict access:
+
+#### ✅ Apply Auth Middleware
+
+You can apply any standard authentication middleware depending on the HTTP server used:
+
+- Hono: use [hono-auth](https://hono.dev/middleware/builtin/bearer-auth) for bearer tokens
+- Express.js: use `passport`, `express-jwt`, or custom middleware
+
+Example (Hono):
+
+```js
+import { bearerAuth } from 'hono/auth'
+
+app.use('/ipfs/*', bearerAuth({ token: process.env.READ_TOKEN }))
+```
+
+#### ⚖️ Network-Level Restrictions
+
+- Restrict ports/IPs via firewall, NGINX, AWS security groups, Cloudflare Zero Trust, etc.
+- Protect Cloudflare Workers with Access Rules
+
+### 🚫 Preventing Index/Pack Writes
+
+If deploying the CLI or ingestion pipelines:
+
+- Use IAM permissions (e.g., AWS S3) to grant read-only access to streamers
+- Run pack/index pipelines on isolated, secured infra (e.g., private ECS task)
+
+Avoid placing pack-writing functionality on public endpoints unless strictly access-controlled.
+
+### 💰 API Keys or Signed URLs
+
+- Consider issuing signed URLs (e.g., CloudFront, S3 pre-signed) for time-limited access
+- This can provide temporary, revocable links to specific content
+
+### ✨ Security Best Practices
+
+- ✅ Enable HTTPS for all endpoints
+- ✅ Ensure environment variables and secrets (e.g., AWS keys) are never committed
+- ✅ Use `.env` or secrets managers (e.g., AWS Secrets Manager, Doppler)
+- ✅ Keep streamer servers up to date and behind a reverse proxy or CDN
+- ✅ Use monitoring/alerting to detect suspicious access patterns (see Monitoring section)
+
+### 🤠 Optional: Content Whitelisting
+
+If you only want to serve known-safe CIDs:
+
+- Maintain a whitelist of allowed multihashes in memory or DB
+- Reject requests outside the list in your streamer handler
+
+```js
+const ALLOWED_HASHES = new Set(['zQm...', 'zQm...'])
+
+if (!ALLOWED_HASHES.has(cid)) {
+  return c.text('Forbidden', 403)
+}
+```
+
+### 📈 Audit & Compliance
+
+For enterprise environments:
+
+- Enable request logging with hash lookups, timestamps, user/IP metadata
+- Store access logs for later auditing
+- Maintain changelogs or attestations of pack/index generation history
