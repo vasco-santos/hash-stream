@@ -12,14 +12,14 @@ import * as cidUtils from './cid.js'
  * @param {{ hashStreamer: import('@hash-stream/streamer').HashStreamer }} context - Context object providing the hash streamer.
  * @returns {Promise<Response>} HTTP Response containing the CAR stream or error.
  */
-export async function httpipfsGet(request, context) {
+export async function ipfsGet(request, context) {
   const format = resolveRequestedFormat(request)
 
   switch (format) {
     case 'car':
-      return await httpCarGet(request, context)
+      return await carGet(request, context)
     case 'raw':
-      return await httpRawGet(request, context)
+      return await rawGet(request, context)
     default:
       return new Response('not acceptable format', { status: 406 })
   }
@@ -32,7 +32,7 @@ export async function httpipfsGet(request, context) {
  * @param {{ hashStreamer: import('@hash-stream/streamer').HashStreamer }} context - Context object providing the hash streamer.
  * @returns {Promise<Response>} HTTP Response containing the CAR stream or error.
  */
-export async function httpCarGet(request, context) {
+export async function carGet(request, context) {
   let cid
   let carResponseOptions
 
@@ -120,7 +120,7 @@ function concatBytes(chunks) {
  * @param {{ hashStreamer: import('@hash-stream/streamer').HashStreamer }} context - Context object providing the hash streamer.
  * @returns {Promise<Response>} HTTP Response containing the raw content or an error.
  */
-export async function httpRawGet(request, context) {
+export async function rawGet(request, context) {
   /** @type {import('multiformats').CID} */
   let cid
   try {

@@ -23,9 +23,9 @@ import {
 import {
   buildCarHTTPResponse,
   buildRawHTTPResponse,
-  httpipfsGet,
-  httpRawGet,
-  httpCarGet,
+  ipfsGet,
+  rawGet,
+  carGet,
 } from '../../src/trustless-ipfs-gateway/http.js'
 import { identityCid } from '../../src/trustless-ipfs-gateway/cid.js'
 
@@ -86,7 +86,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpipfsGet(request, { hashStreamer })
+    const response = await ipfsGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 200)
     assert.strictEqual(
@@ -121,7 +121,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpipfsGet(request, { hashStreamer })
+    const response = await ipfsGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 200)
     assert.strictEqual(
@@ -156,7 +156,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpipfsGet(request, { hashStreamer })
+    const response = await ipfsGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 406)
   })
@@ -169,7 +169,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpipfsGet(request, { hashStreamer })
+    const response = await ipfsGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 200)
     assert.strictEqual(
@@ -187,7 +187,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpipfsGet(request, { hashStreamer })
+    const response = await ipfsGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 200)
     assert.strictEqual(
@@ -240,7 +240,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpRawGet(request, { hashStreamer })
+    const response = await rawGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 200)
     assert.strictEqual(
@@ -290,7 +290,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpCarGet(request, { hashStreamer })
+    const response = await carGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 200)
     assert.strictEqual(
@@ -339,7 +339,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpCarGet(request, { hashStreamer })
+    const response = await carGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 400)
   })
@@ -353,7 +353,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpRawGet(request, { hashStreamer })
+    const response = await rawGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 400)
   })
@@ -367,7 +367,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpCarGet(request, { hashStreamer })
+    const response = await carGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 400)
   })
@@ -381,7 +381,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpCarGet(request, { hashStreamer })
+    const response = await carGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 404)
   })
@@ -395,7 +395,7 @@ describe(`trustless ipfs gateway http utils`, () => {
       },
     })
 
-    const response = await httpRawGet(request, { hashStreamer })
+    const response = await rawGet(request, { hashStreamer })
     assert(response)
     assert.strictEqual(response.status, 404)
   })

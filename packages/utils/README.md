@@ -104,14 +104,14 @@ const response = await http.ipfsGet(request, context)
 
 ---
 
-### `http.httpCarGet`
+### `http.carGet`
 
 Gets trustless content behind IPFS CID as a CAR file.
 
 ```js
 import { http } from '@hash-stream/utils/trustless-ipfs-gateway'
 
-const response = await http.httpCarGet(request, context)
+const response = await http.carGet(request, context)
 ```
 
 **Parameters:**
@@ -123,14 +123,14 @@ const response = await http.httpCarGet(request, context)
 
 ---
 
-### `http.httpRawGet`
+### `http.rawGet`
 
 Gets trustless content behind IPFS CID as raw bytes.
 
 ```js
 import { http } from '@hash-stream/utils/trustless-ipfs-gateway'
 
-const response = await http.httpRawGet(request, context)
+const response = await http.rawGet(request, context)
 ```
 
 **Parameters:**
