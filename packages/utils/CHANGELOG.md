@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/vasco-santos/hash-stream/compare/utils-v1.3.0...utils-v2.0.0) (2025-04-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* httpCarGet and httpRawGet function names renamed
+
+### Fixes
+
+* rename utils http functions ([#99](https://github.com/vasco-santos/hash-stream/issues/99)) ([3458743](https://github.com/vasco-santos/hash-stream/commit/3458743bb4eb5404f67b5cfaca9dbd2cc91c07b1))
+
 ## [1.3.0](https://github.com/vasco-santos/hash-stream/compare/utils-v1.2.0...utils-v1.3.0) (2025-04-11)
 
 
