@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/vasco-santos/hash-stream/compare/pack-v1.3.2...pack-v1.4.0) (2025-04-22)
+
+
+### Features
+
+* add logo ([#92](https://github.com/vasco-santos/hash-stream/issues/92)) ([7692df5](https://github.com/vasco-santos/hash-stream/commit/7692df523d8b1814e92c60d94bf31bd811a33876))
+
 ## [1.3.2](https://github.com/vasco-santos/hash-stream/compare/pack-v1.3.1...pack-v1.3.2) (2025-04-17)
 
 
