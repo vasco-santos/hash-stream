@@ -67,12 +67,14 @@ Let's walk through what happens internally.
 
 ---
 
-#### 🛡️ Stream Response to Client
+#### 🌊 Stream Response to Client
 
 - Server looks up for the bytes that can be cryptographically verified against the requested multihash, in its known storage
 - Server creates a response to send back to the client, which is shaped by the client request:
   - a simple `multihash` request-response at a time interaction (similar to [Bitswap](https://specs.ipfs.tech/bitswap-protocol/))
   - more complex responses, such as [commp](https://spec.filecoin.io/systems/filecoin_files/piece/#section-systems.filecoin_files.piece), [blake3](https://github.com/BLAKE3-team/BLAKE3/), multiblock-responses ([CAR](https://ipld.io/specs/transport/car/carv1/)), etc.
+- Stateless, low-memory footprint:
+  - All `HashStreamer` building blocks are pure reads and streaming - ideal for tiny servers or Lambda Functions
 
 ![image](./diagrams/hash-stream-3-streamer.svg)
 
@@ -198,7 +200,7 @@ for await (const { multihash, bytes } of this.packReader.stream(
 
 ---
 
-#### 🛡️ Stream Response to Client
+#### 🌊 Stream Response to Client
 
 - Streamer ties together the previous steps by finding index records and reading packs (byte ranges).
 
