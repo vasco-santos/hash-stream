@@ -126,7 +126,7 @@ const data = await response.blob()
 
 #### 🕵️‍♂️ Find Index Records associated with the multihash
 
-No need to do "content discover" — just lookup for known Index records for the multihash.
+- No need to do "content discover" — just lookup for known Index records for the multihash
 
 ![image](./diagrams/hash-stream-1-index.svg)
 
@@ -176,7 +176,8 @@ for await (const indexRecord of indexReader.findRecords(targetMultihash)) {
 
 #### 📦 Read Blobs from Pack Storage
 
-Once the index records are found, the bytes from storage can be read. The server may fetch the right byte ranges from a Pack (e.g., [CAR](https://ipld.io/specs/transport/car/carv1/) file).
+- Once the index records are found, the bytes can be read from the storage layer
+- The server may fetch the right byte ranges from a Pack (e.g., [CAR](https://ipld.io/specs/transport/car/carv1/) file)
 
 ![image](./diagrams/hash-stream-2-read-blobs.svg)
 
@@ -199,7 +200,7 @@ for await (const { multihash, bytes } of this.packReader.stream(
 
 #### 🛡️ Stream Response to Client
 
-Streamer ties together the previous steps by finding index records and reading packs out of the box.
+- Streamer ties together the previous steps by finding index records and reading packs out of the box
 
 ![image](./diagrams/hash-stream.svg)
 
@@ -207,9 +208,9 @@ Streamer ties together the previous steps by finding index records and reading p
 
 ## 🧪 Architecture: Simple and Modular
 
-Hash Stream separates the system into modular building blocks that act together to serve some requested content:
+- Hash Stream separates the system into modular building blocks that act together to serve some requested content:
 
-![image](./diagrams/server-architecture-horizontal.svg)
+![image](./diagrams/streamer-architecture-horizontal.svg)
 
 ---
 

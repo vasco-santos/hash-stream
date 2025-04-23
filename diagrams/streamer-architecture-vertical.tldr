@@ -36,9 +36,9 @@
 		{
 			"id": "pointer:pointer",
 			"typeName": "pointer",
-			"x": 803.8700470206602,
-			"y": 1117.2407476488695,
-			"lastActivityTimestamp": 1745413625105,
+			"x": 457.0459105443173,
+			"y": 12.701046729725903,
+			"lastActivityTimestamp": 1745420567620,
 			"meta": {}
 		},
 		{
@@ -135,9 +135,9 @@
 			"typeName": "shape"
 		},
 		{
-			"x": 1038.3239227059023,
-			"y": -296.79152889886944,
-			"z": 0.5,
+			"x": 321.369279926735,
+			"y": 204.03574024927843,
+			"z": 0.56697393741919,
 			"meta": {},
 			"id": "camera:page:page",
 			"typeName": "camera"
@@ -213,8 +213,8 @@
 			"typeName": "shape"
 		},
 		{
-			"x": 339.23250063476553,
-			"y": -35.847989688651296,
+			"x": 385.45102781757066,
+			"y": -24.58341767133473,
 			"rotation": 0,
 			"isLocked": false,
 			"opacity": 1,
@@ -224,7 +224,7 @@
 			"props": {
 				"color": "black",
 				"size": "l",
-				"w": 266.6875,
+				"w": 174.52212524414062,
 				"font": "draw",
 				"textAlign": "middle",
 				"autoSize": true,
@@ -240,19 +240,7 @@
 							"content": [
 								{
 									"type": "text",
-									"text": "Hashstreamer"
-								}
-							]
-						},
-						{
-							"type": "paragraph",
-							"attrs": {
-								"dir": "auto"
-							},
-							"content": [
-								{
-									"type": "text",
-									"text": "Server"
+									"text": "Streamer"
 								}
 							]
 						}
@@ -318,8 +306,7 @@
 			"editingShapeId": null,
 			"croppingShapeId": null,
 			"selectedShapeIds": [
-				"shape:rtk_002SgM3yyG0KRdmCq",
-				"shape:LTspEI3Wb8EHHA6DtkBBu"
+				"shape:lkZ1CtpIvRD23S-iSmO3C"
 			],
 			"hoveredShapeId": null,
 			"erasingShapeIds": [],
@@ -868,8 +855,8 @@
 			"screenBounds": {
 				"x": 0,
 				"y": 0,
-				"w": 1184.1666259765625,
-				"h": 894.1666259765625
+				"w": 909.1666259765625,
+				"h": 855
 			},
 			"insets": [
 				false,
