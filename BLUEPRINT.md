@@ -12,8 +12,8 @@ What if you could:
 
 - `curl https://some-hash-stream-server.com/{cid}`
 - Get **verifiable** data directly from any HTTP server
-- Without trusting the server — only the **content** itself
-- Without needing heavy nodes, complex protocols, content discovery, or DHTs
+- Without trusting the server — only the **content** itself and the **place** where one got the hash
+- Without needing resource-heavy stateful nodes, complex protocols, content discovery, or DHTs
 - And still verifying every byte against its hash
 
 **Hash Stream** is an exploration:  
@@ -26,7 +26,7 @@ What if you could:
 In decentralized systems like IPFS, content addressing revolutionized how data is identified. But real-world operation revealed:
 
 - Running full nodes at scale is **complex**, **costly**, **fragile**.
-- Reads and writes are **tightly coupled**, limiting scaling.
+- Publishing and Consuming clients usually ship as a single product with very **tight coupling**, limiting scaling.
 - "Content discovery" and "content verification" are **artificially tied together**.
 - Some standards like UnixFS and CAR are considered as **the only way**, not just **one option**.
 
@@ -74,7 +74,7 @@ No need to "discover" — just lookup for known Index records for the multihash.
 ![image](./diagrams/hash-stream-1-index.svg)
 
 - **What’s an Index?**
-  - A tiny, verifiable map of `multihash` → `IndexRecord`.
+  - A tiny, server-local, map of `multihash` → `IndexRecord`.
   - One can think of it like a `directory` or `map` for their content inside storage.
 - There are different **fundamental lenses**, which an indexing system MAY be able to index and enable queries for:
   - A **Blob** is a set of bytes that is individually addressed by a multihash. It can be stored as is in a given store, or within a Pack.
