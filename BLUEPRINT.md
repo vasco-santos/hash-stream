@@ -46,7 +46,7 @@ In decentralized systems like IPFS, content addressing revolutionized how data i
 - Verifiability built into the data flow, not bolted on
 
 <p align="center">
-  <img src="diagrams/nginx.svg" alt="Hash Stream Logo" width="70%"/>
+  <img src="diagrams/nginx.svg" alt="Hash Stream nginx example" width="70%"/>
 </p>
 
 ---
@@ -67,9 +67,66 @@ Let's walk through what happens internally.
 
 ---
 
+#### 🛡️ Stream Response to Client
+
+- Server looks up for the bytes that can be cryptographically verified against the requested multihash in its known storage
+- Server creates a response to send back to the client, which is shaped by the client request:
+  - a simple `multihash` request-response at a time interaction (similar to [Bitswap](https://specs.ipfs.tech/bitswap-protocol/))
+  - more complex responses, such as [commp](https://spec.filecoin.io/systems/filecoin_files/piece/#section-systems.filecoin_files.piece), [blake3](https://github.com/BLAKE3-team/BLAKE3/), multiblock-responses ([CAR](https://ipld.io/specs/transport/car/carv1/)), etc.
+
+![image](./diagrams/hash-stream-3-streamer.svg)
+
+```js
+import { HashStreamer } from '@hash-stream/streamer'
+import { IndexReader } from '@hash-stream/index/reader'
+import { PackReader } from '@hash-stream/pack/reader'
+
+const indexReader = new IndexReader(indexStore)
+const packReader = new PackReader(packStore)
+const hashStreamer = new HashStreamer(indexReader, packReader)
+
+// Get verifiable blobs associated with the target multihash
+for await (const { multihash, bytes } of hashStreamer.stream(targetMultihash)) {
+  // TODO: Encode data stream to send to the client depending on the request
+}
+
+return new Response(dataStream)
+```
+
+---
+
+#### 😎 Done — Trustless Data, Delivered!
+
+Streamed bytes can be hashed by the client on the fly to ensure they match the requested CID.
+
+- Verified content, no server trust required
+- Minimal moving parts
+- Simple transport (HTTP, gRPC, etc.)
+
+![image](./diagrams/hash-stream-simple.svg)
+
+Client libraries like [`@helia/verified-fetch`](https://github.com/ipfs/helia-verified-fetch/tree/main/packages/verified-fetch) can help fetching and verifying responses easily.
+
+```js
+import { createVerifiedFetch } from '@helia/verified-fetch'
+
+const verifiedFetch = await createVerifiedFetch({
+  gateways: ['https://some-hash-stream-server.com'],
+})
+
+const response = await verifiedFetch(`ipfs://${cid}/`)
+const data = await response.blob()
+```
+
+---
+
+### 🛫 Lifecycle of the Response
+
+> How does the streamer response actually get assembled?
+
 #### 🕵️‍♂️ Find Index Records associated with the multihash
 
-No need to "discover" — just lookup for known Index records for the multihash.
+No need to do "content discover" — just lookup for known Index records for the multihash.
 
 ![image](./diagrams/hash-stream-1-index.svg)
 
@@ -144,49 +201,7 @@ for await (const { multihash, bytes } of this.packReader.stream(
 
 Streamer ties together the previous steps by finding index records and reading packs out of the box.
 
-![image](./diagrams/hash-stream-3-streamer.svg)
-
-```js
-import { HashStreamer } from '@hash-stream/streamer'
-import { IndexReader } from '@hash-stream/index/reader'
-import { PackReader } from '@hash-stream/pack/reader'
-
-const indexReader = new IndexReader(indexStore)
-const packReader = new PackReader(packStore)
-const hashStreamer = new HashStreamer(indexReader, packReader)
-
-// Get verifiable blobs from the containing and write them into the transport to send to the client
-for await (const { multihash, bytes } of hashStreamer.stream(targetMultihash)) {
-  // TODO: Encode data stream to send to the client (e.g. inside a CAR File)
-}
-
-return new Response(dataStream)
-```
-
----
-
-#### 😎 Done — Trustless Data, Delivered!
-
-Streamed bytes can be hashed by the client on the fly to ensure they match the requested CID.
-
-- Verified content, no server trust required
-- Minimal moving parts
-- Simple transport (HTTP, gRPC, etc.)
-
 ![image](./diagrams/hash-stream.svg)
-
-Client libraries like [`@helia/verified-fetch`](https://github.com/ipfs/helia-verified-fetch/tree/main/packages/verified-fetch) can help fetching and verifying responses easily.
-
-```js
-import { createVerifiedFetch } from '@helia/verified-fetch'
-
-const verifiedFetch = await createVerifiedFetch({
-  gateways: ['https://some-hash-stream-server.com'],
-})
-
-const response = await verifiedFetch(`ipfs://${cid}/`)
-const data = await response.blob()
-```
 
 ---
 
