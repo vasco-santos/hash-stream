@@ -67,7 +67,6 @@ graph TD
 ## Usage
 
 Here follow two simple examples relying on the building blocks of `hash-stream`.
-
 The first example relies on the available building blocks to ingest some data to a configured Store and have it indexed.
 
 ```js
