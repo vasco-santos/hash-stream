@@ -194,7 +194,7 @@ for await (const { multihash, bytes } of this.packReader.stream(
   targetMultihash,
   blobRanges // Read full pack if no ranges, or just parts of the pack
 )) {
-  // TODO: stream it to the client - each chunk is can be verified as it goes
+  // TODO: stream it to the client - each chunk can be verified as it goes
 }
 ```
 
