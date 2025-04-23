@@ -51,6 +51,10 @@ main().catch(console.error)
 
 One of the typical ways to transport the verifiable entries is via CAR files. A [CarWriter](https://github.com/ipld/js-car?tab=readme-ov-file#CarWriter) may be used to write the content of the stream into.
 
+## Relevant Specifications
+
+- [hash streamer](../../specs/hash-streamer.md)
+
 ## Contributing
 
 Feel free to join in. All welcome. Please [open an issue](https://github.com/vasco-santos/hash-stream/issues)!

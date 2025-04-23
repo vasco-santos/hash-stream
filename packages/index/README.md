@@ -219,6 +219,11 @@ export interface IndexRecord {
 }
 ```
 
+## Relevant Specifications
+
+- [index](../../specs/index.md)
+- [index writer](../../specs/index-writer.md)
+
 ## Contributing
 
 Feel free to join in. All welcome. Please [open an issue](https://github.com/vasco-santos/hash-stream/issues)!

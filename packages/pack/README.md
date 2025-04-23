@@ -298,6 +298,11 @@ class MemoryStore {
 const store = new MemoryStore()
 ```
 
+## Relevant Specifications
+
+- [pack](../../specs/pack.md)
+- [pack writer](../../specs/pack-writer.md)
+
 ## Contributing
 
 Feel free to join in. All welcome. Please [open an issue](https://github.com/vasco-santos/hash-stream/issues)!
