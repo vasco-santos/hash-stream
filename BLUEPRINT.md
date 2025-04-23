@@ -69,7 +69,7 @@ Let's walk through what happens internally.
 
 #### 🛡️ Stream Response to Client
 
-- Server looks up for the bytes that can be cryptographically verified against the requested multihash in its known storage
+- Server looks up for the bytes that can be cryptographically verified against the requested multihash, in its known storage
 - Server creates a response to send back to the client, which is shaped by the client request:
   - a simple `multihash` request-response at a time interaction (similar to [Bitswap](https://specs.ipfs.tech/bitswap-protocol/))
   - more complex responses, such as [commp](https://spec.filecoin.io/systems/filecoin_files/piece/#section-systems.filecoin_files.piece), [blake3](https://github.com/BLAKE3-team/BLAKE3/), multiblock-responses ([CAR](https://ipld.io/specs/transport/car/carv1/)), etc.
@@ -97,7 +97,7 @@ return new Response(dataStream)
 
 #### 😎 Done — Trustless Data, Delivered!
 
-Streamed bytes can be hashed by the client on the fly to ensure they match the requested CID.
+Streamed bytes can be hashed by the client on the fly, in order to ensure they match the requested CID.
 
 - Verified content, no server trust required
 - Minimal moving parts
@@ -200,7 +200,7 @@ for await (const { multihash, bytes } of this.packReader.stream(
 
 #### 🛡️ Stream Response to Client
 
-- Streamer ties together the previous steps by finding index records and reading packs out of the box
+- Streamer ties together the previous steps by finding index records and reading packs (byte ranges).
 
 ![image](./diagrams/hash-stream.svg)
 
