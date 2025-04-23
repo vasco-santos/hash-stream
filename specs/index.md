@@ -24,7 +24,7 @@ Smart client implementations MAY request a verifiable pack as a single verifiabl
 
 ## Fundamentals
 
-There are three different **fundamental units**, which the indexing system MAY be able to index and enable queries for:
+There are three different **fundamental lenses**, which the indexing system MAY be able to index and enable queries for:
 
 - A **Blob** is a set of bytes that is individually addressed by a multihash. It can be stored as is in a given store, or within a Pack.
 - A **Pack** holds several Blobs and is also individually addressed by a multihash (can be seen as a Blob itself). Multiple **Packs** MAY store the same Blob.
