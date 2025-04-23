@@ -115,17 +115,17 @@ interface IndexReader {
 
 **Reading Previously Indexed Data**
 
-1. A client requests a stream of bytes behind a given multihash using a Verifiable Reader.
-2. The Verifiable Reader queries the appropriate Index.
+1. A client requests a stream of bytes behind a given multihash using a Hash Streamer.
+2. The Hash Streamer queries the appropriate Index.
 3. The Index Reader provides index records representing the location where requested multihash bytes are stored.
-4. The Verifiable Reader fetches the actual data based on the resolved locations (see `verifiable-reader.md`).
+4. The Hash Streamer fetches the actual data based on the resolved locations (see `hash-streamer.md`).
 
 ```mermaid
 graph TD;
-    Client -->|Request stream of bytes| VerifiableReader;
-    VerifiableReader -->|Lookup Multihash| IndexReader;
-    IndexReader -->|Resolve index records| VerifiableReader;
-    VerifiableReader -->|Read from locations| PackReader;
+    Client -->|Request stream of bytes| HashStreamer;
+    HashStreamer -->|Lookup Multihash| IndexReader;
+    IndexReader -->|Resolve index records| HashStreamer;
+    HashStreamer -->|Read from locations| PackReader;
     PackReader -->|Returns data| Client;
 
     subgraph Index System
