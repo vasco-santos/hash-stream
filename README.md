@@ -15,7 +15,7 @@
 
 ## Getting Started
 
-This repository provides a set of libraries and tools that allow you to build and run a trustless HTTP server for content-addressable data. These building blocks are modular and designed in a plug-and-play fashion, enabling you to use just a subset of them to create a custom server.
+This repository provides a set of libraries and tools that allow you to build and run a trustless HTTP server for content-addressable data. These building blocks are modular and designed in a plug-and-play fashion, enabling you to use just a subset of them to create a custom server. Going through the [Blueprint](./BLUEPRINT.md) document is a great way to better understand Hashstream.
 
 For those interested in implementing building blocks differently, there are a few [specifications](./specs/) and interfaces available, allowing new implementations to be compatible with the existing pieces.
 
