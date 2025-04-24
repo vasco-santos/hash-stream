@@ -151,7 +151,7 @@ type IndexRecord = {
   multihash: MultihashDigest
   // Type of the record
   type: IndexRecordType
-  // hash digest of the location or Path
+  // hash digest of the location (e.g. Pack multihash) or Path
   location: MultihashDigest | Path
   // length of the data
   length?: number
@@ -179,7 +179,8 @@ for await (const indexRecord of indexReader.findRecords(targetMultihash)) {
 #### 📦 Read Blobs from Pack Storage
 
 - Once the index records are found, the bytes can be read from the storage layer
-- The blob location can be obtained from the records and passed to a Pack Reader
+- The blob location can be obtained from the records and passed to a Pack Reader.
+  - The location can either be a simple `location` Multihash representing a Pack multihash, or some blob ranges within this `location` specified as an array of `{ length, range, multihash }`, where multihash represents the hash of the bytes to be read in each range.
 - The server may fetch the right byte ranges from a Pack (e.g., [CAR](https://ipld.io/specs/transport/car/carv1/) file)
 
 ![image](./diagrams/hash-stream-2-read-blobs.svg)
@@ -192,8 +193,10 @@ const packStore = new S3LikePackStore() // TODO: Create store with s3 client
 const packReader = new PackReader(packStore)
 
 for await (const { multihash, bytes } of this.packReader.stream(
-  targetMultihash,
-  blobRanges // Read full pack if no ranges, or just parts of the pack
+  // Pack multihash
+  locationMultihash,
+  // Read full pack if no ranges, or just ranges of the pack
+  blobRanges // [{ offset: 0, length: 1000, multihash: Uint8Array }]
 )) {
   // TODO: stream it to the client - each chunk can be verified as it goes
 }
