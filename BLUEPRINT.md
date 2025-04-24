@@ -179,6 +179,7 @@ for await (const indexRecord of indexReader.findRecords(targetMultihash)) {
 #### 📦 Read Blobs from Pack Storage
 
 - Once the index records are found, the bytes can be read from the storage layer
+- The blob location can be obtained from the records and passed to a Pack Reader
 - The server may fetch the right byte ranges from a Pack (e.g., [CAR](https://ipld.io/specs/transport/car/carv1/) file)
 
 ![image](./diagrams/hash-stream-2-read-blobs.svg)
