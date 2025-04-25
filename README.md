@@ -237,6 +237,10 @@ graph LR
 
 A Deployment Guide is available [here](./DEPLOYMENT_GUIDE.md).
 
+## Resources
+
+- [Hashstream demo video](https://youtu.be/rFjz6n_UGaY)
+
 ## Contributing
 
 All welcome! `hash-stream` is open-source. See the [contributing guide](./CONTRIBUTING.md)
