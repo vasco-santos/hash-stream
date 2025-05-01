@@ -32,18 +32,5 @@
     "skipLibCheck": true,
     "stripInternal": true,
     "resolveJsonModule": true
-  },
-  "typedocOptions": {
-    "entryPointStrategy": "packages",
-    "entryPoints": [
-      "packages/hash-streamer",
-      "packages/index",
-      "packages/pack"
-    ],
-    "excludeExternals": true,
-    "darkHighlightTheme": "github-dark",
-    "navigationLinks": {
-      "Github": "https://github.com/vasco-santos/hash-stream"
-    }
   }
 }

@@ -1,4 +1,6 @@
-# Hash Streamer Specification
+---
+title: Hash Streamer
+---
 
 ![wip](https://img.shields.io/badge/status-wip-orange.svg?style=flat-square)
 
@@ -20,7 +22,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 # Overview
 
-The Hash Streamer enables consumers to read a stream of bytes that can be cryptographically verified against the requested multihash (target multihash). It relies on an indexing layer, defined in the [Index Specification](./index.md), to determine the location of the target data within a given **PackStore** (MAY be spread in multiple location). These bytes can represent a **Blob**, a **Pack**, or a **Containing** cryptographic reference.
+The Hash Streamer enables consumers to read a stream of bytes that can be cryptographically verified against the requested multihash (target multihash). It relies on an indexing layer, defined in the [Index Specification](/specs), to determine the location of the target data within a given **PackStore** (MAY be spread in multiple location). These bytes can represent a **Blob**, a **Pack**, or a **Containing** cryptographic reference.
 
 ## Design Principles
 
@@ -63,7 +65,7 @@ The **Hash Streamer**, **Index**, and **Pack Reader** work together to enable ef
 
 1. **Index Maintains Metadata**
 
-   - The [Index](./index.md) maintains records mapping Multihashes to the location of their bytes.
+   - The [Index](/specs) maintains records mapping Multihashes to the location of their bytes.
    - When the bytes of a `targetMultihash` are requested, the Index resolves the known Index Records associated with the multihash.
 
 2. **Hash Streamer Fetches Bytes**

@@ -1,0 +1,22 @@
+---
+title: Node.js Server
+description: Infra deployment PoC for hash-stream Server implementing the IPFS Trustless Gateway built on a Node.js HTTP server with Hono.
+---
+
+Infra deployment PoC for [hash-stream] Server implementing the [IPFS Trustless Gateway](https://specs.ipfs.tech/http-gateways/trustless-gateway/) built on a Node.js HTTP server with [Hono](https://hono.dev/).
+
+Repository: [vasco-santos/hash-stream-infra-poc-server](https://github.com/vasco-santos/hash-stream-infra-poc-server)
+
+## Introduction
+
+This PoC setup relies on the following Index and Pack stores in the file system:
+
+- [`@hash-stream/index/store/fs`](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/store/fs.js)
+- [`@hash-stream/pack/store/fs`](https://github.com/vasco-santos/hash-stream/blob/main/packages/pack/src/store/fs.js)
+
+The stores can easily be changed to target S3-like Cloud Object Storage like, AWS S3 and Cloudflare R2. See:
+
+- [Index Stores](https://github.com/vasco-santos/hash-stream/tree/main/packages/index#stores)
+- [Pack Stores](https://github.com/vasco-santos/hash-stream/tree/main/packages/pack#stores)
+
+[hash-stream]: https://github.com/vasco-santos/hash-stream

@@ -1,0 +1,18 @@
+---
+title: Cloudflare Workers Server
+description: Infra deployment PoC for hash-stream Server implementing the IPFS Trustless Gateway built on SST for Cloudflare deployments
+---
+
+Infra deployment PoC for [hash-stream] Server implementing the [IPFS Trustless Gateway](https://specs.ipfs.tech/http-gateways/trustless-gateway/) built on [SST] for Cloudflare deployments.
+
+Repository: [vasco-santos/hash-stream-infra-poc-cf](https://github.com/vasco-santos/hash-stream-infra-poc-cf)
+
+## Introduction
+
+This PoC setup relies on the following Index and Pack stores in the file system:
+
+- [`@hash-stream/index/store/cf-worker-bucket`](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/store/cf-worker-bucket.js)
+- [`@hash-stream/pack/store/cf-worker-bucket`](https://github.com/vasco-santos/hash-stream/blob/main/packages/pack/src/store/cf-worker-bucket.js)
+
+[SST]: https://sst.dev
+[hash-stream]: https://github.com/vasco-santos/hash-stream

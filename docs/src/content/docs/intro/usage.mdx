@@ -1,71 +1,7 @@
-<p align="center">
-  <img src="assets/name-and-logo.png" alt="Hash Stream Logo" width="50%"/>
-</p>
-
-<h1 align="center">Building blocks for running a off-the-shelf trustless HTTP server for content-addressable data.</h1>
-
-## Table of Contents
-
-- [Getting Started](#getting-started)
-- [Requirements](#requirements)
-- [Packages](#packages)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Getting Started
-
-This repository provides a set of libraries and tools that allow you to build and run a trustless HTTP server for content-addressable data. These building blocks are modular and designed in a plug-and-play fashion, enabling you to use just a subset of them to create a custom server. Going through the [Blueprint](https://vasco-santos.github.io/hash-stream/intro/blueprint) document is a great way to better understand Hashstream.
-
-Documentation can be seen at [https://vasco-santos.github.io/hash-stream](https://vasco-santos.github.io/hash-stream):
-
-- [Deployment Guide](https://vasco-santos.github.io/hash-stream/guides/deployment)
-- [Specifications](https://vasco-santos.github.io/hash-stream/specs) - for those interested in implementing building blocks differently
-
-## Development
-
-### Installing
-
-To work on this codebase **you need**:
-
-- Node.js >= v18
-- Install the deps with `pnpm i`
-
-### Testing
-
-For testing environment, first install [Docker Desktop](https://www.docker.com/) and ensure it is running. This codebase has `S3 client compatible` backed datastores used in testing, which are simulated using Docker.
-
-Next, ensure the `AWS_REGION`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables are set in your terminal. They do
-not need to be set to real values - the following works in `bash`-like shells:
-
-```
-export AWS_REGION='us-west-2'; export AWS_ACCESS_KEY_ID='NOSUCH'; export AWS_SECRET_ACCESS_KEY='NOSUCH'
-```
-
-## Packages
-
-The repository includes the following packages:
-
-- [`packages/cli`](./packages/cli/): A CLI tool for transforming data into content-addressable data, writing index records, and a verifiable streamer.
-- [`packages/streamer`](./packages/streamer/): A library for streaming verifiable data associated with a requested multihash, based on available index records and stored packs.
-- [`packages/index`](./packages/index/): A library with implementations for `IndexReader` and various `IndexWriter` strategies, along with `IndexStore` implementations.
-- [`packages/pack`](./packages/pack/): A library for writing data into packs (`PackWriter`) and reading them back (`PackReader`), facilitating the creation and retrieval of content-addressable data. While writing data into packs, Index Records can be created when provided an `IndexWriter` implementation.
-- [`packages/utils`](./packages/utils/): Utility functions for working with [hash-stream](https://github.com/vasco-santos/hash-stream), including converting verifiable blob streams to CAR files or raw bytes and building HTTP responses with appropriate content headers.
-
-```mermaid
-graph TD
-    A[hash-stream Repository] --> B[packages/cli] --> C[Transforms data to content-addressable]
-    A --> D[packages/streamer] --> E[Streams verifiable data]
-    A --> F[packages/index] --> G[Reads/Writes index records]
-    A --> H[packages/pack] --> I[Handles content-addressable data packs]
-
-    B --> J[CLI tool for transforming data]
-    D --> K[Streams data based on multihash]
-    F --> L[Handles index records and strategies]
-    H --> M[Writing and reading packs for data storage]
-```
-
-## Usage
+---
+title: Usage
+description: Learn how to use the hash-stream libraries.
+---
 
 Here follow two simple examples relying on the building blocks of `hash-stream`.
 
@@ -233,17 +169,3 @@ graph LR
     B --> C[CarWriter] --> D[CAR File]
     A --> G[Retrieve Verifiable Data from Multihash]
 ```
-
-## Resources
-
-- [Hashstream demo video](https://youtu.be/rFjz6n_UGaY)
-
-## Contributing
-
-All welcome! `hash-stream` is open-source. See the [contributing guide](./CONTRIBUTING.md)
-
-This project uses node v18 and `pnpm`. It's a monorepo that uses [pnpm workspaces](https://pnpm.io/workspaces) to handle resolving dependencies between the local [`packages`](https://github.com/vasco-santos/hash-stream/tree/main/packages)
-
-## License
-
-Dual-licensed under [MIT + Apache 2.0](license.md)

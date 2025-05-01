@@ -1,4 +1,6 @@
-# Index writer specification
+---
+title: Index Writer
+---
 
 ![wip](https://img.shields.io/badge/status-wip-orange.svg?style=flat-square)
 
@@ -14,7 +16,7 @@
 
 This document describes an indexing writer protocol that enables content-addressable data to be served efficiently by a server relying on the indexes written as described in this spec.
 
-This writer spec complements the [Index spec](./index.md) by describing index creation and persistence. Reading and Writing are not required to be symmetrical, as long as the Index Stores knows how to interpret the persisted data format.
+This writer spec complements the [Index spec](/specs) by describing index creation and persistence. Reading and Writing are not required to be symmetrical, as long as the Index Stores knows how to interpret the persisted data format.
 
 ## Language
 
@@ -68,7 +70,7 @@ The design of the indexing writer considers the following key aspects:
 
 ### Index Record
 
-Defined in [Index spec](./index.md).
+Defined in [Index spec](/spec).
 
 ### Index Store
 

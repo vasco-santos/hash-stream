@@ -1,0 +1,57 @@
+---
+title: Hashstream
+description: Building blocks to run a off-the-shelf Trustless HTTP Server for Content-Addressable Data
+template: splash
+editUrl: false
+lastUpdated: false
+hero:
+  tagline: Building blocks to run a off-the-shelf Trustless HTTP Server for Content-Addressable Data
+  image:
+    dark: ../../assets/hashstream-icon-dark.svg
+    light: ../../assets/hashstream-icon-light.svg
+  actions:
+    - text: Blueprint
+      link: /intro/blueprint/
+      icon: right-arrow
+    - text: Get started
+      link: /intro/getting-started/
+      icon: right-arrow
+    - text: Star on GitHub
+      link: https://github.com/vasco-santos/hash-stream
+      icon: star
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components'
+
+## Building Blocks
+
+<CardGrid stagger>
+  <Card title="Index" icon="seti:notebook">
+    A library with implementations for `IndexReader` and various `IndexWriter`
+    strategies, along with `IndexStore` implementations.
+  </Card>
+  <Card title="Pack" icon="seti:zip">
+    A library for writing data into packs (`PackWriter`) and reading them back
+    (`PackReader`), facilitating the creation and retrieval of
+    content-addressable data. While writing data into packs, Index Records can
+    be created when provided an `IndexWriter` implementation.
+  </Card>
+  <Card title="Streamer" icon="seti:video">
+    A library for streaming verifiable data associated with a requested
+    multihash, based on available index records and stored packs.
+  </Card>
+</CardGrid>
+
+## Resources
+
+<iframe
+  src="https://www.youtube.com/embed/rFjz6n_UGaY"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+></iframe>
+
+## Support
+
+Help support future development and make hash-stream a sustainable open-source project.

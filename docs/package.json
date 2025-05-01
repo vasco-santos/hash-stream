@@ -1,0 +1,34 @@
+{
+  "name": "docs",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.34.1",
+    "astro": "^5.7.5",
+    "expressive-code-twoslash": "^0.5.0",
+    "starlight-llms-txt": "^0.5.1",
+    "starlight-typedoc": "^0.21.1",
+    "typedoc": "^0.28.3",
+    "typedoc-plugin-markdown": "^4.6.3"
+  },
+  "devDependencies": {
+    "@ledgerhq/hw-transport-webusb": "^6.29.4",
+    "@tanstack/react-query": "^5.74.4",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@hash-stream/cli": "workspace:^",
+    "@hash-stream/index": "workspace:^",
+    "@hash-stream/pack": "workspace:^",
+    "@hash-stream/streamer": "workspace:^",
+    "@hash-stream/utils": "workspace:^",
+    "sharp": "^0.34.1"
+  }
+}
