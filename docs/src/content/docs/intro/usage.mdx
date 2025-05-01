@@ -75,14 +75,7 @@ async function main() {
 main().catch(console.error)
 ```
 
-```mermaid
-graph LR
-    A[Blob Data] --> B[PackWriter]
-    B --> C[Pack creation]
-    B --> D[MultipleLevelIndexWriter]
-    D --> E[IndexStore]
-    C --> F[PackStore]
-```
+![usage-diagram](../../../assets/spec-diagrams/usage-0.png)
 
 Note that `PackWriter` in example above is used to write transformed data into the `PackStore`. For use cases where data does not need to be transformed to content addressable data, an `IndexWriter` can be used to simply write index records from a given Blob like data.
 
@@ -135,13 +128,7 @@ async function main() {
 main().catch(console.error)
 ```
 
-```mermaid
-graph LR
-    A[Multihash Request] --> B[HashStreamer] --> C[IndexReader]
-    B --> D[PackReader] --> E[PackStore]
-    E --> F[Verifiable Entries Streamed]
-    C --> H[Fetch Index Records]
-```
+![usage-diagram](../../../assets/spec-diagrams/usage-1.png)
 
 One of the typical ways to transport the verifiable entries is via CAR files. A [CarWriter](https://github.com/ipld/js-car?tab=readme-ov-file#CarWriter) may be used to write the content of the stream into.
 
@@ -163,9 +150,4 @@ const carFile = await writer.close()
 console.log('CAR file created:', carFile)
 ```
 
-```mermaid
-graph LR
-    A[HashStreamer] --> B[Data Chunks]
-    B --> C[CarWriter] --> D[CAR File]
-    A --> G[Retrieve Verifiable Data from Multihash]
-```
+![usage-diagram](../../../assets/spec-diagrams/usage-2.png)

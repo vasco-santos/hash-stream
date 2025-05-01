@@ -164,16 +164,7 @@ interface CarV2IndexStore {
 2. The IndexWriter creates the appropriate Index records to represent the multihashes.
 3. The selected index is generated and stored in the Index Store.
 
-```mermaid
-graph TD;
-    Client -->|Requests pack indexing| IndexWriter;
-    IndexWriter -->|Index records created| IndexStore;
-
-    subgraph Indexing Process
-        IndexWriter
-        IndexStore
-    end
-```
+![index-writer-diagram](../../../assets/spec-diagrams/index-writer.png)
 
 ## Implementation Guide
 
