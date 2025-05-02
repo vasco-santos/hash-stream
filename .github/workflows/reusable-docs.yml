@@ -1,5 +1,6 @@
 name: Reusable Deploy Docs
 on:
+  workflow_dispatch:
   workflow_call:
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
