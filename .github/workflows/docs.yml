@@ -1,7 +1,11 @@
-name: Reusable Deploy Docs
+name: Deploy Docs
 on:
+  # Trigger the workflow every time you push to the `main` branch
+  # Using a different branch name? Replace `main` with your branch’s name
+  push:
+    branches: [main]
+  # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
-  workflow_call:
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -31,6 +35,7 @@ jobs:
           cache: pnpm
       - run: pnpm install
       - run: pnpm run build
+
       - run: pnpm run docs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

@@ -10,6 +10,7 @@ const site = 'https://vasco-santos.github.io/hash-stream/'
 
 // https://astro.build/config
 export default defineConfig({
+  base: '/hash-stream/',
   site,
   integrations: [
     starlight({
