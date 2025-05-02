@@ -11,13 +11,6 @@ const site = 'https://vasco-santos.github.io/hash-stream/'
 // https://astro.build/config
 export default defineConfig({
   site,
-  vite: {
-    resolve: {
-      alias: {
-        '@specs': '/specs', // replace with real path
-      },
-    },
-  },
   integrations: [
     starlight({
       title: 'hash-stream',
