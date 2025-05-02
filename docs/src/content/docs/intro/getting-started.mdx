@@ -1,0 +1,42 @@
+---
+title: Getting Started
+description: Learn how to install and use the hash-stream libraries.
+---
+
+This repository provides a set of libraries and tools that allow you to build and run a trustless HTTP server for content-addressable data. These building blocks are modular and designed in a plug-and-play fashion, enabling you to use just a subset of them to create a custom server. Going through the [Blueprint](/intro/blueprint) document is a great way to better understand Hashstream.
+
+For those interested in implementing building blocks differently, there are a few [specifications](/specs) and interfaces available, allowing new implementations to be compatible with the existing pieces.
+
+Documentation can be seen at [https://vasco-santos.github.io/hash-stream](https://vasco-santos.github.io/hash-stream):
+
+- [Deployment Guide](/guides/deployment)
+
+## Development
+
+### Installing
+
+To work on this codebase **you need**:
+
+- Node.js >= v18
+- Install the deps with `pnpm i`
+
+### Testing
+
+For testing environment, first install [Docker Desktop](https://www.docker.com/) and ensure it is running. This codebase has `S3 client compatible` backed datastores used in testing, which are simulated using Docker.
+
+Next, ensure the `AWS_REGION`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables are set in your terminal. They do
+not need to be set to real values - the following works in `bash`-like shells:
+
+```
+export AWS_REGION='us-west-2'; export AWS_ACCESS_KEY_ID='NOSUCH'; export AWS_SECRET_ACCESS_KEY='NOSUCH'
+```
+
+## Packages
+
+The repository includes the following packages:
+
+- [`packages/cli`](./packages/cli/): A CLI tool for transforming data into content-addressable data, writing index records, and a verifiable streamer.
+- [`packages/streamer`](./packages/streamer/): A library for streaming verifiable data associated with a requested multihash, based on available index records and stored packs.
+- [`packages/index`](./packages/index/): A library with implementations for `IndexReader` and various `IndexWriter` strategies, along with `IndexStore` implementations.
+- [`packages/pack`](./packages/pack/): A library for writing data into packs (`PackWriter`) and reading them back (`PackReader`), facilitating the creation and retrieval of content-addressable data. While writing data into packs, Index Records can be created when provided an `IndexWriter` implementation.
+- [`packages/utils`](./packages/utils/): Utility functions for working with [hash-stream](https://github.com/vasco-santos/hash-stream), including converting verifiable blob streams to CAR files or raw bytes and building HTTP responses with appropriate content headers.

@@ -1,4 +1,6 @@
-# Index specification
+---
+title: Index
+---
 
 ![wip](https://img.shields.io/badge/status-wip-orange.svg?style=flat-square)
 
@@ -120,19 +122,4 @@ interface IndexReader {
 3. The Index Reader provides index records representing the location where requested multihash bytes are stored.
 4. The Hash Streamer fetches the actual data based on the resolved locations (see `hash-streamer.md`).
 
-```mermaid
-graph TD;
-    Client -->|Request stream of bytes| HashStreamer;
-    HashStreamer -->|Lookup Multihash| IndexReader;
-    IndexReader -->|Resolve index records| HashStreamer;
-    HashStreamer -->|Read from locations| PackReader;
-    PackReader -->|Returns data| Client;
-
-    subgraph Index System
-        IndexReader
-    end
-
-    subgraph Storage System
-        PackReader
-    end
-```
+![index-diagram](../../../assets/spec-diagrams/index.png)

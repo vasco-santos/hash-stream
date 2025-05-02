@@ -1,0 +1,22 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"],
+  "references": [
+    {
+      "path": "../packages/cli"
+    },
+    {
+      "path": "../packages/index"
+    },
+    {
+      "path": "../packages/pack"
+    },
+    {
+      "path": "../packages/streamer"
+    },
+    {
+      "path": "../packages/utils"
+    }
+  ]
+}

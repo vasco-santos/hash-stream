@@ -1,52 +1,7 @@
-# 📦 Hash Stream Deployment Guide
-
-## 📚 Table of Contents
-
-- [📦 Hash Stream Deployment Guide](#-hash-stream-deployment-guide)
-  - [Introduction](#introduction)
-  - [🧱 Separation of Concerns: Reads vs. Writes](#-separation-of-concerns-reads-vs-writes)
-  - [Setting Up a Hash Streamer](#setting-up-a-hash-streamer)
-  - [🏗️ Read-Side Deployment Architectures](#️-read-side-deployment-architectures)
-    - [1. 🧪 Minimal Local Server](#1-🧪-minimal-local-server)
-    - [2. ☁️ Cloud-Native Serverless](#2-☁️-cloud-native-serverless)
-    - [3. 🌐 Hybrid Edge + Cloud](#3-🌐-hybrid-edge--cloud)
-    - [4. 🐳 Dockerized Long-Running Service](#4-🐳-dockerized-long-running-service)
-  - [☁️ Deployment Setups](#️-deployment-setups)
-    - [🌐 Cloudflare Workers Setup](#-cloudflare-workers-setup)
-    - [AWS Setup](#aws-setup)
-    - [Bare Metal / Local Disk](#bare-metal--local-disk)
-  - [🔧 Storage Backends](#-storage-backends)
-  - [📏 Caching Best Practices](#-caching-best-practices)
-    - [What to Cache](#what-to-cache)
-    - [Recommendations](#recommendations)
-  - [🧩 Extending Hash Stream](#-extending-hash-stream)
-  - [📦 Prebuilt Docker Images](#-prebuilt-docker-images)
-  - [🧪 Use Verified Fetch as a client](#-use-verified-fetch-as-a-client)
-    - [What is `verified-fetch`](#what-is-verified-fetch)
-    - [Benefits](#benefits)
-    - [How to Use](#how-to-use)
-    - [Requirements](#requirements)
-  - [🧳 Migrating Data from Legacy Sources](#-migrating-data-from-legacy-sources)
-    - [1. I Already Have Content-Addressable Files](#1-i-already-have-content-addressable-files)
-    - [2. I Have Raw Files or Data That Is Not Yet Content-Addressable](#2-i-have-raw-files-or-data-that-is-not-yet-content-addressable)
-  - [🛠️ Testing Strategies](#️-testing-strategies)
-    - [1. Unit & Integration Tests](#1-unit--integration-tests)
-    - [2. Server Smoke Tests](#2-server-smoke-tests)
-    - [3. Load and Performance Testing](#3-load-and-performance-testing)
-  - [📉 Monitoring & Observability](#-monitoring--observability)
-    - [Metrics to Track](#metrics-to-track)
-    - [Logging](#logging)
-    - [Instrumentation](#instrumentation)
-    - [Alerts](#alerts)
-    - [Deployment Suggestions](#deployment-suggestions)
-  - [🔐 Security & Access Control](#-security--access-control)
-    - [⚡ Threat Model Summary](#⚡-threat-model-summary)
-    - [🔒 Securing Read APIs (Streamers)](#-securing-read-apis-streamers)
-    - [🚫 Preventing Index/Pack Writes](#🚫-preventing-indexpack-writes)
-    - [💰 API Keys or Signed URLs](#💰-api-keys-or-signed-urls)
-    - [✨ Security Best Practices](#✨-security-best-practices)
-    - [🤠 Optional: Content Whitelisting](#🤠-optional-content-whitelisting)
-    - [📈 Audit & Compliance](#📈-audit--compliance)
+---
+title: Deployment
+description: Learn how to deploy a hash-stream server.
+---
 
 ## Introduction
 
