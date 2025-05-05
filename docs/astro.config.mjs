@@ -64,6 +64,10 @@ export default defineConfig({
           autogenerate: { directory: 'guides' },
         },
         {
+          label: 'CLI',
+          autogenerate: { directory: 'cli' },
+        },
+        {
           label: 'Proof of Concepts',
           autogenerate: { directory: 'pocs' },
         },
