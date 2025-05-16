@@ -77,6 +77,7 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
       assert(records.length === 1)
       assert.strictEqual(records[0].offset, offset)
       assert.strictEqual(records[0].length, length)
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.digest, packCid.multihash.digest))
       assert(records[0].type === Type.BLOB)
     })
@@ -89,6 +90,7 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
       const packCid = await randomCID()
       const record = createFromContaining(content.multihash, [
         createFromPack(
+          packCid.multihash,
           packCid.multihash,
           blobCids.map((cid, i) =>
             createFromBlob(
@@ -113,6 +115,7 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
 
       assert(equals(records[0].multihash.digest, content.multihash.digest))
       assert.strictEqual(records[0].type, Type.CONTAINING)
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.digest, content.multihash.digest))
       assert.strictEqual(records[0].subRecords.length, 1)
       assert(
@@ -148,6 +151,7 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
         packCids.map((packCid) =>
           createFromPack(
             packCid.multihash,
+            packCid.multihash,
             blobCids.map((cid, i) =>
               createFromBlob(
                 cid.multihash,
@@ -171,6 +175,7 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
       assert(records.length === 1)
       assert(equals(records[0].multihash.digest, content.multihash.digest))
       assert.strictEqual(records[0].type, Type.CONTAINING)
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.digest, content.multihash.digest))
       assert.strictEqual(records[0].subRecords.length, packLength)
       for (const packCid of packCids) {
@@ -202,6 +207,7 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
               yield createFromContaining(content.multihash, [
                 createFromPack(
                   packCid.multihash,
+                  packCid.multihash,
                   blobCids.map((cid, i) =>
                     createFromBlob(
                       cid.multihash,
@@ -222,6 +228,7 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
       assert(records.length === 1)
       assert(equals(records[0].multihash.digest, content.multihash.digest))
       assert.strictEqual(records[0].type, Type.CONTAINING)
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.digest, content.multihash.digest))
       assert.strictEqual(records[0].subRecords.length, packLength)
       for (const packCid of packCids) {

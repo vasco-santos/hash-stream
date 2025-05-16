@@ -9,7 +9,7 @@ export class IndexRecord {
   /**
    * @param {API.MultihashDigest} multihash
    * @param {API.IndexRecordType} type
-   * @param {API.MultihashDigest} location
+   * @param {API.Location} location
    * @param {API.IndexRecord[]} subRecords
    * @param {object} [options]
    * @param {number} [options.offset]
@@ -30,10 +30,16 @@ export class IndexRecord {
  * @returns {API.IndexRecordEncoded}
  */
 export function encode(record) {
+  // Encode location based on either string for path and bytes for Multihash
+  const location =
+    typeof record.location === 'string'
+      ? record.location
+      : record.location.bytes
+
   return {
     multihash: record.multihash.bytes,
     type: record.type,
-    location: record.location.bytes,
+    location,
     subRecords: record.subRecords.map((r) => encode(r)),
     offset: record.offset,
     length: record.length,
@@ -45,10 +51,16 @@ export function encode(record) {
  * @returns {API.IndexRecord}
  */
 export function decode(encoded) {
+  // Decode location based on either string for path and bytes for Multihash
+  const location =
+    typeof encoded.location === 'string'
+      ? encoded.location
+      : decodeDigest(encoded.location)
+
   return new IndexRecord(
     decodeDigest(encoded.multihash),
     encoded.type,
-    decodeDigest(encoded.location),
+    location,
     encoded.subRecords.map(decode),
     { offset: encoded.offset, length: encoded.length }
   )
@@ -64,15 +76,16 @@ export function createFromContaining(multihash, subRecords) {
 
 /**
  * @param {API.MultihashDigest} multihash
+ * @param {API.Location} location
  * @param {API.IndexRecord[]} subRecords
  */
-export function createFromPack(multihash, subRecords) {
-  return new IndexRecord(multihash, Type.PACK, multihash, subRecords)
+export function createFromPack(multihash, location, subRecords) {
+  return new IndexRecord(multihash, Type.PACK, location, subRecords)
 }
 
 /**
  * @param {API.MultihashDigest} multihash
- * @param {API.MultihashDigest} location
+ * @param {API.Location} location
  * @param {number} offset
  * @param {number} length
  */

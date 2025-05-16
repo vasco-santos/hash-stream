@@ -126,11 +126,69 @@ describe('MultipleLevelIndex writer', () => {
     const packRecords = await all(store.get(packCid.multihash))
     assert(packRecords.length === 1)
     assert(equals(packRecords[0].multihash.bytes, packCid.multihash.bytes))
+    assert(typeof packRecords[0].location !== 'string')
     assert(equals(packRecords[0].location.bytes, packCid.multihash.bytes))
     assert(!packRecords[0].offset)
     assert(!packRecords[0].length)
     assert.strictEqual(packRecords[0].type, Type.PACK)
     assert.strictEqual(packRecords[0].subRecords.length, blobLength)
+  })
+
+  it('adds blobs with a location path and associated with a containing record', async () => {
+    const containing = await randomCID()
+    const blobLength = 4
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+    const path = '/path/to/blob'
+
+    await indexWriter.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: path,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })(),
+      { containingMultihash: containing.multihash }
+    )
+
+    const entries = await all(store.get(containing.multihash))
+    assert(entries.length)
+  })
+
+  it('adds blobs with a location path and not associated with a containing record', async () => {
+    const blobLength = 4
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+    const path = '/path/to/blob'
+
+    await indexWriter.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: path,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })()
+    )
+
+    for (const blobCid of blobCids) {
+      const records = await all(store.get(blobCid.multihash))
+      assert(records.length === 1)
+      assert(equals(records[0].multihash.bytes, blobCid.multihash.bytes))
+      assert.strictEqual(records[0].offset, 0)
+      assert.strictEqual(records[0].length, 100)
+      assert.strictEqual(records[0].type, Type.BLOB)
+      assert.strictEqual(records[0].location, path)
+    }
   })
 
   it('finds records for existing containing record', async () => {
@@ -158,6 +216,7 @@ describe('MultipleLevelIndex writer', () => {
     const records = await all(indexReader.findRecords(containing.multihash))
     assert(records.length === 1)
     assert(equals(records[0].multihash.bytes, containing.multihash.bytes))
+    assert(typeof records[0].location !== 'string')
     assert(equals(records[0].location.bytes, containing.multihash.bytes))
     assert(!records[0].offset)
     assert(!records[0].length)
@@ -172,6 +231,49 @@ describe('MultipleLevelIndex writer', () => {
     for (const blobCid of blobCids) {
       // @ts-ignore type not inferred
       const blobRecord = packRecord.subRecords.find((record) =>
+        equals(record.multihash.bytes, blobCid.multihash.bytes)
+      )
+      assert(blobRecord)
+      assert.strictEqual(blobRecord.type, Type.BLOB)
+    }
+  })
+
+  it('finds records with path for existing containing record', async () => {
+    const containing = await randomCID()
+    const blobLength = 4
+    const path = '/path/to/blob'
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+
+    await indexWriter.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: path,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })(),
+      { containingMultihash: containing.multihash }
+    )
+
+    const records = await all(indexReader.findRecords(containing.multihash))
+    assert(records.length === 1)
+    const containingRecord = records[0]
+    assert(equals(containingRecord.multihash.bytes, containing.multihash.bytes))
+    assert(typeof containingRecord.location !== 'string')
+    assert(equals(containingRecord.location.bytes, containing.multihash.bytes))
+    assert(!containingRecord.offset)
+    assert(!containingRecord.length)
+    assert.strictEqual(containingRecord.type, Type.CONTAINING)
+
+    assert.strictEqual(containingRecord.subRecords.length, blobLength)
+    for (const blobCid of blobCids) {
+      // @ts-ignore type not inferred
+      const blobRecord = containingRecord.subRecords.find((record) =>
         equals(record.multihash.bytes, blobCid.multihash.bytes)
       )
       assert(blobRecord)
@@ -214,7 +316,51 @@ describe('MultipleLevelIndex writer', () => {
       )
       assert(records.length === 1)
       assert(equals(records[0].multihash.bytes, blobCid.multihash.bytes))
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.bytes, packCid.multihash.bytes))
+      assert.strictEqual(records[0].offset, 0)
+      assert.strictEqual(records[0].length, 100)
+      assert.strictEqual(records[0].type, Type.BLOB)
+    }
+  })
+
+  it('finds records for existing blob record with path location when containing is provided', async () => {
+    const containing = await randomCID()
+    const blobLength = 4
+    const path = '/path/to/blob'
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+
+    await indexWriter.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: path,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })(),
+      { containingMultihash: containing.multihash }
+    )
+
+    for (const blobCid of blobCids) {
+      const recordsWithoutContaining = await all(
+        indexReader.findRecords(blobCid.multihash)
+      )
+      assert.deepEqual(recordsWithoutContaining, [])
+
+      const records = await all(
+        indexReader.findRecords(blobCid.multihash, {
+          containingMultihash: containing.multihash,
+        })
+      )
+      assert(records.length === 1)
+      assert(equals(records[0].multihash.bytes, blobCid.multihash.bytes))
+      assert(typeof records[0].location === 'string')
+      assert.strictEqual(records[0].location, path)
       assert.strictEqual(records[0].offset, 0)
       assert.strictEqual(records[0].length, 100)
       assert.strictEqual(records[0].type, Type.BLOB)
@@ -256,6 +402,7 @@ describe('MultipleLevelIndex writer', () => {
 
     assert(records[0])
     assert(equals(records[0].multihash.bytes, packCid.multihash.bytes))
+    assert(typeof records[0].location !== 'string')
     assert(equals(records[0].location.bytes, packCid.multihash.bytes))
     assert.strictEqual(records[0].type, Type.PACK)
     assert.strictEqual(records[0].subRecords.length, blobLength)
@@ -293,6 +440,7 @@ describe('MultipleLevelIndex writer', () => {
     const records = await all(indexReader.findRecords(containing.multihash))
     assert(records.length === 1)
     assert(equals(records[0].multihash.bytes, containing.multihash.bytes))
+    assert(typeof records[0].location !== 'string')
     assert(equals(records[0].location.bytes, containing.multihash.bytes))
     assert(!records[0].offset)
     assert(!records[0].length)
@@ -312,6 +460,7 @@ describe('MultipleLevelIndex writer', () => {
       )
       assert(records.length === 1)
       assert(equals(records[0].multihash.bytes, blobCid.multihash.bytes))
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.bytes, blobCid.multihash.bytes))
       assert.strictEqual(records[0].offset, 0)
       assert.strictEqual(records[0].length, 100)
@@ -352,6 +501,7 @@ describe('MultipleLevelIndex writer', () => {
     assert(records.length === 1)
 
     assert(equals(records[0].multihash.bytes, containingCid.multihash.bytes))
+    assert(typeof records[0].location !== 'string')
     assert(equals(records[0].location.bytes, containingCid.multihash.bytes))
     assert(!records[0].offset)
     assert(!records[0].length)
@@ -452,6 +602,7 @@ describe('MultipleLevelIndex writer', () => {
         assert(recordsStream)
         const records = await all(recordsStream)
         assert(records.length === 1)
+        assert(typeof records[0].location !== 'string')
         assert(equals(records[0].location.digest, shardDigest.digest))
         assert.strictEqual(records[0].offset, position[0])
         assert.strictEqual(records[0].length, position[1])

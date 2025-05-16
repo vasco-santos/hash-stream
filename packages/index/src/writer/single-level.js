@@ -56,14 +56,17 @@ export class SingleLevelIndexWriter {
       const blob = createFromBlob(multihash, location, offset, length)
       yield blob
 
-      // Create/Update Pack Index record
-      const encodedLocation = base58btc.encode(location.bytes)
-      packs.set(encodedLocation, location)
+      // If the location is not a string, we can create a Pack Index record
+      if (typeof location !== 'string') {
+        // Create/Update Pack Index record
+        const encodedLocation = base58btc.encode(location.bytes)
+        packs.set(encodedLocation, location)
+      }
     }
 
     // Yield Pack Index records as Blobs
     for (const multihash of packs.values()) {
-      yield createFromPack(multihash, [])
+      yield createFromPack(multihash, multihash, [])
     }
   }
 }

@@ -1,6 +1,6 @@
 import { MultihashDigest } from 'multiformats'
 
-import { IndexReader, IndexRecord } from '@hash-stream/index/types'
+import { IndexReader, IndexRecord, Location } from '@hash-stream/index/types'
 import { PackReader } from '@hash-stream/pack/types'
 
 export type { IndexReader, IndexRecord, PackReader, MultihashDigest }
@@ -20,10 +20,11 @@ export interface HashStreamer {
   ): AsyncIterable<VerifiableBlob>
 }
 
-export type PackLocation = {
+export type LocationRecord = {
   length: number
   offset: number
   multihash: MultihashDigest
+  location: Location
 }
 
 export type VerifiableBlob = {
