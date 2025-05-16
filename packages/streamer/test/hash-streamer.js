@@ -328,7 +328,7 @@ export function runHashStreamTests(
       await indexStore.add(
         (async function* () {
           // Yield only the pack
-          yield createFromPack(pack.multihash, [])
+          yield createFromPack(pack.multihash, pack.multihash, [])
         })(),
         recordType
       )

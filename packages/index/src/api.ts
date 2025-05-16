@@ -52,7 +52,7 @@ export interface IndexRecord {
   // Type of the record
   type: IndexRecordType
   // hash digest of the location or Path
-  location: MultihashDigest
+  location: Location
   // length of the data
   length?: number
   // offset of the data in the location byte stream
@@ -67,7 +67,7 @@ export interface IndexRecordEncoded {
   // Type of the record
   type: IndexRecordType
   // hash digest of the location or Path
-  location: Uint8Array
+  location: Uint8Array | Path
   // length of the data
   length?: number
   // offset of the data in the location byte stream
@@ -85,12 +85,16 @@ type BLOB = 0
 type PACK = 1
 type CONTAINING = 2
 
+export type Path = string
+
+export type Location = MultihashDigest | Path
+
 // Index record of where blob is
 export interface BlobIndexRecord {
   // MultihashDigest identifiying the Blob
   multihash: MultihashDigest
   // hash digest of the location where the Blob is (Pack or Blob itself)
-  location: MultihashDigest
+  location: Location
   // length of the data
   length: number
   // offset of the data in the location byte stream

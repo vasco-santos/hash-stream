@@ -65,7 +65,32 @@ export function runIndexStoreTests(storeName, createIndexStore) {
       assert(records.length === 1)
       assert.strictEqual(records[0].offset, offset)
       assert.strictEqual(records[0].length, length)
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.digest, packCid.multihash.digest))
+      assert(records[0].type === Type.BLOB)
+    })
+
+    it('can store and retrieve a blob index record in a path location', async () => {
+      const blobCid = await randomCID()
+      const path = '/path/to/blob'
+      const offset = 0
+      const length = 100
+
+      const blob = createFromBlob(blobCid.multihash, path, offset, length)
+
+      await store.add(
+        (async function* () {
+          yield blob
+        })(),
+        recordType
+      )
+
+      const records = await all(store.get(blob.multihash))
+      assert(records.length === 1)
+      assert.strictEqual(records[0].offset, offset)
+      assert.strictEqual(records[0].length, length)
+      assert(typeof records[0].location === 'string')
+      assert.strictEqual(records[0].location, path)
       assert(records[0].type === Type.BLOB)
     })
 
@@ -98,6 +123,7 @@ export function runIndexStoreTests(storeName, createIndexStore) {
       assert(records.length === 1)
       assert.strictEqual(records[0].offset, offset)
       assert.strictEqual(records[0].length, length)
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.digest, packCid.multihash.digest))
       assert(records[0].type === Type.BLOB)
     })
@@ -110,6 +136,7 @@ export function runIndexStoreTests(storeName, createIndexStore) {
       const packCid = await randomCID()
       const record = createFromContaining(content.multihash, [
         createFromPack(
+          packCid.multihash,
           packCid.multihash,
           blobCids.map((cid, i) =>
             createFromBlob(
@@ -134,6 +161,7 @@ export function runIndexStoreTests(storeName, createIndexStore) {
 
       assert(equals(records[0].multihash.digest, content.multihash.digest))
       assert.strictEqual(records[0].type, Type.CONTAINING)
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.digest, content.multihash.digest))
       assert.strictEqual(records[0].subRecords.length, 1)
       assert(
@@ -169,6 +197,7 @@ export function runIndexStoreTests(storeName, createIndexStore) {
         packCids.map((packCid) =>
           createFromPack(
             packCid.multihash,
+            packCid.multihash,
             blobCids.map((cid, i) =>
               createFromBlob(
                 cid.multihash,
@@ -192,6 +221,7 @@ export function runIndexStoreTests(storeName, createIndexStore) {
       assert(records.length === 1)
       assert(equals(records[0].multihash.digest, content.multihash.digest))
       assert.strictEqual(records[0].type, Type.CONTAINING)
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.digest, content.multihash.digest))
       assert.strictEqual(records[0].subRecords.length, packLength)
       for (const packCid of packCids) {
@@ -223,6 +253,7 @@ export function runIndexStoreTests(storeName, createIndexStore) {
               yield createFromContaining(content.multihash, [
                 createFromPack(
                   packCid.multihash,
+                  packCid.multihash,
                   blobCids.map((cid, i) =>
                     createFromBlob(
                       cid.multihash,
@@ -243,6 +274,7 @@ export function runIndexStoreTests(storeName, createIndexStore) {
       assert(records.length === 1)
       assert(equals(records[0].multihash.digest, content.multihash.digest))
       assert.strictEqual(records[0].type, Type.CONTAINING)
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.digest, content.multihash.digest))
       assert.strictEqual(records[0].subRecords.length, packLength)
       for (const packCid of packCids) {
