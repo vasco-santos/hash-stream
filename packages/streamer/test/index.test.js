@@ -10,6 +10,7 @@ import { runHashStreamTests } from './hash-streamer.js'
     getIndexStore: () => {
       const indexStore = new MemoryIndexStore()
       const destroyableIndexStore = Object.assign(indexStore, {
+        directory: '',
         destroy: () => {},
       })
       return Promise.resolve(destroyableIndexStore)
@@ -20,6 +21,7 @@ import { runHashStreamTests } from './hash-streamer.js'
     getPackStore: () => {
       const packStore = new MemoryPackStore()
       const destroyablePackStore = Object.assign(packStore, {
+        directory: '',
         destroy: () => {},
       })
       return Promise.resolve(destroyablePackStore)

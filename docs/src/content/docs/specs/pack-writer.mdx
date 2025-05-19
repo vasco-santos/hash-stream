@@ -58,11 +58,11 @@ export interface PackStoreWriter {
   /**
    * Stores a pack file.
    *
-   * @param hash - The Multihash digest of the pack.
+   * @param target - The Multihash digest of the pack or its path.
    * @param data - The pack file bytes.
    * @returns A promise that resolves when the pack file is stored.
    */
-  put(hash: MultihashDigest, data: Uint8Array): Promise<void>
+  put(target: MultihashDigest | Path, data: Uint8Array): Promise<void>
 }
 
 export interface BlobLike {

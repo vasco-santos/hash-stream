@@ -292,15 +292,16 @@ function logRecords(records, indentLevel = 1) {
   const indent = '    '.repeat(indentLevel)
 
   for (const record of records) {
+    const cid = CID.createV1(RawCode, record.multihash || new Uint8Array())
+
+    const location =
+      typeof record.location === 'string'
+        ? record.location
+        : `MH(${CID.createV1(RawCode, record.location || new Uint8Array())})`
+
     console.info(
-      `${indent}CID: MH(${CID.createV1(
-        RawCode,
-        record.multihash || new Uint8Array()
-      )})
-${indent}location: MH(${CID.createV1(
-        RawCode,
-        record.location || new Uint8Array()
-      )})
+      `${indent}CID: MH(${cid})
+${indent}location: ${location}
 ${indent}type: ${TypeStr[record.type]}, offset: ${
         record.offset || 'N/A'
       }, length: ${record.length || 'N/A'}\n`

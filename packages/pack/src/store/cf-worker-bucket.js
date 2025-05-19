@@ -37,11 +37,14 @@ export class CloudflareWorkerBucketPackStore {
   /**
    * Generate an S3 object key for storage.
    *
-   * @param {API.MultihashDigest} hash
+   * @param {API.MultihashDigest | API.Path} target
    * @returns {string}
    */
-  _getObjectKey(hash) {
-    return `${this.prefix}${CloudflareWorkerBucketPackStore.encodeKey(hash)}${
+  _getObjectKey(target) {
+    if (typeof target === 'string') {
+      return `${this.prefix}${target}${this.extension}`
+    }
+    return `${this.prefix}${CloudflareWorkerBucketPackStore.encodeKey(target)}${
       this.extension
     }`
   }
@@ -49,17 +52,17 @@ export class CloudflareWorkerBucketPackStore {
   /**
    * Put a pack file in R2.
    *
-   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @param {API.MultihashDigest | API.Path} target - The Multihash digest of the pack or its path.
    * @param {Uint8Array} data - The pack file bytes.
    */
-  async put(hash, data) {
-    const objectKey = this._getObjectKey(hash)
+  async put(target, data) {
+    const objectKey = this._getObjectKey(target)
     // If it is sha256, we can use the hash directly
     // Otherwise, we need to calculate the sha256 hash of the data
     // and use that as the checksum
     let checksum
-    if (hash.code === sha256.code) {
-      checksum = hash
+    if (typeof target !== 'string' && target.code === sha256.code) {
+      checksum = target
     } else {
       checksum = await sha256.digest(data)
     }
@@ -70,13 +73,13 @@ export class CloudflareWorkerBucketPackStore {
   }
 
   /**
-   * Retrieves bytes of a pack file from R2 by its multihash digest.
+   * Retrieves bytes of a pack file from R2 by its multihash digest or path.
    *
-   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @param {API.MultihashDigest | API.Path} target - The Multihash digest of the pack or its path.
    * @returns {Promise<Uint8Array | null>}
    */
-  async get(hash) {
-    const objectKey = this._getObjectKey(hash)
+  async get(target) {
+    const objectKey = this._getObjectKey(target)
     const r2ObjectBody = await this.bucket.get(objectKey)
     if (!r2ObjectBody) return null
     const buffer = await r2ObjectBody.arrayBuffer()
@@ -84,14 +87,14 @@ export class CloudflareWorkerBucketPackStore {
   }
 
   /**
-   * Retrieves bytes of a pack file from R2 by its multihash digest and streams it in specified ranges.
+   * Retrieves bytes of a pack file from R2 by its multihash digest or path and streams it in specified ranges.
    *
-   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @param {API.MultihashDigest | API.Path} target - The Multihash digest of the pack or its path.
    * @param {Array<{ offset: number, length?: number, multihash: API.MultihashDigest }>} [ranges]
    * @returns {AsyncIterable<API.VerifiableEntry>}
    */
-  async *stream(hash, ranges = []) {
-    const objectKey = this._getObjectKey(hash)
+  async *stream(target, ranges = []) {
+    const objectKey = this._getObjectKey(target)
 
     // If no ranges, stream the entire file
     if (ranges.length === 0) {
@@ -99,7 +102,17 @@ export class CloudflareWorkerBucketPackStore {
       if (!r2ObjectBody) return
 
       const buffer = await r2ObjectBody.arrayBuffer()
-      yield { multihash: hash, bytes: new Uint8Array(buffer) }
+      const bytes = new Uint8Array(buffer)
+      let multihash
+      if (typeof target === 'string') {
+        // If target is a path, we need to calculate the hash
+        multihash = await sha256.digest(bytes)
+      }
+      // If target is a multihash, we can use it directly
+      else {
+        multihash = target
+      }
+      yield { multihash, bytes }
       return
     }
 

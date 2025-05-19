@@ -12,7 +12,7 @@ import { MemoryIndexStore } from '../src/store/memory.js'
 import { Type } from '../src/record.js'
 import { carBlockIndexToBlobIndexRecordIterable } from '../src/utils.js'
 
-import { randomCAR } from './helpers/random.js'
+import { randomCAR, randomCID } from './helpers/random.js'
 
 describe('SingleLevelIndex Writer', () => {
   /** @type {MemoryIndexStore} */
@@ -46,12 +46,45 @@ describe('SingleLevelIndex Writer', () => {
     for await (const blob of blobIterator) {
       const records = await all(indexReader.findRecords(blob.cid.multihash))
       assert(records.length === 1)
+      assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.digest, car.cid.multihash.digest))
       assert(records[0].offset)
       assert(records[0].length)
       assert(records[0].type === Type.BLOB)
 
       blobCount++
+    }
+  })
+
+  it('can add blobs with a path and find records', async () => {
+    const blobLength = 4
+    const path = '/path/to/blob'
+    const blobCids = await Promise.all(
+      Array.from({ length: blobLength }, async () => await randomCID())
+    )
+
+    await indexWriter.addBlobs(
+      (async function* () {
+        for (const blobCid of blobCids) {
+          yield {
+            multihash: blobCid.multihash,
+            location: path,
+            offset: 0,
+            length: 100,
+          }
+        }
+      })()
+    )
+
+    for (const blobCid of blobCids) {
+      const records = await all(indexReader.findRecords(blobCid.multihash))
+      assert(records.length === 1)
+      assert(equals(records[0].multihash.bytes, blobCid.multihash.bytes))
+      assert(typeof records[0].location === 'string')
+      assert.strictEqual(records[0].location, path)
+      assert.strictEqual(records[0].offset, 0)
+      assert.strictEqual(records[0].length, 100)
+      assert.strictEqual(records[0].type, Type.BLOB)
     }
   })
 
@@ -75,6 +108,7 @@ describe('SingleLevelIndex Writer', () => {
       for (const [blobDigest, position] of slices.entries()) {
         const records = await all(indexReader.findRecords(blobDigest))
         assert(records.length === 1)
+        assert(typeof records[0].location !== 'string')
         assert(equals(records[0].location.digest, car.cid.multihash.digest))
         assert.strictEqual(records[0].offset, position[0])
         assert.strictEqual(records[0].length, position[1])

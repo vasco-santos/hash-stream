@@ -56,12 +56,12 @@ import { MultihashDigest } from 'multiformats'
 export interface PackReader {
   storeReader: PackStoreReader
 
-  // Retrieves bytes of a pack file by its multihash digest.
-  get(hash: MultihashDigest): Promise<Uint8Array | null>
+  // Retrieves bytes of a pack file by its multihash digest or path.
+  get(target: MultihashDigest | Path): Promise<Uint8Array | null>
 
   // Stream data from a Pack, optionally requesting specific byte ranges.
   stream(
-    targetMultihash: MultihashDigest,
+    target: MultihashDigest | Path,
     ranges?: Array<{
       offset?: number
       length?: number
@@ -71,12 +71,12 @@ export interface PackReader {
 }
 
 export interface PackStoreReader {
-  // Retrieves bytes of a pack file by its multihash digest.
-  get(hash: MultihashDigest): Promise<Uint8Array | null>
+  // Retrieves bytes of a pack file by its multihash digest or path.
+  get(target: MultihashDigest | Path): Promise<Uint8Array | null>
 
   // Stream data from a Pack, optionally requesting specific byte ranges.
   stream(
-    targetMultihash: MultihashDigest,
+    target: MultihashDigest | Path,
     ranges?: Array<{
       offset?: number
       length?: number
@@ -84,4 +84,6 @@ export interface PackStoreReader {
     }>
   ): AsyncIterable<VerifiableEntry>
 }
+
+type Path = string
 ```

@@ -43,28 +43,31 @@ export class S3LikePackStore {
   /**
    * Generate an S3 object key for storage.
    *
-   * @param {API.MultihashDigest} hash
+   * @param {API.MultihashDigest | API.Path} target
    * @returns {string}
    */
-  _getObjectKey(hash) {
-    return `${this.prefix}${S3LikePackStore.encodeKey(hash)}${this.extension}`
+  _getObjectKey(target) {
+    if (typeof target === 'string') {
+      return `${this.prefix}${target}${this.extension}`
+    }
+    return `${this.prefix}${S3LikePackStore.encodeKey(target)}${this.extension}`
   }
 
   /**
    * Put a pack file in S3.
    *
-   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @param {API.MultihashDigest | API.Path} target
    * @param {Uint8Array} data - The pack file bytes.
    */
-  async put(hash, data) {
-    const objectKey = this._getObjectKey(hash)
+  async put(target, data) {
+    const objectKey = this._getObjectKey(target)
 
     // If it is sha256, we can use the hash directly
     // Otherwise, we need to calculate the sha256 hash of the data
     // and use that as the checksum
     let checksum
-    if (hash.code === sha256.code) {
-      checksum = hash
+    if (typeof target !== 'string' && target.code === sha256.code) {
+      checksum = target
     } else {
       checksum = await sha256.digest(data)
     }
@@ -81,11 +84,11 @@ export class S3LikePackStore {
   /**
    * Retrieves bytes of a pack file from S3 by its multihash digest.
    *
-   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @param {API.MultihashDigest | API.Path} target - The Multihash digest of the pack or its path.
    * @returns {Promise<Uint8Array | null>}
    */
-  async get(hash) {
-    const objectKey = this._getObjectKey(hash)
+  async get(target) {
+    const objectKey = this._getObjectKey(target)
     try {
       const { Body } = await this.client.send(
         new GetObjectCommand({
@@ -106,12 +109,12 @@ export class S3LikePackStore {
   /**
    * Retrieves bytes of a pack file from S3 by its multihash digest and streams it in specified ranges.
    *
-   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @param {API.MultihashDigest | API.Path} target - The Multihash digest of the pack or its path.
    * @param {Array<{ offset: number, length?: number, multihash: API.MultihashDigest }>} [ranges]
    * @returns {AsyncIterable<API.VerifiableEntry>}
    */
-  async *stream(hash, ranges = []) {
-    const objectKey = this._getObjectKey(hash)
+  async *stream(target, ranges = []) {
+    const objectKey = this._getObjectKey(target)
 
     // If no ranges, stream the entire file
     if (ranges.length === 0) {
@@ -125,8 +128,17 @@ export class S3LikePackStore {
         /* c8 ignore next 1 */
         if (!Body) return
 
-        const buffer = new Uint8Array(await Body.transformToByteArray())
-        yield { multihash: hash, bytes: buffer }
+        const bytes = new Uint8Array(await Body.transformToByteArray())
+        let multihash
+        if (typeof target === 'string') {
+          // If target is a path, we need to calculate the hash
+          multihash = await sha256.digest(bytes)
+        }
+        // If target is a multihash, we can use it directly
+        else {
+          multihash = target
+        }
+        yield { multihash, bytes }
       } catch (/** @type {any} */ err) {
         /* c8 ignore next 1 */
         if (err.name !== 'NoSuchKey') throw err

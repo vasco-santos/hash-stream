@@ -23,6 +23,7 @@ import { createS3Like, createBucket } from './helpers/resources.js'
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-index-test-'))
       const indexStore = new FSIndexStore(tempDir)
       const destroyableIndexStore = Object.assign(indexStore, {
+        directory: tempDir,
         destroy: () => {
           if (fs.existsSync(tempDir)) {
             fs.rmSync(tempDir, { recursive: true, force: true })
@@ -38,6 +39,7 @@ import { createS3Like, createBucket } from './helpers/resources.js'
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-pack-test-'))
       const packStore = new FSPackStore(tempDir)
       const destroyablePackStore = Object.assign(packStore, {
+        directory: tempDir,
         destroy: () => {
           if (fs.existsSync(tempDir)) {
             fs.rmSync(tempDir, { recursive: true, force: true })
@@ -60,6 +62,7 @@ import { createS3Like, createBucket } from './helpers/resources.js'
         client,
       })
       const destroyablePackStore = Object.assign(packStore, {
+        directory: bucketName,
         destroy: () => {},
       })
       return destroyablePackStore
@@ -75,6 +78,7 @@ import { createS3Like, createBucket } from './helpers/resources.js'
         client,
       })
       const destroyablePackStore = Object.assign(packStore, {
+        directory: bucketName,
         destroy: () => {},
       })
       return destroyablePackStore

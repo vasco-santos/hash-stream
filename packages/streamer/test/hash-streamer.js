@@ -11,6 +11,7 @@ import { CarReader } from '@ipld/car/reader'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { CID } from 'multiformats/cid'
 import { code as RawCode } from 'multiformats/codecs/raw'
+import { decode as decodeDigest } from 'multiformats/hashes/digest'
 
 import { IndexReader } from '@hash-stream/index/reader'
 import {
@@ -32,6 +33,7 @@ const dagPbCode = 0x70
  *
  * @typedef {object} Destroyable
  * @property {() => void} destroy
+ * @property {string} directory - Directory path for the store.
  *
  * @typedef {IndexStore & Destroyable} DestroyableIndexStore
  * @typedef {PackStore & Destroyable} DestroyablePackStore
@@ -328,7 +330,7 @@ export function runHashStreamTests(
       await indexStore.add(
         (async function* () {
           // Yield only the pack
-          yield createFromPack(pack.multihash, [])
+          yield createFromPack(pack.multihash, pack.multihash, [])
         })(),
         recordType
       )
@@ -340,6 +342,56 @@ export function runHashStreamTests(
       assert(equals(verifiableBlob.multihash.bytes, pack.multihash.bytes))
       const computedHash = await sha256.digest(verifiableBlob.bytes)
       assert(equals(verifiableBlob.multihash.bytes, computedHash.bytes))
+    })
+
+    it('reads stream of verifiable pack from a written pack with path', async () => {
+      const byteLength = 5_000_000
+      const bytes = await randomBytes(byteLength)
+      const blob = new Blob([bytes])
+      /** @type {Map<string, Uint8Array>} */
+      const createdPacks = new Map()
+
+      // Write the Packs
+      const createPackOptions = {
+        type: /** @type {'car'} */ ('car'),
+      }
+
+      // Create packs separately for writing
+      const { packStream } = createPacks(blob, createPackOptions)
+
+      // Iterate through each pack in the pack stream and store them
+      for await (const { multihash, bytes } of packStream) {
+        // Store the pack in the createdPacks map to compare later
+        const encodedKey = `${packStore.directory}${base58btc.encode(
+          multihash.bytes
+        )}`
+        createdPacks.set(encodedKey, bytes)
+        await packStore.put(encodedKey, bytes)
+      }
+
+      // Add index for Pack without subrecords
+      await indexStore.add(
+        (async function* () {
+          // Yield only the pack
+          for (const [key] of createdPacks.entries()) {
+            const encodedMultihash = key.replace(packStore.directory, '')
+            const multihash = decodeDigest(base58btc.decode(encodedMultihash))
+            yield createFromPack(multihash, key, [])
+          }
+        })(),
+        recordType
+      )
+
+      for (const [key] of createdPacks.entries()) {
+        const encodedMultihash = key.replace(packStore.directory, '')
+        const multihash = decodeDigest(base58btc.decode(encodedMultihash))
+        const verifiableBlobs = await all(hashStreamer.stream(multihash))
+        assert(verifiableBlobs.length === 1)
+        const verifiableBlob = verifiableBlobs[0]
+        assert(equals(verifiableBlob.multihash.bytes, multihash.bytes))
+        const computedHash = await sha256.digest(verifiableBlob.bytes)
+        assert(equals(verifiableBlob.multihash.bytes, computedHash.bytes))
+      }
     })
   })
 }
