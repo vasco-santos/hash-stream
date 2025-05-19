@@ -419,9 +419,15 @@ importers:
 
   packages/utils:
     dependencies:
+      '@hash-stream/pack':
+        specifier: workspace:^
+        version: link:../pack
       '@hash-stream/streamer':
         specifier: workspace:^
         version: link:../streamer
+      '@vascosantos/unixfs':
+        specifier: ^3.0.3
+        version: 3.0.3
       ipfs-core-utils:
         specifier: ^0.18.1
         version: 0.18.1(encoding@0.1.13)
@@ -438,12 +444,12 @@ importers:
       '@hash-stream/index':
         specifier: workspace:^
         version: link:../index
-      '@hash-stream/pack':
-        specifier: workspace:^
-        version: link:../pack
       '@ipld/car':
         specifier: ^5.4.0
         version: 5.4.1
+      '@ipld/dag-pb':
+        specifier: ^4.0.0
+        version: 4.1.4
       '@storacha/one-webcrypto':
         specifier: ^1.0.1
         version: 1.0.1
@@ -456,6 +462,9 @@ importers:
       '@types/node':
         specifier: ^22.13.10
         version: 22.15.18
+      '@web3-storage/upload-client':
+        specifier: ^17.1.4
+        version: 17.1.4(encoding@0.1.13)
       assert:
         specifier: ^2.1.0
         version: 2.1.0
@@ -2168,6 +2177,9 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+
+  '@vascosantos/unixfs@3.0.3':
+    resolution: {integrity: sha512-h6wg/7UWFe0xkgCgnUqzFZF5V4aWo8w8ERIY8920i2oiq2G+Rr6q4tEHQWYoWOUwHMY7XXDXICiXTk6VIbs3Bg==}
 
   '@vue/compiler-core@3.5.14':
     resolution: {integrity: sha512-k7qMHMbKvoCXIxPhquKQVw3Twid3Kg4s7+oYURxLGRd56LiuHJVrvFKI4fm2AM3c8apqODPfVJGoh8nePbXMRA==}
@@ -8076,6 +8088,16 @@ snapshots:
       multiformats: 13.3.4
 
   '@ungap/structured-clone@1.3.0': {}
+
+  '@vascosantos/unixfs@3.0.3':
+    dependencies:
+      '@ipld/dag-pb': 4.1.4
+      '@multiformats/murmur3': 2.1.8
+      '@perma/map': 1.0.3
+      actor: 2.3.1
+      multiformats: 13.3.4
+      protobufjs: 7.5.2
+      rabin-rs: 2.1.0
 
   '@vue/compiler-core@3.5.14':
     dependencies:

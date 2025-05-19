@@ -112,12 +112,13 @@ export class PackWriter {
     if (options?.notIndexContaining) {
       // Tee the stream for multiple writers
       const teedStreams = teeMultipleStreams(readable, this.indexWriters.length)
-      for (let i = 0; i < this.indexWriters.length; i++) {
-        // eslint-disable-next-line no-await-in-loop
-        await this.indexWriters[i].addBlobs(
-          streamIndexData(teedStreams[i].getReader())
+      const indexWriters = this.indexWriters
+      // Start processing all writers
+      await Promise.all(
+        teedStreams.map((stream, i) =>
+          indexWriters[i].addBlobs(streamIndexData(stream.getReader()))
         )
-      }
+      )
       return
     }
 
@@ -178,10 +179,14 @@ export class PackWriter {
       bufferedStream(),
       this.indexWriters.length
     )
-    for (let i = 0; i < this.indexWriters.length; i++) {
-      // eslint-disable-next-line no-await-in-loop
-      await this.indexWriters[i].addBlobs(streams[i], { containingMultihash })
-    }
+
+    // Start processing all writers
+    const indexWriters = this.indexWriters
+    await Promise.all(
+      indexWriters.map((indexWriter, i) =>
+        indexWriter.addBlobs(streams[i], { containingMultihash })
+      )
+    )
   }
 }
 
