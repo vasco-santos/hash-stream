@@ -15,11 +15,11 @@ export class PackReader {
   }
 
   /**
-   * @param {API.MultihashDigest} targetMultihash
+   * @param {API.MultihashDigest | API.Path} target
    * @param {Array<{ offset: number, length?: number, multihash: API.MultihashDigest }>} [ranges]
    * @returns {AsyncIterable<API.VerifiableEntry>}
    */
-  stream(targetMultihash, ranges) {
-    return this.storeReader.stream(targetMultihash, ranges)
+  stream(target, ranges) {
+    return this.storeReader.stream(target, ranges)
   }
 }

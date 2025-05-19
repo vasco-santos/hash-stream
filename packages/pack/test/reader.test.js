@@ -11,8 +11,10 @@ import { runPackReaderTests } from './reader.js'
     getPackStore: () => {
       const packStore = new MemoryPackStore()
       const destroyablePackStore = Object.assign(packStore, {
+        direntory: '',
         destroy: () => {},
       })
+      // @ts-expect-error
       return Promise.resolve(destroyablePackStore)
     },
     /**
@@ -21,8 +23,10 @@ import { runPackReaderTests } from './reader.js'
     getIndexStore: () => {
       const indexStore = new MemoryIndexStore()
       const destroyableIndexStore = Object.assign(indexStore, {
+        direntory: '',
         destroy: () => {},
       })
+      // @ts-expect-error
       return Promise.resolve(destroyableIndexStore)
     },
   },

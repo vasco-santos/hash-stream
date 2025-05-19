@@ -25,12 +25,13 @@ import {
   {
     name: 'FS',
     /**
-     * @returns {Promise<import('./pack.js').DestroyablePackStore>}
+     * @returns {Promise<import('./reader.js').DestroyablePackStore>}
      */
     getPackStore: () => {
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-pack-test-'))
       const packStore = new FSPackStore(tempDir)
       const destroyablePackStore = Object.assign(packStore, {
+        directory: tempDir,
         destroy: () => {
           if (fs.existsSync(tempDir)) {
             fs.rmSync(tempDir, { recursive: true, force: true })
@@ -46,6 +47,7 @@ import {
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-index-test-'))
       const indexStore = new FSIndexStore(tempDir)
       const destroyableIndexStore = Object.assign(indexStore, {
+        directory: tempDir,
         destroy: () => {
           if (fs.existsSync(tempDir)) {
             fs.rmSync(tempDir, { recursive: true, force: true })
@@ -58,7 +60,7 @@ import {
   {
     name: 'S3Like',
     /**
-     * @returns {Promise<import('./pack.js').DestroyablePackStore>}
+     * @returns {Promise<import('./reader.js').DestroyablePackStore>}
      */
     getPackStore: async () => {
       const { client } = await createS3Like()
@@ -68,6 +70,7 @@ import {
         client,
       })
       const destroyablePackStore = Object.assign(packStore, {
+        directory: `${bucketName}/`,
         destroy: () => {},
       })
       return destroyablePackStore
@@ -83,6 +86,7 @@ import {
         client,
       })
       const destroyablePackStore = Object.assign(packStore, {
+        directory: `${bucketName}/`,
         destroy: () => {},
       })
       return destroyablePackStore
@@ -91,12 +95,13 @@ import {
   {
     name: 'Cloudflare Worker Bucket',
     /**
-     * @returns {Promise<import('./pack.js').DestroyablePackStore>}
+     * @returns {Promise<import('./reader.js').DestroyablePackStore>}
      */
     getPackStore: async () => {
       const { mf, bucket } = await createCloudflareWorkerBucket()
       const packStore = new CloudflareWorkerBucketPackStore({ bucket })
       const destroyablePackStore = Object.assign(packStore, {
+        directory: '',
         destroy: async () => {
           await mf.dispose()
         },
@@ -110,6 +115,7 @@ import {
       const { mf, bucket } = await createCloudflareWorkerBucket()
       const indexStore = new CloudflareWorkerBucketIndexStore({ bucket })
       const destroyableIndexStore = Object.assign(indexStore, {
+        directory: '',
         destroy: async () => {
           await mf.dispose()
         },

@@ -44,8 +44,8 @@ export class HashStreamer {
    * @returns {AsyncIterable<API.VerifiableBlob>}
    */
   async *#processIndexRecords(indexRecords, seenMultihashes) {
-    /** @type {Map<string, API.PackLocation[]>} */
-    const packsToRead = new Map() // Map: pack location → [{ offset, length, multihash }]
+    /** @type {Map<string, API.LocationRecord[]>} */
+    const locationsToRead = new Map() // Map: pack location → [{ offset, length, multihash }]
 
     // 1. Organize Blobs by Pack location to read
     for (const record of indexRecords) {
@@ -56,11 +56,11 @@ export class HashStreamer {
 
         const { location, offset, length, multihash } = record
         if (offset !== undefined && length !== undefined) {
-          const encodedLocation = base58btc.encode(location.bytes)
-          let blobs = packsToRead.get(encodedLocation)
+          const encodedLocation = encodeLocation(location)
+          let blobs = locationsToRead.get(encodedLocation)
           if (!blobs) {
             blobs = []
-            packsToRead.set(encodedLocation, blobs)
+            locationsToRead.set(encodedLocation, blobs)
           }
           blobs.push({ offset, length, multihash })
         }
@@ -70,10 +70,10 @@ export class HashStreamer {
           yield* this.#processIndexRecords(record.subRecords, seenMultihashes)
           // Only known location is the pack itself, so we can just read it all
         } else {
+          const encodedLocation = encodeLocation(record.location)
           // Add the full pack to the read map
-          const encodedLocation = base58btc.encode(record.location.bytes)
-          if (!packsToRead.has(encodedLocation)) {
-            packsToRead.set(encodedLocation, []) // Empty range means "read all"
+          if (!locationsToRead.has(encodedLocation)) {
+            locationsToRead.set(encodedLocation, []) // Empty range means "read all"
           }
         }
       } else if (record.type === IndexRecordType.CONTAINING) {
@@ -83,12 +83,10 @@ export class HashStreamer {
     }
 
     // 2. Read data for each Pack in batches and stream results
-    for (const [packLocation, blobRanges] of packsToRead.entries()) {
-      const decodedLocation = base58btc.decode(packLocation)
-      const targetMultihash = decodeDigest(decodedLocation)
-
+    for (const [encodedLocation, blobRanges] of locationsToRead.entries()) {
+      const location = decodeLocation(encodedLocation)
       for await (const { multihash, bytes } of this.packReader.stream(
-        targetMultihash,
+        location,
         blobRanges.length > 0 ? blobRanges : undefined // Read full pack if no ranges
       )) {
         yield {
@@ -102,8 +100,45 @@ export class HashStreamer {
 }
 
 /**
+ * @param {string | API.MultihashDigest} location
+ * @returns {string}
+ */
+function encodeLocation(location) {
+  if (typeof location === 'string') {
+    // Blob with a path location
+    return `${LocationType.PATH}${location}`
+  } else {
+    // Blob with a multihash location
+    return `${LocationType.MULTIHASH}${base58btc.encode(location.bytes)}`
+  }
+}
+
+/**
+ * @param {string} encodedLocation
+ * @returns {string | API.MultihashDigest}
+ */
+function decodeLocation(encodedLocation) {
+  if (encodedLocation.startsWith(`${LocationType.PATH}`)) {
+    return encodedLocation.substring(1)
+  } else if (encodedLocation.startsWith(`${LocationType.MULTIHASH}`)) {
+    const multihash = encodedLocation.substring(1)
+    return decodeDigest(base58btc.decode(multihash))
+  }
+  /* c8 ignore next 1 */
+  throw new Error(`Invalid location type: ${encodedLocation}`)
+}
+
+/**
  * @enum {API.VerifiableBlobType}
  */
 export const Type = Object.freeze({
   PLAIN: /** @type {API.VerifiableBlobType} */ (0),
+})
+
+/**
+ * @enum {API.LocationType}
+ */
+const LocationType = Object.freeze({
+  MULTIHASH: /** @type {API.LocationType} */ (0),
+  PATH: /** @type {API.LocationType} */ (1),
 })

@@ -2,6 +2,7 @@ import * as API from '../api.js'
 
 import { CID } from 'multiformats/cid'
 import { code as RawCode } from 'multiformats/codecs/raw'
+import { sha256 } from 'multiformats/hashes/sha2'
 
 /**
  * In-memory implementation of PackStore.
@@ -34,54 +35,66 @@ export class MemoryPackStore {
   /**
    * Generate a key for storage.
    *
-   * @param {API.MultihashDigest} hash
+   * @param {API.MultihashDigest | API.Path} target
    * @returns {string}
    */
-  _getObjectKey(hash) {
-    return `${this.prefix}${MemoryPackStore.encodeKey(hash)}${this.extension}`
+  _getObjectKey(target) {
+    if (typeof target === 'string') {
+      return `${this.prefix}${target}${this.extension}`
+    }
+    return `${this.prefix}${MemoryPackStore.encodeKey(target)}${this.extension}`
   }
 
   /**
    * Put a pack file in memory.
    *
-   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @param {API.MultihashDigest | API.Path} target - The Multihash digest of the pack or its path.
    * @param {Uint8Array} data - The pack file bytes.
    */
-  async put(hash, data) {
-    this.store.set(this._getObjectKey(hash), data)
+  async put(target, data) {
+    this.store.set(this._getObjectKey(target), data)
   }
 
   /**
    * Retrieves bytes of a pack file by its multihash digest.
    *
-   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @param {API.MultihashDigest | API.Path} target - The Multihash digest of the pack or its path.
    * @returns {Promise<Uint8Array | null>}
    */
-  async get(hash) {
-    return this.store.get(this._getObjectKey(hash)) || null
+  async get(target) {
+    return this.store.get(this._getObjectKey(target)) || null
   }
 
   /**
    * Retrieves bytes of a pack file by its multihash digest and streams it in specified ranges.
    *
-   * @param {API.MultihashDigest} hash - The Multihash digest of the pack.
+   * @param {API.MultihashDigest | API.Path} target - The Multihash digest of the pack or its path.
    * @param {Array<{ offset: number, length?: number, multihash: API.MultihashDigest }>} [ranges]
    * @returns {AsyncIterable<API.VerifiableEntry>}
    */
-  async *stream(hash, ranges = []) {
-    const key = this._getObjectKey(hash)
-    const data = this.store.get(key)
+  async *stream(target, ranges = []) {
+    const key = this._getObjectKey(target)
+    const bytes = this.store.get(key)
     /* c8 ignore next 1 */
-    if (!data) return
+    if (!bytes) return
 
     if (ranges.length === 0) {
-      yield { multihash: hash, bytes: data }
+      let multihash
+      if (typeof target === 'string') {
+        // If target is a path, we need to calculate the hash
+        multihash = await sha256.digest(bytes)
+      }
+      // If target is a multihash, we can use it directly
+      else {
+        multihash = target
+      }
+      yield { multihash, bytes }
       return
     }
 
     for (const { multihash, offset, length } of ranges) {
       /* c8 ignore next 1 */
-      const slice = data.slice(offset, length ? offset + length : undefined)
+      const slice = bytes.slice(offset, length ? offset + length : undefined)
       yield { multihash, bytes: slice }
     }
   }

@@ -24,14 +24,14 @@ export interface PackReader {
   /**
    * Stream data from a Pack, optionally requesting specific byte ranges.
    *
-   * @param {MultihashDigest} targetMultihash - The multihash of the Pack to retrieve.
+   * @param {MultihashDigest | Path} target - The multihash of the Pack to retrieve or its path.
    * @param {Array<{ offset: number, length?: number, multihash: MultihashDigest }>} [ranges] -
    *        Optional ranges specifying which parts of the Pack should be streamed.
    *        If omitted, the entire Pack is streamed.
    * @returns {AsyncIterable<VerifiableEntry>}
    */
   stream(
-    targetMultihash: MultihashDigest,
+    target: MultihashDigest | Path,
     ranges?: Array<{
       offset: number
       length: number
@@ -39,6 +39,8 @@ export interface PackReader {
     }>
   ): AsyncIterable<VerifiableEntry>
 }
+
+export type Path = string
 
 export interface PackWriter {
   storeWriter: PackStoreWriter
@@ -82,24 +84,24 @@ export interface PackStoreWriter {
   /**
    * Stores a pack file.
    *
-   * @param hash - The Multihash digest of the pack.
+   * @param target - The Multihash digest of the pack or its path.
    * @param data - The pack file bytes.
    * @returns A promise that resolves when the pack file is stored.
    */
-  put(hash: MultihashDigest, data: Uint8Array): Promise<void>
+  put(target: MultihashDigest | Path, data: Uint8Array): Promise<void>
 }
 
 export interface PackStoreReader {
   /**
-   * Retrieves bytes of a pack file by its multihash digest.
+   * Retrieves bytes of a pack file by its multihash digest or Path.
    *
-   * @param hash - The Multihash digest of the pack.
+   * @param target - The Multihash digest of the pack or its path.
    * @returns A promise that resolves with the pack file data or null if not found.
    */
-  get(hash: MultihashDigest): Promise<Uint8Array | null>
+  get(target: MultihashDigest | Path): Promise<Uint8Array | null>
 
   stream(
-    targetMultihash: MultihashDigest,
+    target: MultihashDigest | Path,
     ranges?: Array<{
       offset?: number
       length?: number

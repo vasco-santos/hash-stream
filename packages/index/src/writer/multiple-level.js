@@ -45,12 +45,19 @@ export class MultipleLevelIndexWriter {
       // Create Blob Index record
       const blob = createFromBlob(multihash, location, offset, length)
 
-      // Block packed in a location
-      if (!equals(multihash.bytes, location.bytes)) {
+      // Block is in a Path location, so we can add the blob directly
+      if (typeof location === 'string') {
+        // Make location unique to avoid collisions of multiple blobs in the same path
+        const encodedLocation = `${location}/${base58btc.encode(
+          blob.multihash.bytes
+        )}`
+        subRecords.set(encodedLocation, blob)
+        // Block packed in a location
+      } else if (!equals(multihash.bytes, location.bytes)) {
         const encodedLocation = base58btc.encode(location.bytes)
         let packIndexRecord = subRecords.get(encodedLocation)
         if (!packIndexRecord) {
-          packIndexRecord = createFromPack(location, [blob])
+          packIndexRecord = createFromPack(location, location, [blob])
           subRecords.set(encodedLocation, packIndexRecord)
         } else {
           packIndexRecord.subRecords.push(blob)
@@ -75,7 +82,7 @@ export class MultipleLevelIndexWriter {
         recordType
       )
     }
-    // If there is no containing multihash, add all subRecords individually
+    // If there is no containing multihash, add all subRecords individually as a record
     else {
       await this.store.add(
         (async function* () {

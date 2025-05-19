@@ -20,11 +20,16 @@ export interface HashStreamer {
   ): AsyncIterable<VerifiableBlob>
 }
 
-export type PackLocation = {
+export type LocationRecord = {
   length: number
   offset: number
   multihash: MultihashDigest
 }
+
+export type LocationType = LOCATION_MULTIHASH | LOCATION_PATH
+
+type LOCATION_MULTIHASH = 0
+type LOCATION_PATH = 1
 
 export type VerifiableBlob = {
   multihash: MultihashDigest

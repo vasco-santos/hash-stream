@@ -22,6 +22,7 @@ import { randomBytes, randomCID } from './helpers/random.js'
  *
  * @typedef {object} Destroyable
  * @property {() => void} destroy
+ * @property {string} directory - Directory path for the store.
  *
  * @typedef {PackStore & Destroyable} DestroyablePackStore
  * @typedef {IndexStore & Destroyable} DestroyableIndexStore
@@ -184,6 +185,45 @@ export function runPackReaderTests(
             }
             const carReaderBlob = await carReader.get(blobCid)
             assert(equals(entry.bytes, carReaderBlob.bytes))
+          }
+        }
+      })
+
+      it('reads content from the store after they are written as a path', async () => {
+        const byteLength = 30_000_000
+        const chunkSize = byteLength / 3
+        const bytes = await randomBytes(byteLength)
+        const blob = new Blob([bytes])
+        /** @type {Map<string, Uint8Array>} */
+        const createdPacks = new Map()
+
+        // Write the Packs
+        const createPackOptions = {
+          shardSize: chunkSize,
+          type: /** @type {'car'} */ ('car'),
+        }
+
+        // Create packs separately for writing
+        const { packStream } = createPacks(blob, createPackOptions)
+
+        // Iterate through each pack in the pack stream
+        for await (const { multihash, bytes } of packStream) {
+          // Store the pack in the createdPacks map to compare later
+          const encodedKey = `${packStore.directory}${base58btc.encode(
+            multihash.bytes
+          )}`
+          createdPacks.set(encodedKey, bytes)
+          await packStore.put(encodedKey, bytes)
+        }
+
+        for (const pack of createdPacks.keys()) {
+          for await (const entry of packReader.stream(pack)) {
+            assert(entry)
+
+            // Verify the entry bytes
+            const writtenBytes = createdPacks.get(pack)
+            assert(writtenBytes)
+            assert(equals(entry.bytes, writtenBytes))
           }
         }
       })
