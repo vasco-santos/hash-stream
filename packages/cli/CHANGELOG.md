@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/vasco-santos/hash-stream/compare/cli-v1.5.0...cli-v1.5.1) (2025-05-21)
+
+
+### Fixes
+
+* index record and pack reader support path ([#108](https://github.com/vasco-santos/hash-stream/issues/108)) ([0003cc0](https://github.com/vasco-santos/hash-stream/commit/0003cc094f86fdda90043c0a2519b8860854af06))
+
 ## [1.5.0](https://github.com/vasco-santos/hash-stream/compare/cli-v1.4.0...cli-v1.5.0) (2025-04-22)
 
 
