@@ -58,6 +58,6 @@ jobs:
         run: |
           PACKAGE="${{ github.event.inputs.package }}"
           TAG="${{ github.event.inputs.tag }}"
-          pnpm -r --filter $PACKAGE publish --access public --tag $TAG
+          pnpm -r --filter $PACKAGE publish --access public --tag $TAG  --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
