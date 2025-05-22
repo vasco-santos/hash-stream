@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/vasco-santos/hash-stream/compare/pack-v1.4.1...pack-v1.5.0) (2025-05-22)
+
+
+### Features
+
+* utils index ([#113](https://github.com/vasco-santos/hash-stream/issues/113)) ([7c72804](https://github.com/vasco-santos/hash-stream/commit/7c7280490f26f01a5413c3c784bcbea6e5f87252))
+
 ## [1.4.1](https://github.com/vasco-santos/hash-stream/compare/pack-v1.4.0...pack-v1.4.1) (2025-05-21)
 
 
