@@ -85,9 +85,10 @@ export class HashStreamer {
     // 2. Read data for each Pack in batches and stream results
     for (const [encodedLocation, blobRanges] of locationsToRead.entries()) {
       const location = decodeLocation(encodedLocation)
+      const ranges = filterFullyCoveredRanges(blobRanges)
       for await (const { multihash, bytes } of this.packReader.stream(
         location,
-        blobRanges.length > 0 ? blobRanges : undefined // Read full pack if no ranges
+        ranges.length > 0 ? ranges : undefined // Read full pack if no ranges
       )) {
         yield {
           multihash,
@@ -126,6 +127,39 @@ function decodeLocation(encodedLocation) {
   }
   /* c8 ignore next 1 */
   throw new Error(`Invalid location type: ${encodedLocation}`)
+}
+
+/**
+ * Filters out ranges that fully cover other ranges.
+ *
+ * In other words, this removes any range that completely includes at least one other range.
+ *
+ * @param {Array<{
+ *   offset: number;
+ *   length: number;
+ *   multihash: API.MultihashDigest;
+ * }>} ranges - Array of ranges to filter.
+ * @returns {Array<{
+ *   offset: number;
+ *   length: number;
+ *   multihash: API.MultihashDigest;
+ * }>} Filtered array with large covering ranges removed.
+ */
+function filterFullyCoveredRanges(ranges) {
+  return ranges.filter((range, i) => {
+    // Check if this range fully covers any other range (except itself)
+    return !ranges.some((other, j) => {
+      if (i === j) return false
+
+      const rangeStart = range.offset
+      const rangeEnd = range.offset + range.length
+      const otherStart = other.offset
+      const otherEnd = other.offset + other.length
+
+      // Does current range fully cover the other range?
+      return rangeStart <= otherStart && rangeEnd >= otherEnd
+    })
+  })
 }
 
 /**

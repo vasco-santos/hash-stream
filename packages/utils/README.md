@@ -10,6 +10,93 @@ npm install @hash-stream/utils
 
 ## Usage
 
+### `index/unixfs`
+
+Supports building unixfs like indexes for content that is not at rest stored as content addressable data, but can be served likewise.
+
+#### `writeUnixFsFileLinkIndex`
+
+Creates an index of `FileLink` entries for a given blob using UnixFS layout and writes them to one or more `IndexWriter`s. It returns the multihash of the final chunk in the DAG (the "containing multihash").
+
+```ts
+import {
+  writeUnixFsFileLinkIndex,
+  defaultSettings,
+} from '@hash-stream/utils/index/unixfs'
+import { withMaxChunkSize } from '@ipld/unixfs/file/chunker/fixed'
+
+// Prepare your blob and writers
+const blob = new Blob(['hello world'])
+const indexWriters = [
+  /* your Hashstream IndexWriter instances */
+]
+
+const { containingMultihash } = await writeUnixFsFileLinkIndex(
+  blob,
+  '/file.txt',
+  indexWriters,
+  {
+    notIndexContaining: false,
+    settings: {
+      ...defaultSettings,
+      chunker: withMaxChunkSize(1024 * 1024),
+    },
+  }
+)
+```
+
+**Parameters:**
+
+- `blob` (`BlobLike`) – The file blob to be split into UnixFS chunks.
+- `path` (`string`) – Virtual path to associate with the entries in the index.
+- `indexWriters` (`IndexWriter[]`) – Array of writers that receive streamable index entries.
+- `options` (optional) (`CreateUnixFsFileLikeStreamOptions`):
+  - `notIndexContaining` (`boolean`) – If `true`, skips indexing the containing multihash in an hierarchy.
+  - `settings` (`Partial<UnixFSEncodeSettings>`) – Optional settings passed to the UnixFS writer.
+
+**Returns:** `Promise<{ containingMultihash: MultihashDigest } | undefined>`  
+The multihash of the final block, or `undefined` if no writers were provided.
+
+---
+
+#### `createUnixFsFileLinkStream`
+
+Creates a `ReadableStream` of `FileLink` entries that describe the byte layout and structure of the given blob encoded as UnixFS.
+
+```ts
+import {
+  createUnixFsFileLinkStream,
+  defaultSettings,
+} from '@hash-stream/utils/index/unixfs'
+import { withMaxChunkSize } from '@ipld/unixfs/file/chunker/fixed'
+
+const blob = new Blob(['example content'])
+
+const stream = createUnixFsFileLinkStream(blob, {
+  settings: {
+    ...defaultSettings,
+    chunker: withMaxChunkSize(1024 * 1024),
+  },
+})
+
+// Example: reading the stream
+const reader = stream.getReader()
+while (true) {
+  const { value, done } = await reader.read()
+  if (done) break
+  console.log(value) // FileLink
+}
+```
+
+**Parameters:**
+
+- `blob` (`BlobLike`) – The input blob to be chunked and streamed as UnixFS `FileLink` entries.
+- `options` (optional) (`CreateUnixFsFileLikeStreamOptions`) – Options to control chunking and encoding:
+  - `settings` (`Partial<UnixFSEncodeSettings>`) – Optional settings to configure the UnixFS encoder.
+
+**Returns:** `ReadableStream<FileLink>`  
+A stream of metadata entries (`FileLink`) describing the chunks and layout of the encoded UnixFS file.
+
 ### `trustless-ipfs-gateway`
 
 #### `streamer.asRawUint8Array`
