@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/vasco-santos/hash-stream/compare/utils-v2.0.0...utils-v2.1.0) (2025-05-22)
+
+
+### Features
+
+* utils index ([#113](https://github.com/vasco-santos/hash-stream/issues/113)) ([7c72804](https://github.com/vasco-santos/hash-stream/commit/7c7280490f26f01a5413c3c784bcbea6e5f87252))
+
 ## [2.0.0](https://github.com/vasco-santos/hash-stream/compare/utils-v1.3.0...utils-v2.0.0) (2025-04-21)
 
 
