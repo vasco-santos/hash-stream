@@ -33,7 +33,7 @@ Defined in: [reader.js:13](https://github.com/vasco-santos/hash-stream/blob/main
 
 ### stream()
 
-> **stream**(`targetMultihash`, `ranges?`): `AsyncIterable`\<`VerifiableEntry`, `any`, `any`\>
+> **stream**(`target`, `ranges?`): `AsyncIterable`\<`VerifiableEntry`, `any`, `any`\>
 
 Defined in: [reader.js:22](https://github.com/vasco-santos/hash-stream/blob/main/packages/pack/src/reader.js#L22)
 
@@ -41,7 +41,7 @@ Defined in: [reader.js:22](https://github.com/vasco-santos/hash-stream/blob/main
 
 | Parameter | Type |
 | ------ | ------ |
-| `targetMultihash` | `MultihashDigest`\<`number`\> |
+| `target` | `string` \| `MultihashDigest`\<`number`\> |
 | `ranges?` | `object`[] |
 
 #### Returns
