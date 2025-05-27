@@ -39,6 +39,6 @@ jobs:
       - run: pnpm -r --filter @hash-stream/index-pipeline run attw
       - run: pnpm -r --filter @hash-stream/index-pipeline test
         env:
-            AWS_REGION: 'us-west-2'
-            AWS_ACCESS_KEY_ID: 'NOSUCH'
-            AWS_SECRET_ACCESS_KEY: 'NOSUCH'
+          AWS_REGION: 'us-west-2'
+          AWS_ACCESS_KEY_ID: 'NOSUCH'
+          AWS_SECRET_ACCESS_KEY: 'NOSUCH'

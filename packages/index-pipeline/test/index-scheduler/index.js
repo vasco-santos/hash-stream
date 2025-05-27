@@ -14,7 +14,7 @@ import assert from 'assert'
  * Runs the test suite for the Index Scheduler.
  *
  * @param {string} schedulerName - The name of the scheduler (e.g., "Memory", "SQS").
- * @param {() => Promise<DestroyableAndDrainableIndexScheduler>} createIndexScheduler - Function to create the index scheduler.
+ * @param {(messageTarget: number) => Promise<DestroyableAndDrainableIndexScheduler>} createIndexScheduler - Function to create the index scheduler.
  */
 export function runIndexSchedulerTests(schedulerName, createIndexScheduler) {
   describe(`${schedulerName} IndexScheduler`, () => {
@@ -22,7 +22,7 @@ export function runIndexSchedulerTests(schedulerName, createIndexScheduler) {
     let store
 
     beforeEach(async () => {
-      store = await createIndexScheduler()
+      store = await createIndexScheduler(1)
     })
 
     afterEach(() => {

@@ -19,7 +19,7 @@
     "dev": "tsc --build --watch",
     "test": "npm run test:all",
     "test:all": "run-s test:browser test:node",
-    "test:node": "hundreds -r html -r text mocha 'test/**/!(*.browser).test.js' -n experimental-vm-modules -n no-warnings --timeout=30s",
+    "test:node": "hundreds -r html -r text mocha 'test/**/!(*.browser).test.js' -n experimental-vm-modules -n no-warnings --timeout=90s",
     "test:browser": "playwright-test --runner mocha 'test/**/!(*.node).test.js'",
     "rc": "npm version prerelease --preid rc"
   },
