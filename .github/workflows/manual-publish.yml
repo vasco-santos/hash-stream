@@ -11,6 +11,7 @@ on:
         options:
           - cli
           - index
+          - index-pipeline
           - pack
           - streamer
           - utils
