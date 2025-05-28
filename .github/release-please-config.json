@@ -15,6 +15,9 @@
     "packages/index": {
       "release-type": "node"
     },
+    "packages/index-pipeline": {
+      "release-type": "node"
+    },
     "packages/pack": {
       "release-type": "node"
     },
