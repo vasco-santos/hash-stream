@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/vasco-santos/hash-stream/compare/index-pipeline-v1.0.1...index-pipeline-v1.0.2) (2025-05-29)
+
+
+### Fixes
+
+* return type for unixfs write file link index ([#122](https://github.com/vasco-santos/hash-stream/issues/122)) ([6d257b3](https://github.com/vasco-santos/hash-stream/commit/6d257b39868e513e842c11c5e224bf07bb9acbe9))
+
 ## [1.0.1](https://github.com/vasco-santos/hash-stream/compare/index-pipeline-v1.0.0...index-pipeline-v1.0.1) (2025-05-29)
 
 
