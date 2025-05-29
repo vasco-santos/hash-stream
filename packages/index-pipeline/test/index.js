@@ -86,7 +86,14 @@ export function runIndexPipelineTests(
       scheduler = await createIndexScheduler(2)
 
       // Step 1: Schedule
-      await scheduleStoreFilesForIndexing(fileStore, scheduler)
+      const scheduledItems = await all(
+        scheduleStoreFilesForIndexing(fileStore, scheduler)
+      )
+      assert(scheduledItems)
+      assert.equal(scheduledItems.length, testFiles.length)
+      for (const scheduledItem of scheduledItems) {
+        assert(testFiles.find((testFile) => testFile.key === scheduledItem))
+      }
 
       // Step 2: Drain & Index
       const indexedFiles = []

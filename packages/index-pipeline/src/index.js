@@ -18,8 +18,9 @@ import { withMaxChunkSize } from '@ipld/unixfs/file/chunker/fixed'
  * @param {API.FileStore} fileStore
  * @param {API.IndexScheduler} indexScheduler
  * @param {API.ScheduleStoreFilesOptions} options
+ * @returns {AsyncIterable<string>}
  */
-export async function scheduleStoreFilesForIndexing(
+export async function* scheduleStoreFilesForIndexing(
   fileStore,
   indexScheduler,
   options = {}
@@ -30,6 +31,7 @@ export async function scheduleStoreFilesForIndexing(
       format,
       size: fileMetadata.size,
     })
+    yield fileMetadata.key
   }
 }
 

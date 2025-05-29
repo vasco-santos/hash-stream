@@ -7,7 +7,7 @@ title: "processFileForIndexing"
 
 > **processFileForIndexing**(`fileStore`, `indexWriters`, `indexFormat`, `fileReference`, `options?`): [`Promise`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`undefined` \| `MultihashDigest`\<`number`\>\>
 
-Defined in: [index.js:50](https://github.com/vasco-santos/hash-stream/blob/main/packages/index-pipeline/src/index.js#L50)
+Defined in: [index.js:52](https://github.com/vasco-santos/hash-stream/blob/main/packages/index-pipeline/src/index.js#L52)
 
 Scheduler consumer function where a file reference is fetched from the store,
 processed, and then written to the index store.
