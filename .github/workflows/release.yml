@@ -31,6 +31,7 @@ jobs:
     if: |
       contains(fromJson(needs.release.outputs.paths_released), 'packages/cli') ||
       contains(fromJson(needs.release.outputs.paths_released), 'packages/index') ||
+      contains(fromJson(needs.release.outputs.paths_released), 'packages/index-pipeline') ||
       contains(fromJson(needs.release.outputs.paths_released), 'packages/pack') ||
       contains(fromJson(needs.release.outputs.paths_released), 'packages/streamer') ||
       contains(fromJson(needs.release.outputs.paths_released), 'packages/utils')
