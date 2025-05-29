@@ -19,7 +19,7 @@ export const defaultSettings = UnixFS.configure({
  * @param {string} path
  * @param {PackAPI.IndexWriter[]} indexWriters
  * @param {API.CreateUnixFsFileLikeStreamOptions} [options]
- * @returns {Promise<{ containingMultihash: API.MultihashDigest} | undefined>}
+ * @returns {Promise<{ containingMultihash: API.MultihashDigest}>}
  */
 export async function writeUnixFsFileLinkIndex(
   blob,
@@ -28,7 +28,7 @@ export async function writeUnixFsFileLinkIndex(
   options
 ) {
   if (!indexWriters || !indexWriters.length) {
-    return
+    throw new Error('No index writers provided')
   }
   // Create a UnixFS file link stream
   const unixFsFileLinkStream = createUnixFsFileLinkStream(blob, options)
