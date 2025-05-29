@@ -1,8 +1,9 @@
 import { BlobLike } from '@web3-storage/upload-client/types'
+import { MultihashDigest } from '@hash-stream/utils/index/types'
 
 import { CreateUnixFsFileLikeStreamOptions } from '@hash-stream/utils/index/types'
 
-export type { BlobLike }
+export type { BlobLike, MultihashDigest }
 
 export interface FileMetadata {
   key: string

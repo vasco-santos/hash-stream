@@ -538,8 +538,14 @@ describe(`unixfs index preparation`, () => {
     await packStore.put(location, bytes)
 
     // Write index for unixfs file links
-    const written = await writeUnixFsFileLinkIndex(blob, location, [])
-    assert.equal(written, undefined, 'index was written')
+    assert.rejects(
+      () => writeUnixFsFileLinkIndex(blob, location, []),
+      {
+        name: 'Error',
+        message: 'No index writers provided',
+      },
+      'should throw error when no index writers are provided'
+    )
   })
 })
 

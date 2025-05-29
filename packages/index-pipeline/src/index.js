@@ -48,6 +48,7 @@ export async function* scheduleStoreFilesForIndexing(
  * @param {string} indexFormat
  * @param {string} fileReference
  * @param {API.ProcessFileForIndexingOptions} [options={}]
+ * @returns {Promise<API.MultihashDigest>}
  */
 export async function processFileForIndexing(
   fileStore,
@@ -77,12 +78,9 @@ export async function processFileForIndexing(
         ...options,
       }
     )
-
-    if (written) {
-      console.log(`File ${fileReference} indexed successfully.`)
-      // Return the containing multihash for further processing if needed
-      return written.containingMultihash
-    }
+    console.log(`File ${fileReference} indexed successfully.`)
+    // Return the containing multihash for further processing if needed
+    return written.containingMultihash
   } else {
     throw new Error(`Unsupported index format: ${indexFormat}`)
   }
