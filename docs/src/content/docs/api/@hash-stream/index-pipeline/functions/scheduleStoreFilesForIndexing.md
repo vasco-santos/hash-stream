@@ -5,9 +5,9 @@ prev: true
 title: "scheduleStoreFilesForIndexing"
 ---
 
-> **scheduleStoreFilesForIndexing**(`fileStore`, `indexScheduler`, `options`): [`Promise`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+> **scheduleStoreFilesForIndexing**(`fileStore`, `indexScheduler`, `options`): `AsyncIterable`\<`string`, `any`, `any`\>
 
-Defined in: [index.js:22](https://github.com/vasco-santos/hash-stream/blob/main/packages/index-pipeline/src/index.js#L22)
+Defined in: [index.js:23](https://github.com/vasco-santos/hash-stream/blob/main/packages/index-pipeline/src/index.js#L23)
 
 Function that prepares files for indexing by listing them in the file store
 and sending a reference of each file to an Index scheduler.
@@ -25,4 +25,4 @@ simple HTTP endpoint that accepts file references for processing.
 
 ## Returns
 
-[`Promise`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+`AsyncIterable`\<`string`, `any`, `any`\>

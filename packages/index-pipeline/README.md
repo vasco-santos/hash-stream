@@ -29,6 +29,7 @@ import {
   scheduleStoreFilesForIndexing,
   processFileForIndexing
 } from '@hash-stream/index-pipeline/index'
+import all from 'it-all'
 
 import { MemoryFileStore } from '@hash-stream/index-pipeline/file-store/memory'
 import { MemoryIndexScheduler } from '@hash-stream/index-pipeline/index-scheduler/memory'
@@ -37,7 +38,7 @@ const fileStore = new MemoryFileStore([...])
 const scheduler = new MemoryIndexScheduler([])
 
 // Schedule all files for indexing
-await scheduleStoreFilesForIndexing(fileStore, scheduler)
+await all(scheduleStoreFilesForIndexing(fileStore, scheduler))
 
 // Consume and process tasks
 for await (const task of scheduler.drain()) {
@@ -56,6 +57,10 @@ Lists all files from a `FileStore` and schedules them via an `IndexScheduler`.
 * `fileStore`: an object implementing `FileStore`
 * `indexScheduler`: an object implementing `IndexScheduler`
 * `options.format`: index format (defaults to `'unixfs'`)
+
+Returns:
+
+* `AsyncIterable<string>` with files scheduled for indexing
 
 ### `processFileForIndexing(fileStore, indexWriters, indexFormat, fileReference, options?)`
 
