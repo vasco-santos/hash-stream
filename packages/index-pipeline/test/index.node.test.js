@@ -1,6 +1,7 @@
 import { runIndexPipelineTests } from './index.js'
 
 import { MemoryIndexStore } from '@hash-stream/index/store/memory'
+import { MemoryPackStore } from '@hash-stream/pack/store/memory'
 import { MultipleLevelIndexWriter, IndexReader } from '@hash-stream/index'
 
 import {
@@ -19,6 +20,12 @@ describe('indexPipeline combinations', () => {
     {
       name: 'S3Like + SQSLike',
       getFileStore: getS3LikeFileStore,
+      createPackStoreWriter: () =>
+        Promise.resolve(
+          Object.assign(new MemoryPackStore(), {
+            destroy: () => {},
+          })
+        ),
       getIndexScheduler: getSQSLikeScheduler,
       /**
        * @returns {Promise<import('@hash-stream/index/types').IndexWriter[]>}
@@ -37,6 +44,12 @@ describe('indexPipeline combinations', () => {
     {
       name: 'S3Like + Memory',
       getFileStore: getS3LikeFileStore,
+      createPackStoreWriter: () =>
+        Promise.resolve(
+          Object.assign(new MemoryPackStore(), {
+            destroy: () => {},
+          })
+        ),
       getIndexScheduler: getMemoryScheduler,
       /**
        * @returns {Promise<import('@hash-stream/index/types').IndexWriter[]>}
@@ -55,6 +68,12 @@ describe('indexPipeline combinations', () => {
     {
       name: 'Cloudflare Worker Bucket + SQSLike',
       getFileStore: getCloudflareWorkerBucketStore,
+      createPackStoreWriter: () =>
+        Promise.resolve(
+          Object.assign(new MemoryPackStore(), {
+            destroy: () => {},
+          })
+        ),
       getIndexScheduler: getSQSLikeScheduler,
       /**
        * @returns {Promise<import('@hash-stream/index/types').IndexWriter[]>}
@@ -73,6 +92,12 @@ describe('indexPipeline combinations', () => {
     {
       name: 'Cloudflare Worker Bucket + Memory',
       getFileStore: getCloudflareWorkerBucketStore,
+      createPackStoreWriter: () =>
+        Promise.resolve(
+          Object.assign(new MemoryPackStore(), {
+            destroy: () => {},
+          })
+        ),
       getIndexScheduler: getMemoryScheduler,
       /**
        * @returns {Promise<import('@hash-stream/index/types').IndexWriter[]>}
@@ -91,6 +116,12 @@ describe('indexPipeline combinations', () => {
     {
       name: 'FS + SQSLike',
       getFileStore: getFsStore,
+      createPackStoreWriter: () =>
+        Promise.resolve(
+          Object.assign(new MemoryPackStore(), {
+            destroy: () => {},
+          })
+        ),
       getIndexScheduler: getSQSLikeScheduler,
       /**
        * @returns {Promise<import('@hash-stream/index/types').IndexWriter[]>}
@@ -109,6 +140,12 @@ describe('indexPipeline combinations', () => {
     {
       name: 'FS + Memory',
       getFileStore: getFsStore,
+      createPackStoreWriter: () =>
+        Promise.resolve(
+          Object.assign(new MemoryPackStore(), {
+            destroy: () => {},
+          })
+        ),
       getIndexScheduler: getMemoryScheduler,
       /**
        * @returns {Promise<import('@hash-stream/index/types').IndexWriter[]>}
@@ -129,6 +166,7 @@ describe('indexPipeline combinations', () => {
       name,
       getFileStore,
       getIndexScheduler,
+      createPackStoreWriter,
       createIndexWriters,
       createIndexReader,
     }) => {
@@ -137,7 +175,8 @@ describe('indexPipeline combinations', () => {
         getFileStore,
         getIndexScheduler,
         createIndexWriters,
-        createIndexReader
+        createIndexReader,
+        createPackStoreWriter
       )
     }
   )

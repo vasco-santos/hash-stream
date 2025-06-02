@@ -1,3 +1,4 @@
+import { MemoryPackStore } from '@hash-stream/pack/store/memory'
 import { MemoryIndexStore } from '@hash-stream/index/store/memory'
 import { MultipleLevelIndexWriter, IndexReader } from '@hash-stream/index'
 
@@ -14,6 +15,12 @@ describe('indexPipeline combinations', () => {
     {
       name: 'MemoryFileStore + MemoryIndexScheduler',
       getFileStore: getMemoryStore,
+      createPackStoreWriter: () =>
+        Promise.resolve(
+          Object.assign(new MemoryPackStore(), {
+            destroy: () => {},
+          })
+        ),
       /**
        * @returns {Promise<API.IndexScheduler & { destroy(): void, drain(): AsyncGenerator<API.QueuedIndexTask> }>}
        */
@@ -38,13 +45,15 @@ describe('indexPipeline combinations', () => {
       getIndexScheduler,
       createIndexWriters,
       createIndexReader,
+      createPackStoreWriter,
     }) => {
       runIndexPipelineTests(
         name,
         getFileStore,
         getIndexScheduler,
         createIndexWriters,
-        createIndexReader
+        createIndexReader,
+        createPackStoreWriter
       )
     }
   )

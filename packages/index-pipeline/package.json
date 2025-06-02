@@ -72,9 +72,11 @@
     "@aws-sdk/client-s3": "^3.817.0",
     "@aws-sdk/client-sqs": "^3.817.0",
     "@hash-stream/index": "workspace:^",
+    "@hash-stream/pack": "workspace:^",
     "@hash-stream/utils": "workspace:^",
     "@ipld/unixfs": "^3.0.0",
-    "@web3-storage/upload-client": "^17.1.4"
+    "@web3-storage/upload-client": "^17.1.4",
+    "multiformats": "^13.3.2"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250525.0",
@@ -96,7 +98,8 @@
     "p-retry": "^6.2.1",
     "sqs-consumer": "^12.0.0",
     "testcontainers": "^10.24.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "uint8arrays": "^5.1.0"
   },
   "eslintConfig": {
     "extends": [

@@ -1,9 +1,11 @@
+import * as API from '../../src/index/api.js'
 import assert from 'assert'
 
 import * as PB from '@ipld/dag-pb'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { withMaxChunkSize } from '@vascosantos/unixfs/file/chunker/fixed'
 import { equals } from 'uint8arrays/equals'
+import { concat } from 'uint8arrays/concat'
 import all from 'it-all'
 
 import { MemoryPackStore } from '@hash-stream/pack/store/memory'
@@ -18,7 +20,7 @@ import { Type } from '@hash-stream/index/record'
 import { HashStreamer } from '@hash-stream/streamer'
 
 import {
-  createUnixFsFileLinkStream,
+  createUnixFsStreams,
   writeUnixFsFileLinkIndex,
   MAX_CHUNK_SIZE,
   defaultSettings,
@@ -56,9 +58,14 @@ describe(`unixfs index preparation`, () => {
     const byteLength = 5_000_000
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
+    /** @type {API.Block | undefined} */
+    let rootBlock
 
-    const unixFsFileLinkStream = createUnixFsFileLinkStream(blob)
-    const unixFsFileLinkEntries = await readAll(unixFsFileLinkStream)
+    const { unixFsFileLinkReadable, unixFsReadable } = createUnixFsStreams(blob)
+    void (async () => {
+      rootBlock = await readLast(unixFsReadable)
+    })()
+    const unixFsFileLinkEntries = await readAll(unixFsFileLinkReadable)
 
     // Validate root CID for unixFS
     const [rootFileLink] = unixFsFileLinkEntries.splice(
@@ -70,6 +77,10 @@ describe(`unixfs index preparation`, () => {
     assert.equal(rootFileLink.contentByteLength, byteLength)
     assert.ok(rootFileLink.dagByteLength > byteLength)
     assert.ok(!rootFileLink.contentByteOffset)
+
+    // Check root block
+    assert.ok(rootBlock)
+    assert(rootBlock.cid.equals(rootFileLink.cid))
 
     assert.ok(unixFsFileLinkEntries.length)
     assert.equal(unixFsFileLinkEntries.length, 5)
@@ -111,14 +122,22 @@ describe(`unixfs index preparation`, () => {
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     const MAX_CHUNK_SIZE_CUSTOM = (1024 * 1024) / 2
+    /** @type {API.Block | undefined} */
+    let rootBlock
 
-    const unixFsFileLinkStream = createUnixFsFileLinkStream(blob, {
-      settings: {
-        ...defaultSettings,
-        chunker: withMaxChunkSize(MAX_CHUNK_SIZE_CUSTOM),
-      },
-    })
-    const unixFsFileLinkEntries = await readAll(unixFsFileLinkStream)
+    const { unixFsFileLinkReadable, unixFsReadable } = createUnixFsStreams(
+      blob,
+      {
+        settings: {
+          ...defaultSettings,
+          chunker: withMaxChunkSize(MAX_CHUNK_SIZE_CUSTOM),
+        },
+      }
+    )
+    void (async () => {
+      rootBlock = await readLast(unixFsReadable)
+    })()
+    const unixFsFileLinkEntries = await readAll(unixFsFileLinkReadable)
 
     // Validate root CID for unixFS
     const [rootFileLink] = unixFsFileLinkEntries.splice(
@@ -130,6 +149,10 @@ describe(`unixfs index preparation`, () => {
     assert.equal(rootFileLink.contentByteLength, byteLength)
     assert.ok(rootFileLink.dagByteLength > byteLength)
     assert.ok(!rootFileLink.contentByteOffset)
+
+    // Check root block
+    assert.ok(rootBlock)
+    assert(rootBlock.cid.equals(rootFileLink.cid))
 
     assert.ok(unixFsFileLinkEntries.length)
     assert.equal(unixFsFileLinkEntries.length, 10)
@@ -171,14 +194,21 @@ describe(`unixfs index preparation`, () => {
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     const location = '/bucket/file.bin'
+    /** @type {API.Block | undefined} */
+    let rootBlock
 
-    const unixFsFileLinkStream = createUnixFsFileLinkStream(blob)
-    // Get entries to be able to see if index records were written
-    const unixFsFileLinkEntries = await readAll(unixFsFileLinkStream)
+    const { unixFsFileLinkReadable, unixFsReadable } = createUnixFsStreams(blob)
+    void (async () => {
+      rootBlock = await readLast(unixFsReadable)
+    })()
+    const unixFsFileLinkEntries = await readAll(unixFsFileLinkReadable)
 
-    const written = await writeUnixFsFileLinkIndex(blob, location, [
-      singleLevelIndexWriter,
-    ])
+    const written = await writeUnixFsFileLinkIndex(
+      blob,
+      location,
+      [singleLevelIndexWriter],
+      packStore
+    )
 
     assert.ok(written, 'index was written')
     assert.ok(written.containingMultihash, 'containing multihash was written')
@@ -196,6 +226,10 @@ describe(`unixfs index preparation`, () => {
       ),
       'containing multihash matches root file link'
     )
+    // Check root block
+    assert.ok(rootBlock)
+    assert(rootBlock.cid.equals(rootFileLink.cid))
+
     const rootIndexRecords = await all(
       indexReader.findRecords(rootFileLink.cid.multihash)
     )
@@ -265,42 +299,76 @@ describe(`unixfs index preparation`, () => {
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     const location = '/bucket/file.bin'
+    /** @type {API.Block | undefined} */
+    let rootBlock
 
     // Store blob in set location
     await packStore.put(location, bytes)
 
     // Get entries to be able to see if index records were written
-    const unixFsFileLinkStream = createUnixFsFileLinkStream(blob)
-    const unixFsFileLinkEntries = await readAll(unixFsFileLinkStream)
+    const { unixFsFileLinkReadable, unixFsReadable } = createUnixFsStreams(blob)
+    void (async () => {
+      rootBlock = await readLast(unixFsReadable)
+    })()
+    const unixFsFileLinkEntries = await readAll(unixFsFileLinkReadable)
+
+    assert.ok(rootBlock, 'root block was created')
 
     // Write index for unixfs file links
-    await writeUnixFsFileLinkIndex(blob, location, [singleLevelIndexWriter])
+    await writeUnixFsFileLinkIndex(
+      blob,
+      location,
+      [singleLevelIndexWriter],
+      packStore
+    )
 
-    // Iterate entries and attempt to stream them
+    // Iterate entries and attempt to stream them.
+    // Collect all verifiable blobs and compare with original bytes
+    let concatedBlobBytes = new Uint8Array([])
     for (const entry of unixFsFileLinkEntries) {
       const verifiableBlobs = await all(
         hashStreamer.stream(entry.cid.multihash)
       )
       assert.equal(verifiableBlobs.length, 1)
-      const verifiableBlob = verifiableBlobs[0]
-      assert.equal(verifiableBlob.bytes.byteLength, entry.contentByteLength)
 
-      // Check bytes
-      assert.ok(
-        equals(
-          verifiableBlob.bytes,
-          bytes.slice(
-            entry.contentByteOffset,
-            (entry.contentByteOffset || 0) + entry.contentByteLength
+      const verifiableBlob = verifiableBlobs[0]
+      // If root CID, the butes should be different as it is a DAG PB
+      // rather than the raw blob
+      if (entry.cid.equals(rootBlock.cid)) {
+        assert.notEqual(
+          verifiableBlob.bytes.byteLength,
+          entry.contentByteLength
+        )
+      } else {
+        assert.equal(verifiableBlob.bytes.byteLength, entry.contentByteLength)
+
+        // Check bytes
+        assert.ok(
+          equals(
+            verifiableBlob.bytes,
+            bytes.slice(
+              entry.contentByteOffset,
+              (entry.contentByteOffset || 0) + entry.contentByteLength
+            )
           )
         )
-      )
 
-      // Check multihash
-      assert.ok(
-        equals(verifiableBlob.multihash.bytes, entry.cid.multihash.bytes)
-      )
+        // Check multihash
+        assert.ok(
+          equals(verifiableBlob.multihash.bytes, entry.cid.multihash.bytes)
+        )
+
+        // Concatenate all bytes from entries except the root CID
+        // @ts-expect-error
+        concatedBlobBytes = concat([concatedBlobBytes, verifiableBlob.bytes])
+      }
     }
+
+    // Verify concatenated bytes they match the original bytes
+    assert(
+      equals(concatedBlobBytes, bytes),
+      'concatenated bytes match original bytes'
+    )
   })
 
   it('streams raw content from pack store with unixfs file link indexed with multiple level writer', async () => {
@@ -308,20 +376,29 @@ describe(`unixfs index preparation`, () => {
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     const location = '/bucket/file.bin'
+    /** @type {API.Block | undefined} */
+    let rootBlock
 
     // Store blob in set location
     await packStore.put(location, bytes)
 
     // Get entries to be able to see if index records were written
-    const unixFsFileLinkStream = createUnixFsFileLinkStream(blob)
-    const unixFsFileLinkEntries = await readAll(unixFsFileLinkStream)
+    const { unixFsFileLinkReadable, unixFsReadable } = createUnixFsStreams(blob)
+    void (async () => {
+      rootBlock = await readLast(unixFsReadable)
+    })()
+    const unixFsFileLinkEntries = await readAll(unixFsFileLinkReadable)
 
     // Write index for unixfs file links
-    const written = await writeUnixFsFileLinkIndex(blob, location, [
-      multipleLevelIndexWriter,
-    ])
+    const written = await writeUnixFsFileLinkIndex(
+      blob,
+      location,
+      [multipleLevelIndexWriter],
+      packStore
+    )
     assert.ok(written, 'index was written')
     assert.ok(written.containingMultihash, 'containing multihash was written')
+    assert.ok(rootBlock, 'root block was created')
 
     // Iterate entries and attempt to stream them
     for (const entry of unixFsFileLinkEntries) {
@@ -331,102 +408,76 @@ describe(`unixfs index preparation`, () => {
       const verifiableBlobsWithoutContaining = await all(
         hashStreamer.stream(entry.cid.multihash)
       )
+      // Only finds records without containing multihash
+      // if the entry is the containing multihash itself
       if (
         equals(entry.cid.multihash.bytes, written.containingMultihash.bytes)
       ) {
-        assert.equal(verifiableBlobsWithoutContaining.length, 5)
+        assert.equal(verifiableBlobsWithoutContaining.length, 6)
+
+        const verifiableBlobsWithContaining = await all(
+          hashStreamer.stream(entry.cid.multihash, {
+            containingMultihash: written.containingMultihash,
+          })
+        )
+        assert.equal(verifiableBlobsWithContaining.length, 1)
+        assert(
+          equals(verifiableBlobsWithContaining[0].bytes, rootBlock.bytes),
+          'bytes match the root block bytes'
+        )
+        assert(
+          equals(
+            verifiableBlobsWithContaining[0].multihash.bytes,
+            rootBlock.cid.multihash.bytes
+          ),
+          'multihash matches the entry multihash'
+        )
       } else {
+        // Not found verifiable blobs without containing multihash
         assert.equal(verifiableBlobsWithoutContaining.length, 0)
-      }
 
-      const verifiableBlobs = await all(
-        hashStreamer.stream(entry.cid.multihash, {
-          containingMultihash: written.containingMultihash,
-        })
-      )
-      assert.equal(verifiableBlobs.length, 1)
-      const verifiableBlob = verifiableBlobs[0]
-      assert.equal(verifiableBlob.bytes.byteLength, entry.contentByteLength)
+        const verifiableBlobsWithContaining = await all(
+          hashStreamer.stream(entry.cid.multihash, {
+            containingMultihash: written.containingMultihash,
+          })
+        )
+        assert.equal(verifiableBlobsWithContaining.length, 1)
+        const verifiableBlob = verifiableBlobsWithContaining[0]
+        assert.equal(verifiableBlob.bytes.byteLength, entry.contentByteLength)
 
-      // Check bytes
-      assert.ok(
-        equals(
-          verifiableBlob.bytes,
-          bytes.slice(
-            entry.contentByteOffset,
-            (entry.contentByteOffset || 0) + entry.contentByteLength
+        // Check bytes
+        assert.ok(
+          equals(
+            verifiableBlob.bytes,
+            bytes.slice(
+              entry.contentByteOffset,
+              (entry.contentByteOffset || 0) + entry.contentByteLength
+            )
           )
         )
-      )
 
-      // Check multihash
-      assert.ok(
-        equals(verifiableBlob.multihash.bytes, entry.cid.multihash.bytes)
-      )
+        // Check multihash
+        assert.ok(
+          equals(verifiableBlob.multihash.bytes, entry.cid.multihash.bytes)
+        )
+      }
     }
 
     // Get Verifiable blobs for containing multihash
     const verifiableBlobs = await all(
       hashStreamer.stream(written.containingMultihash)
     )
-    assert.equal(verifiableBlobs.length, 5)
+    // 5 chunks for the file and 1 for the root block
+    // which is the unixfs root block
+    assert.equal(verifiableBlobs.length, 6)
     const fetchedBytes = getBytesFromChunckedBytes(
-      verifiableBlobs.map((blob) => blob.bytes)
+      // remove last blob with the unixfs root block
+      verifiableBlobs
+        .slice(0, verifiableBlobs.length - 1)
+        .map((blob) => blob.bytes)
     )
     assert.equal(fetchedBytes.byteLength, byteLength)
     assert.ok(equals(fetchedBytes, bytes), 'fetched bytes match original bytes')
-  })
-
-  it('streams raw content from pack store with unixfs file link indexed with multiple level writer, but no index containing', async () => {
-    const byteLength = 5_000_000
-    const bytes = await randomBytes(byteLength)
-    const blob = new Blob([bytes])
-    const location = '/bucket/file.bin'
-
-    // Store blob in set location
-    await packStore.put(location, bytes)
-
-    // Get entries to be able to see if index records were written
-    const unixFsFileLinkStream = createUnixFsFileLinkStream(blob)
-    const unixFsFileLinkEntries = await readAll(unixFsFileLinkStream)
-
-    // Write index for unixfs file links
-    const written = await writeUnixFsFileLinkIndex(
-      blob,
-      location,
-      [multipleLevelIndexWriter],
-      {
-        notIndexContaining: true,
-      }
-    )
-    assert.ok(written, 'index was written')
-    assert.ok(written.containingMultihash, 'containing multihash was written')
-
-    // Iterate entries and attempt to stream them
-    for (const entry of unixFsFileLinkEntries) {
-      const verifiableBlobs = await all(
-        hashStreamer.stream(entry.cid.multihash)
-      )
-      assert.equal(verifiableBlobs.length, 1)
-      const verifiableBlob = verifiableBlobs[0]
-      assert.equal(verifiableBlob.bytes.byteLength, entry.contentByteLength)
-
-      // Check bytes
-      assert.ok(
-        equals(
-          verifiableBlob.bytes,
-          bytes.slice(
-            entry.contentByteOffset,
-            (entry.contentByteOffset || 0) + entry.contentByteLength
-          )
-        )
-      )
-
-      // Check multihash
-      assert.ok(
-        equals(verifiableBlob.multihash.bytes, entry.cid.multihash.bytes)
-      )
-    }
   })
 
   it('writes unixfs file link index after processing blob for multiple writers', async () => {
@@ -434,15 +485,23 @@ describe(`unixfs index preparation`, () => {
     const bytes = await randomBytes(byteLength)
     const blob = new Blob([bytes])
     const location = '/bucket/file.bin'
+    /** @type {API.Block | undefined} */
+    let rootBlock
 
-    const unixFsFileLinkStream = createUnixFsFileLinkStream(blob)
     // Get entries to be able to see if index records were written
-    const unixFsFileLinkEntries = await readAll(unixFsFileLinkStream)
+    const { unixFsFileLinkReadable, unixFsReadable } = createUnixFsStreams(blob)
+    void (async () => {
+      rootBlock = await readLast(unixFsReadable)
+    })()
+    const unixFsFileLinkEntries = await readAll(unixFsFileLinkReadable)
+    assert.ok(rootBlock, 'root block was created')
 
-    const written = await writeUnixFsFileLinkIndex(blob, location, [
-      singleLevelIndexWriter,
-      multipleLevelIndexWriter,
-    ])
+    const written = await writeUnixFsFileLinkIndex(
+      blob,
+      location,
+      [singleLevelIndexWriter, multipleLevelIndexWriter],
+      packStore
+    )
 
     assert.ok(written, 'index was written')
     assert.ok(written.containingMultihash, 'containing multihash was written')
@@ -483,51 +542,6 @@ describe(`unixfs index preparation`, () => {
     assert.equal(multipleLevelRootIndexRecord.subRecords.length, 6)
   })
 
-  it('writes unixfs file link index after processing blob for multiple writers not indexing containing', async () => {
-    const byteLength = 5_000_000
-    const bytes = await randomBytes(byteLength)
-    const blob = new Blob([bytes])
-    const location = '/bucket/file.bin'
-
-    const unixFsFileLinkStream = createUnixFsFileLinkStream(blob)
-    // Get entries to be able to see if index records were written
-    const unixFsFileLinkEntries = await readAll(unixFsFileLinkStream)
-
-    const written = await writeUnixFsFileLinkIndex(
-      blob,
-      location,
-      [singleLevelIndexWriter, multipleLevelIndexWriter],
-      { notIndexContaining: true }
-    )
-
-    assert.ok(written, 'index was written')
-    assert.ok(written.containingMultihash, 'containing multihash was written')
-
-    // Validate root CID for unixFS
-    const [rootFileLink] = unixFsFileLinkEntries.splice(
-      unixFsFileLinkEntries.length - 1,
-      1
-    )
-    assert.ok(rootFileLink)
-    assert.ok(
-      equals(
-        rootFileLink.cid.multihash.bytes,
-        written.containingMultihash.bytes
-      ),
-      'containing multihash matches root file link'
-    )
-    const rootIndexRecords = await all(
-      indexReader.findRecords(rootFileLink.cid.multihash)
-    )
-    assert.equal(rootIndexRecords.length, 1)
-
-    const rootIndexRecord = rootIndexRecords.find(
-      (record) => record.type === Type.BLOB
-    )
-
-    assert(rootIndexRecord)
-  })
-
   it('handles empty index writers', async () => {
     const byteLength = 5_000_000
     const bytes = await randomBytes(byteLength)
@@ -539,7 +553,7 @@ describe(`unixfs index preparation`, () => {
 
     // Write index for unixfs file links
     assert.rejects(
-      () => writeUnixFsFileLinkIndex(blob, location, []),
+      () => writeUnixFsFileLinkIndex(blob, location, [], packStore),
       {
         name: 'Error',
         message: 'No index writers provided',
@@ -581,4 +595,23 @@ async function readAll(stream) {
     chunks.push(value)
   }
   return chunks
+}
+
+/**
+ * Reads all chunks from a ReadableStream and returns the last.
+ *
+ * @template T
+ * @param {ReadableStream<T>} stream
+ * @returns {Promise<T | undefined>}
+ */
+async function readLast(stream) {
+  const reader = stream.getReader()
+  let chunk
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { value, done } = await reader.read()
+    if (done) break
+    chunk = value
+  }
+  return chunk
 }

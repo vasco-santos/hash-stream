@@ -10,7 +10,9 @@ export interface FileMetadata {
   size?: number
 }
 
-export interface FileStore {
+export interface FileStore extends FileStoreReader {}
+
+export interface FileStoreReader {
   /**
    * Lists all files available in the store.
    * Returns an iterable of file metadata or identifiers.
@@ -47,3 +49,5 @@ export interface QueuedIndexTask {
   fileReference: string
   options?: IndexSchedulerAddOptions
 }
+
+export type Path = string

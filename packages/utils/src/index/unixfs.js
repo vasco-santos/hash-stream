@@ -1,10 +1,13 @@
 import * as API from './api.js'
+import pDefer from 'p-defer'
 import * as PackAPI from '@hash-stream/pack/types'
 import * as raw from 'multiformats/codecs/raw'
 import * as UnixFS from '@vascosantos/unixfs'
 
 import { withMaxChunkSize } from '@vascosantos/unixfs/file/chunker/fixed'
 import { withWidth } from '@vascosantos/unixfs/file/layout/balanced'
+
+import { readAll, readLast } from './utils.js'
 
 export const MAX_CHUNK_SIZE = 1024 * 1024
 export const defaultSettings = UnixFS.configure({
@@ -17,7 +20,8 @@ export const defaultSettings = UnixFS.configure({
 /**
  * @param {PackAPI.BlobLike} blob
  * @param {string} path
- * @param {PackAPI.IndexWriter[]} indexWriters
+ * @param {PackAPI.IndexWriter[]} indexWriters}
+ * @param {PackAPI.PackStoreWriter} packStoreWriter
  * @param {API.CreateUnixFsFileLikeStreamOptions} [options]
  * @returns {Promise<{ containingMultihash: API.MultihashDigest}>}
  */
@@ -25,53 +29,36 @@ export async function writeUnixFsFileLinkIndex(
   blob,
   path,
   indexWriters,
+  packStoreWriter,
   options
 ) {
   if (!indexWriters || !indexWriters.length) {
     throw new Error('No index writers provided')
   }
   // Create a UnixFS file link stream
-  const unixFsFileLinkStream = createUnixFsFileLinkStream(blob, options)
+  const { unixFsFileLinkReadable, unixFsReadable } = createUnixFsStreams(
+    blob,
+    options
+  )
+  /** @type {import('p-defer').DeferredPromise<API.Block>} */
+  const rootBlockDefer = pDefer()
 
-  // If we should *not* index the containing multihash → stream lazily
-  if (options?.notIndexContaining) {
-    // Tee the stream for multiple writers
-    const teedStreams = teeMultipleStreams(
-      unixFsFileLinkStream,
-      indexWriters.length
-    )
-
-    // Prepare promise to get containing multihash
-    // This will be resolved when the last stream is processed
-    /** @type {(mh: API.MultihashDigest) => void} */
-    let resolveLast
-    const lastMultihashPromise = new Promise((resolve) => {
-      resolveLast = resolve
-    })
-
-    // Start processing all writers
-    await Promise.all(
-      teedStreams.map((stream, i) =>
-        indexWriters[i].addBlobs(
-          streamIndexData(
-            stream.getReader(),
-            path,
-            i === 0 ? resolveLast : undefined
-          )
-        )
-      )
-    )
-
-    /** @type {API.MultihashDigest} */
-    const lastMultihash = await lastMultihashPromise
-    return { containingMultihash: lastMultihash }
-  }
+  void (async () => {
+    const rootBlock = await readLast(unixFsReadable)
+    rootBlockDefer.resolve(rootBlock)
+  })()
 
   // Buffering mode to precompute containingMultihash first
-  const unixFsFileLinkEntries = await readAll(unixFsFileLinkStream)
+  const unixFsFileLinkEntries = await readAll(unixFsFileLinkReadable)
 
   const containingMultihash =
     unixFsFileLinkEntries[unixFsFileLinkEntries.length - 1].cid.multihash
+
+  // Wait for the root block to be computed
+  const rootBlock = await rootBlockDefer.promise
+
+  // Write the root block to the store
+  await packStoreWriter.put(rootBlock.cid.multihash, rootBlock.bytes)
 
   // Start processing all writers
   await Promise.all(
@@ -79,11 +66,23 @@ export async function writeUnixFsFileLinkIndex(
       indexWriter.addBlobs(
         (async function* () {
           for (const entry of unixFsFileLinkEntries) {
-            yield {
-              multihash: entry.cid.multihash,
-              location: path,
-              offset: entry.contentByteOffset || 0,
-              length: entry.contentByteLength,
+            // handle root CID as a special case
+            // where the DAG is stored in the multihash location
+            // of the root CID multihash
+            if (entry.cid.equals(rootBlock.cid)) {
+              yield {
+                multihash: entry.cid.multihash,
+                location: rootBlock.cid.multihash,
+                offset: 0,
+                length: entry.contentByteLength,
+              }
+            } else {
+              yield {
+                multihash: entry.cid.multihash,
+                location: path,
+                offset: entry.contentByteOffset || 0,
+                length: entry.contentByteLength,
+              }
             }
           }
         })(),
@@ -101,24 +100,28 @@ export async function writeUnixFsFileLinkIndex(
 /**
  * @param {PackAPI.BlobLike} blob
  * @param {API.CreateUnixFsFileLikeStreamOptions} [options]
- * @returns {ReadableStream<import('@vascosantos/unixfs').FileLink>}
+ * @returns {API.UnixFsStreams}
  */
-export function createUnixFsFileLinkStream(
+export function createUnixFsStreams(
   blob,
   options = {
     settings: defaultSettings,
   }
 ) {
+  /* c8 ignore next 1 */
   const settings = options?.settings ?? defaultSettings
 
-  // Set up metadata stream
+  // Set up file link stream
   const { readable: unixFsFileLinkReadable, writable: unixFsFileLinkWritable } =
     new TransformStream()
+  // Set up unixfs stream
+  const { readable: unixFsReadable, writable: unixFsWritable } =
+    new TransformStream()
 
-  // Pipe one branch into UnixFS for metadata indexing
+  // Pipe one branch into UnixFS for file link indexing
   void (async () => {
     const unixfsWriter = UnixFS.createWriter({
-      writable: new WritableStream(),
+      writable: unixFsWritable,
       // @ts-expect-error
       settings,
     })
@@ -126,7 +129,6 @@ export function createUnixFsFileLinkStream(
 
     try {
       const fileBuilder = new UnixFSFileBuilder('', blob)
-
       await fileBuilder.finalize(unixfsWriter, {
         initOptions: {
           unixFsFileLinkWriter,
@@ -140,7 +142,7 @@ export function createUnixFsFileLinkStream(
   })()
 
   // Return the unixfs file links stream
-  return unixFsFileLinkReadable
+  return { unixFsFileLinkReadable, unixFsReadable }
 }
 
 // from @web3-storage/upload-client
@@ -172,79 +174,4 @@ class UnixFSFileBuilder {
     )
     return await unixfsFileWriter.close()
   }
-}
-
-/**
- * Tee a ReadableStream into multiple streams.
- *
- * @param {ReadableStream} readable
- * @param {number} n - The number of teed streams to create
- * @returns {ReadableStream[]} - Array of teed ReadableStreams
- */
-function teeMultipleStreams(readable, n) {
-  if (n <= 1) return [readable]
-
-  // Use tee to split the stream into two
-  let [first, second] = readable.tee()
-  const streams = [first]
-
-  // If n is greater than 2, tee the second stream and continue
-  let currentStream = second
-  /* c8 ignore next 5 */
-  for (let i = 1; i < n - 1; i++) {
-    const [newStream, remaining] = currentStream.tee()
-    streams.push(newStream)
-    currentStream = remaining
-  }
-
-  // Only push the last stream when we have more than two streams
-  streams.push(currentStream)
-
-  return streams
-}
-
-/**
- * Streams index data from a reader as an async generator.
- *
- * @param {ReadableStreamDefaultReader<import('@vascosantos/unixfs').FileLink>} reader
- * @param {string} path
- * @param {(mh: API.MultihashDigest) => void} [onLast]
- * @returns {AsyncGenerator<import('@hash-stream/index/types').BlobIndexRecord, void, unknown>}
- */
-async function* streamIndexData(reader, path, onLast) {
-  let lastSeen = undefined
-  while (true) {
-    const { value, done } = await reader.read()
-    if (done) break
-    lastSeen = value
-    yield {
-      multihash: value.cid.multihash,
-      location: path,
-      offset: value.contentByteOffset || 0,
-      length: value.contentByteLength,
-    }
-  }
-
-  if (onLast && lastSeen) {
-    onLast(lastSeen.cid.multihash)
-  }
-}
-
-/**
- * Reads all chunks from a ReadableStream and returns them as an array.
- *
- * @template T
- * @param {ReadableStream<T>} stream
- * @returns {Promise<T[]>}
- */
-async function readAll(stream) {
-  const reader = stream.getReader()
-  const chunks = []
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const { value, done } = await reader.read()
-    if (done) break
-    chunks.push(value)
-  }
-  return chunks
 }

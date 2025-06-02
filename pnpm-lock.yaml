@@ -279,6 +279,9 @@ importers:
       '@hash-stream/index':
         specifier: workspace:^
         version: link:../index
+      '@hash-stream/pack':
+        specifier: workspace:^
+        version: link:../pack
       '@hash-stream/utils':
         specifier: workspace:^
         version: link:../utils
@@ -288,6 +291,9 @@ importers:
       '@web3-storage/upload-client':
         specifier: ^17.1.4
         version: 17.1.4(encoding@0.1.13)
+      multiformats:
+        specifier: ^13.3.2
+        version: 13.3.4
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20250525.0
@@ -349,6 +355,9 @@ importers:
       typescript:
         specifier: ^5.8.2
         version: 5.8.3
+      uint8arrays:
+        specifier: ^5.1.0
+        version: 5.1.0
 
   packages/pack:
     dependencies:
@@ -516,6 +525,9 @@ importers:
       multiformats:
         specifier: ^13.3.2
         version: 13.3.4
+      p-defer:
+        specifier: ^4.0.1
+        version: 4.0.1
       uint8arrays:
         specifier: ^5.1.0
         version: 5.1.0

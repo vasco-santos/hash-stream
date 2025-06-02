@@ -30,11 +30,13 @@ const blob = new Blob(['hello world'])
 const indexWriters = [
   /* your Hashstream IndexWriter instances */
 ]
+const packStore = // your Hashstream Pack store of choice instance
 
 const { containingMultihash } = await writeUnixFsFileLinkIndex(
   blob,
   '/file.txt',
   indexWriters,
+  packStore,
   {
     notIndexContaining: false,
     settings: {
@@ -50,6 +52,7 @@ const { containingMultihash } = await writeUnixFsFileLinkIndex(
 - `blob` (`BlobLike`) – The file blob to be split into UnixFS chunks.
 - `path` (`string`) – Virtual path to associate with the entries in the index.
 - `indexWriters` (`IndexWriter[]`) – Array of writers that receive streamable index entries.
+- `PackStore` - Pack Store where UnixFS block with root of DAG can be stored.
 - `options` (optional) (`CreateUnixFsFileLikeStreamOptions`):
   - `notIndexContaining` (`boolean`) – If `true`, skips indexing the containing multihash in an hierarchy.
   - `settings` (`Partial<UnixFSEncodeSettings>`) – Optional settings passed to the UnixFS writer.
