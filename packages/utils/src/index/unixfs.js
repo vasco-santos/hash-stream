@@ -74,7 +74,7 @@ export async function writeUnixFsFileLinkIndex(
                 multihash: entry.cid.multihash,
                 location: rootBlock.cid.multihash,
                 offset: 0,
-                length: entry.contentByteLength,
+                length: rootBlock.bytes.byteLength,
               }
             } else {
               yield {
