@@ -65,6 +65,7 @@
     "@vascosantos/unixfs": "^3.0.3",
     "ipfs-core-utils": "^0.18.1",
     "multiformats": "^13.3.2",
+    "p-defer": "^4.0.1",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {

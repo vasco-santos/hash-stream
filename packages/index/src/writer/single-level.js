@@ -1,6 +1,7 @@
 import * as API from '../api.js'
 
 import { base58btc } from 'multiformats/bases/base58'
+import { equals } from 'uint8arrays'
 
 import { createFromBlob, createFromPack } from '../record.js'
 
@@ -56,8 +57,12 @@ export class SingleLevelIndexWriter {
       const blob = createFromBlob(multihash, location, offset, length)
       yield blob
 
-      // If the location is not a string, we can create a Pack Index record
-      if (typeof location !== 'string') {
+      // If the location is not a string and not equal to the multihash itself,
+      // we can create a Pack Index record
+      if (
+        typeof location !== 'string' &&
+        !equals(multihash.bytes, location.bytes)
+      ) {
         // Create/Update Pack Index record
         const encodedLocation = base58btc.encode(location.bytes)
         packs.set(encodedLocation, location)

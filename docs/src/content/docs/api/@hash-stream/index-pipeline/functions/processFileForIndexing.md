@@ -5,9 +5,9 @@ prev: true
 title: "processFileForIndexing"
 ---
 
-> **processFileForIndexing**(`fileStore`, `indexWriters`, `indexFormat`, `fileReference`, `options?`): [`Promise`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`undefined` \| `MultihashDigest`\<`number`\>\>
+> **processFileForIndexing**(`fileStore`, `packStoreWriter`, `indexWriters`, `indexFormat`, `fileReference`, `options?`): [`Promise`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`MultihashDigest`\<`number`\>\>
 
-Defined in: [index.js:52](https://github.com/vasco-santos/hash-stream/blob/main/packages/index-pipeline/src/index.js#L52)
+Defined in: [index.js:54](https://github.com/vasco-santos/hash-stream/blob/main/packages/index-pipeline/src/index.js#L54)
 
 Scheduler consumer function where a file reference is fetched from the store,
 processed, and then written to the index store.
@@ -21,6 +21,7 @@ content to the index store using the provided index writer.
 | Parameter | Type |
 | ------ | ------ |
 | `fileStore` | `FileStore` |
+| `packStoreWriter` | `PackStoreWriter` |
 | `indexWriters` | `IndexWriter`[] |
 | `indexFormat` | `string` |
 | `fileReference` | `string` |
@@ -28,4 +29,4 @@ content to the index store using the provided index writer.
 
 ## Returns
 
-[`Promise`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`undefined` \| `MultihashDigest`\<`number`\>\>
+[`Promise`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`MultihashDigest`\<`number`\>\>

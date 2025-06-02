@@ -44,6 +44,7 @@ export async function* scheduleStoreFilesForIndexing(
  * content to the index store using the provided index writer.
  *
  * @param {API.FileStore} fileStore
+ * @param {import('@hash-stream/pack/types').PackStoreWriter} packStoreWriter
  * @param {import('@hash-stream/index/types').IndexWriter[]} indexWriters
  * @param {string} indexFormat
  * @param {string} fileReference
@@ -52,6 +53,7 @@ export async function* scheduleStoreFilesForIndexing(
  */
 export async function processFileForIndexing(
   fileStore,
+  packStoreWriter,
   indexWriters,
   indexFormat,
   fileReference,
@@ -70,6 +72,7 @@ export async function processFileForIndexing(
       blob,
       fileReference,
       indexWriters,
+      packStoreWriter,
       {
         settings: {
           ...defaultSettings,
