@@ -1,6 +1,6 @@
 {
   "name": "@hash-stream/pack",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "The pack client to use hash-stream",
   "repository": {
     "type": "git",
