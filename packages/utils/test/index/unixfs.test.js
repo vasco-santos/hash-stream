@@ -9,7 +9,6 @@ import { concat } from 'uint8arrays/concat'
 import all from 'it-all'
 
 import { MemoryPackStore } from '@hash-stream/pack/store/memory'
-import { PackReader } from '@hash-stream/pack'
 import { MemoryIndexStore } from '@hash-stream/index/store/memory'
 import {
   SingleLevelIndexWriter,
@@ -25,6 +24,7 @@ import {
   MAX_CHUNK_SIZE,
   defaultSettings,
 } from '../../src/index/unixfs.js'
+import { UnixFsPackReader } from '../../src/index/unixfs-pack-reader.js'
 
 import { randomBytes } from '../helpers/random.js'
 
@@ -39,6 +39,8 @@ describe(`unixfs index preparation`, () => {
   let indexReader
   /** @type {import('@hash-stream/pack/types').PackStore} */
   let packStore
+  /** @type {import('@hash-stream/pack/types').PackStore} */
+  let pathStore
   /** @type {import('@hash-stream/pack/types').PackReader} */
   let packReader
   /** @type {import('@hash-stream/streamer/types').HashStreamer} */
@@ -49,8 +51,11 @@ describe(`unixfs index preparation`, () => {
     indexReader = new IndexReader(indexStore)
     singleLevelIndexWriter = new SingleLevelIndexWriter(indexStore)
     multipleLevelIndexWriter = new MultipleLevelIndexWriter(indexStore)
+    // Where packs are stored
     packStore = new MemoryPackStore()
-    packReader = new PackReader(packStore)
+    // Where paths are stored in original format
+    pathStore = new MemoryPackStore()
+    packReader = new UnixFsPackReader(packStore, pathStore)
     hashStreamer = new HashStreamer(indexReader, packReader)
   })
 
@@ -302,8 +307,8 @@ describe(`unixfs index preparation`, () => {
     /** @type {API.Block | undefined} */
     let rootBlock
 
-    // Store blob in set location
-    await packStore.put(location, bytes)
+    // Store blob in set location on the path store
+    await pathStore.put(location, bytes)
 
     // Get entries to be able to see if index records were written
     const { unixFsFileLinkReadable, unixFsReadable } = createUnixFsStreams(blob)
@@ -379,8 +384,8 @@ describe(`unixfs index preparation`, () => {
     /** @type {API.Block | undefined} */
     let rootBlock
 
-    // Store blob in set location
-    await packStore.put(location, bytes)
+    // Store blob in set location on the path store
+    await pathStore.put(location, bytes)
 
     // Get entries to be able to see if index records were written
     const { unixFsFileLinkReadable, unixFsReadable } = createUnixFsStreams(blob)
@@ -549,7 +554,7 @@ describe(`unixfs index preparation`, () => {
     const location = '/bucket/file.bin'
 
     // Store blob in set location
-    await packStore.put(location, bytes)
+    await pathStore.put(location, bytes)
 
     // Write index for unixfs file links
     assert.rejects(

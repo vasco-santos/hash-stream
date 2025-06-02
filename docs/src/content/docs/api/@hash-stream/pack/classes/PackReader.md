@@ -15,7 +15,7 @@ PackReader is responsible for reading packs from the store.
 
 ### Constructor
 
-> **new PackReader**(`storeReader`): `PackReader`
+> **new PackReader**(`storeStreamer`): `PackReader`
 
 Defined in: [reader.js:13](https://github.com/vasco-santos/hash-stream/blob/main/packages/pack/src/reader.js#L13)
 
@@ -23,7 +23,7 @@ Defined in: [reader.js:13](https://github.com/vasco-santos/hash-stream/blob/main
 
 | Parameter | Type |
 | ------ | ------ |
-| `storeReader` | `PackStoreReader` |
+| `storeStreamer` | `PackStoreStreamer` |
 
 #### Returns
 
@@ -50,8 +50,8 @@ Defined in: [reader.js:22](https://github.com/vasco-santos/hash-stream/blob/main
 
 ## Properties
 
-### storeReader
+### storeStreamer
 
-> **storeReader**: `PackStoreReader`
+> **storeStreamer**: `PackStoreStreamer`
 
 Defined in: [reader.js:14](https://github.com/vasco-santos/hash-stream/blob/main/packages/pack/src/reader.js#L14)

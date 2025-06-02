@@ -100,6 +100,33 @@ while (true) {
 **Returns:** `ReadableStream<FileLink>`  
 A stream of metadata entries (`FileLink`) describing the chunks and layout of the encoded UnixFS file.
 
+### `index/unixfs-pack-reader`
+
+#### `UnixFsPackReader`
+
+Provides a way to stream file data from multiple pack stores depending on the input type (multihash digest or path). This is useful for keeping original raw files in a separate store and UnixFS Dag files in another store.
+
+```ts
+import { UnixFsPackReader } from '@hash-stream/utils/index/unixfs-pack-reader'
+
+const reader = new UnixFsPackReader(multihashPackStore, pathPackStore)
+
+for await (const entry of reader.stream(someTarget)) {
+  console.log(entry) // VerifiableEntry
+}
+```
+
+**Constructor:**
+- `new UnixFsPackReader(packStoreStreamer, pathStoreStreamer)`
+  - `packStoreStreamer` (`PackStoreStreamer`) – Used for multihash-based lookups
+  - `pathStoreStreamer` (`PackStoreStreamer`) – Used for path-based lookups
+
+**Method:**
+- `stream(target, ranges?)`
+  - `target`: `MultihashDigest | Path` – The target to retrieve
+  - `ranges`: Optional array of `{ offset, length?, multihash }` range descriptors
+  - **Returns:** `AsyncIterable<VerifiableEntry>`
+
 ### `trustless-ipfs-gateway`
 
 #### `streamer.asRawUint8Array`
