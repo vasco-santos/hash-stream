@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/vasco-santos/hash-stream/compare/streamer-v1.3.1...streamer-v1.4.0) (2025-06-02)
+
+
+### Features
+
+* unixfs pack reader ([#132](https://github.com/vasco-santos/hash-stream/issues/132)) ([d4a1c14](https://github.com/vasco-santos/hash-stream/commit/d4a1c14edeb023e088862c55e195307ed429f4a8))
+
 ## [1.3.1](https://github.com/vasco-santos/hash-stream/compare/streamer-v1.3.0...streamer-v1.3.1) (2025-06-02)
 
 
