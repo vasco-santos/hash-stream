@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/vasco-santos/hash-stream/compare/utils-v2.1.2...utils-v2.2.0) (2025-06-02)
+
+
+### Features
+
+* unixfs pack reader ([#132](https://github.com/vasco-santos/hash-stream/issues/132)) ([d4a1c14](https://github.com/vasco-santos/hash-stream/commit/d4a1c14edeb023e088862c55e195307ed429f4a8))
+
 ## [2.1.2](https://github.com/vasco-santos/hash-stream/compare/utils-v2.1.1...utils-v2.1.2) (2025-06-02)
 
 
