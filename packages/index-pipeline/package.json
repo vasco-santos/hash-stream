@@ -1,6 +1,6 @@
 {
   "name": "@hash-stream/index-pipeline",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Index pipeline for using hash-stream",
   "repository": {
     "type": "git",
