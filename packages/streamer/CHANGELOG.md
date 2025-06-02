@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/vasco-santos/hash-stream/compare/streamer-v1.3.0...streamer-v1.3.1) (2025-06-02)
+
+
+### Fixes
+
+* pack store s3 only checksum mode disabled in test ([#129](https://github.com/vasco-santos/hash-stream/issues/129)) ([573017e](https://github.com/vasco-santos/hash-stream/commit/573017e70242c01d61afd2b24c1906d33aa57451))
+
 ## [1.3.0](https://github.com/vasco-santos/hash-stream/compare/streamer-v1.2.1...streamer-v1.3.0) (2025-05-22)
 
 
