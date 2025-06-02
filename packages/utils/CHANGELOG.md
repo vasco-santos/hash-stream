@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/vasco-santos/hash-stream/compare/utils-v2.2.0...utils-v2.2.1) (2025-06-02)
+
+
+### Fixes
+
+* unixfs write util should keep byte length of root block and not total size ([#138](https://github.com/vasco-santos/hash-stream/issues/138)) ([ae18949](https://github.com/vasco-santos/hash-stream/commit/ae18949f1b70c330d73759282cee7d9f98b86f57))
+
 ## [2.2.0](https://github.com/vasco-santos/hash-stream/compare/utils-v2.1.2...utils-v2.2.0) (2025-06-02)
 
 
