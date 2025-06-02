@@ -66,6 +66,10 @@ import {
       const packStore = new S3LikePackStore({
         bucketName,
         client,
+        getObjectOptionsForRangeRequests: {
+          // Needed because range GET won't be the entire file
+          ChecksumMode: 'DISABLED',
+        },
       })
       const destroyablePackStore = Object.assign(packStore, {
         destroy: () => {},

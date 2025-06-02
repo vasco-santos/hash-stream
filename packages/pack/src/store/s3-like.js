@@ -20,12 +20,20 @@ export class S3LikePackStore {
    * @param {S3Client} config.client - S3 client instance.
    * @param {string} [config.prefix] - Optional prefix for stored objects.
    * @param {string} [config.extension] - Optional extension for stored objects, should include '.'.
+   * @param {object} [config.getObjectOptionsForRangeRequests] - Additional options for GetObjectCommand when handling range requests.
    */
-  constructor({ bucketName, client, prefix = '', extension = '.car' }) {
+  constructor({
+    bucketName,
+    client,
+    prefix = '',
+    extension = '.car',
+    getObjectOptionsForRangeRequests = {},
+  }) {
     this.bucketName = bucketName
     this.prefix = prefix
     this.client = client
     this.extension = extension
+    this.getObjectOptionsForRangeRequests = getObjectOptionsForRangeRequests
   }
 
   /**
@@ -158,9 +166,7 @@ export class S3LikePackStore {
             Bucket: this.bucketName,
             Key: objectKey,
             Range: rangeHeader,
-            // Needed because range GET won't be the entire file
-            // @ts-expect-error this mode is not typed
-            ChecksumMode: 'DISABLED',
+            ...this.getObjectOptionsForRangeRequests,
           })
         )
         /* c8 ignore next 1 */
