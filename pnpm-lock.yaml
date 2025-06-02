@@ -301,6 +301,9 @@ importers:
       '@hash-stream/eslint-config':
         specifier: workspace:^
         version: link:../eslint-config
+      '@hash-stream/streamer':
+        specifier: workspace:^
+        version: link:../streamer
       '@storacha/one-webcrypto':
         specifier: ^1.0.1
         version: 1.0.1

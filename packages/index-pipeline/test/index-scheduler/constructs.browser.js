@@ -4,7 +4,7 @@ import * as API from '../../src/api.js'
 
 import { MemoryIndexScheduler } from '../../src/index-scheduler/memory.js'
 
-export const getMemoryScheduler = async () => {
+export const createMemoryScheduler = async () => {
   /** @type {API.QueuedIndexTask[]} */
   const queue = []
   const scheduler = new MemoryIndexScheduler(queue)

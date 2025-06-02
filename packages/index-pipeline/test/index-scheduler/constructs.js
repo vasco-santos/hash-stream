@@ -12,7 +12,7 @@ import { createQueue, createSQS } from '../helpers/resources.js'
 /**
  * @param {number} [messageTarget]
  */
-export const getSQSLikeScheduler = async (messageTarget = 0) => {
+export const createSQSLikeScheduler = async (messageTarget = 0) => {
   const { client: sqsClient } = await createSQS()
   const queueUrl = await createQueue(sqsClient)
   /** @type {API.QueuedIndexTask[]} */

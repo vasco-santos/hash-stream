@@ -5,7 +5,7 @@ import { MultipleLevelIndexWriter, IndexReader } from '@hash-stream/index'
 import { runIndexPipelineTests } from './index.js'
 
 import { getMemoryStore } from './file-store/constructs.browser.js'
-import { getMemoryScheduler } from './index-scheduler/constructs.browser.js'
+import { createMemoryScheduler } from './index-scheduler/constructs.browser.js'
 
 describe('indexPipeline combinations', () => {
   let indexStore = new MemoryIndexStore()
@@ -24,7 +24,7 @@ describe('indexPipeline combinations', () => {
       /**
        * @returns {Promise<API.IndexScheduler & { destroy(): void, drain(): AsyncGenerator<API.QueuedIndexTask> }>}
        */
-      getIndexScheduler: getMemoryScheduler,
+      getIndexScheduler: createMemoryScheduler,
       /**
        * @returns {Promise<import('@hash-stream/index/types').IndexWriter[]>}
        */

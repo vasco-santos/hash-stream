@@ -8,10 +8,10 @@ import * as API from './api.js'
 export class PackReader {
   /**
    *
-   * @param {API.PackStoreReader} storeReader
+   * @param {API.PackStoreStreamer} storeStreamer
    */
-  constructor(storeReader) {
-    this.storeReader = storeReader
+  constructor(storeStreamer) {
+    this.storeStreamer = storeStreamer
   }
 
   /**
@@ -20,6 +20,6 @@ export class PackReader {
    * @returns {AsyncIterable<API.VerifiableEntry>}
    */
   stream(target, ranges) {
-    return this.storeReader.stream(target, ranges)
+    return this.storeStreamer.stream(target, ranges)
   }
 }

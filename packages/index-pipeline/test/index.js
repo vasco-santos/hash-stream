@@ -5,6 +5,9 @@ import all from 'it-all'
 import { equals } from 'uint8arrays/equals'
 
 import { Type } from '@hash-stream/index/record'
+import { UnixFsPackReader } from '@hash-stream/utils/index/unixfs-pack-reader'
+import { HashStreamer } from '@hash-stream/streamer'
+
 import {
   scheduleStoreFilesForIndexing,
   processFileForIndexing,
@@ -15,16 +18,21 @@ import {
  * @property {() => void} destroy
  * @property {() => AsyncGenerator<API.QueuedIndexTask>} drain
  *
- * @typedef {object} DestroyableAndUpdatable
+ * @typedef {object} DestroyableAndUpdatableAndStreamable
  * @property {(key: string, bytes: Uint8Array) => Promise<void>} put
+ * @property {(target: import('multiformats').MultihashDigest | import('@hash-stream/pack/types').Path, ranges?: Array<{
+ *   offset?: number,
+ *   length?: number,
+ *   multihash: import('multiformats').MultihashDigest
+ * }>) => AsyncIterable<import('@hash-stream/pack/types').VerifiableEntry>} stream - Stream entries optionally filtered by byte ranges and multihashes.
  * @property {() => void} destroy
  *
  * @typedef {object} Destroyable
  * @property {() => void} destroy
  *
  * @typedef {API.IndexScheduler & DestroyableAndDrainable} DestroyableAndDrainableIndexScheduler
- * @typedef {API.FileStore & DestroyableAndUpdatable} DestroyableAndUpdatableFileStore
- * @typedef {import('@hash-stream/pack/types').PackStoreWriter & Destroyable} DestroyablePackStoreWriter
+ * @typedef {API.FileStore & DestroyableAndUpdatableAndStreamable} DestroyableAndUpdatableFileStore
+ * @typedef {import('@hash-stream/pack/types').PackStore & Destroyable} DestroyablePackStore
  */
 
 /**
@@ -38,7 +46,7 @@ import {
  * @param {(messageTarget: number) => Promise<DestroyableAndDrainableIndexScheduler>} createIndexScheduler - Factory for IndexScheduler instance.
  * @param {() => Promise<import('@hash-stream/index/types').IndexWriter[]>} createIndexWriters - Array of writers to use for actual indexing (can be mocks).
  * @param {() => Promise<import('@hash-stream/index/types').IndexReader>} createIndexReader - Index reader to test writer behaviour.
- * @param {() => Promise<DestroyablePackStoreWriter>} createPackStoreWriter - Pack store to test writer behaviour.
+ * @param {() => Promise<DestroyablePackStore>} createPackStore - Pack store to test writer behaviour and streamer.
  */
 export function runIndexPipelineTests(
   pipelineName,
@@ -46,7 +54,7 @@ export function runIndexPipelineTests(
   createIndexScheduler,
   createIndexWriters,
   createIndexReader,
-  createPackStoreWriter
+  createPackStore
 ) {
   describe(`IndexPipeline [${pipelineName}]`, () => {
     /** @type {DestroyableAndUpdatableFileStore} */
@@ -57,8 +65,8 @@ export function runIndexPipelineTests(
     let indexWriters
     /** @type {import('@hash-stream/index/types').IndexReader} */
     let indexReader
-    /** @type {DestroyablePackStoreWriter} */
-    let packStoreWriter
+    /** @type {DestroyablePackStore} */
+    let packStore
 
     const testFiles = [
       {
@@ -77,10 +85,10 @@ export function runIndexPipelineTests(
       fileStore = await createFileStore()
       indexWriters = await createIndexWriters()
       indexReader = await createIndexReader()
-      packStoreWriter = await createPackStoreWriter()
+      packStore = await createPackStore()
     })
 
-    // Pre-populate FileStore
+    // Step 0: Pre-populate FileStore
     beforeEach(async () => {
       for (const file of testFiles) {
         await fileStore.put(file.key, file.content)
@@ -90,7 +98,7 @@ export function runIndexPipelineTests(
     afterEach(() => {
       scheduler && scheduler.destroy()
       fileStore.destroy()
-      packStoreWriter.destroy()
+      packStore.destroy()
     })
 
     it('can schedule and index all files from the FileStore', async () => {
@@ -111,7 +119,7 @@ export function runIndexPipelineTests(
       for await (const task of scheduler.drain()) {
         const mh = await processFileForIndexing(
           fileStore,
-          packStoreWriter,
+          packStore,
           indexWriters,
           task.options?.format || 'unixfs',
           task.fileReference
@@ -124,10 +132,10 @@ export function runIndexPipelineTests(
         })
       }
 
+      // Step 3: Verify indexing
       assert.strictEqual(indexedFiles.length, testFiles.length)
       const keys = indexedFiles.map((f) => f.key).sort()
       assert.deepStrictEqual(keys, testFiles.map((f) => f.key).sort())
-
       for (const indexedFile of indexedFiles) {
         const indexRecords = await all(
           indexReader.findRecords(indexedFile.multihash)
@@ -148,6 +156,23 @@ export function runIndexPipelineTests(
           assert(equals(indexedFile.multihash.bytes, blobRecord.location.bytes))
         }
       }
+
+      // Step 4: Verify Streaming
+      const packReader = new UnixFsPackReader(packStore, fileStore)
+      const streamer = new HashStreamer(indexReader, packReader)
+
+      for (const indexedFile of indexedFiles) {
+        const records = await all(streamer.stream(indexedFile.multihash))
+        assert.equal(records.length, 1)
+        const fileBytes = testFiles.find(
+          (f) => f.key === indexedFile.fileReference
+        )?.content
+        assert(
+          fileBytes,
+          `File bytes not found for ${indexedFile.fileReference}`
+        )
+        assert(equals(records[0].bytes, fileBytes))
+      }
     })
 
     it('throws when file is missing from FileStore', async () => {
@@ -158,7 +183,7 @@ export function runIndexPipelineTests(
         for await (const task of scheduler.drain()) {
           await processFileForIndexing(
             fileStore,
-            packStoreWriter,
+            packStore,
             indexWriters,
             task.options?.format || 'unixfs',
             task.fileReference
@@ -178,7 +203,7 @@ export function runIndexPipelineTests(
         for await (const task of scheduler.drain()) {
           await processFileForIndexing(
             fileStore,
-            packStoreWriter,
+            packStore,
             indexWriters,
             task.options?.format || 'unsupported',
             task.fileReference

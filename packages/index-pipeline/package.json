@@ -81,6 +81,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250525.0",
     "@hash-stream/eslint-config": "workspace:^",
+    "@hash-stream/streamer": "workspace:^",
     "@storacha/one-webcrypto": "^1.0.1",
     "@types/assert": "^1.5.11",
     "@types/mocha": "^10.0.10",

@@ -29,6 +29,7 @@
     "./trustless-ipfs-gateway/types": "./dist/src/trustless-ipfs-gateway/api.js",
     "./index": "./dist/src/index/index.js",
     "./index/unixfs": "./dist/src/index/unixfs.js",
+    "./index/unixfs-pack-reader": "./dist/src/index/unixfs-pack-reader.js",
     "./index/types": "./dist/src/index/api.js"
   },
   "typesVersions": {
@@ -47,6 +48,9 @@
       ],
       "index/unixfs": [
         "dist/src/index/unixfs.d.ts"
+      ],
+      "index/unixfs-pack-reader": [
+        "dist/src/index/unixfs-pack-reader.d.ts"
       ],
       "index/types": [
         "dist/src/index/api.d.ts"

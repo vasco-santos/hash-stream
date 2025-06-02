@@ -19,7 +19,7 @@ export type {
 }
 
 export interface PackReader {
-  storeReader: PackStoreReader
+  storeStreamer: PackStoreStreamer
 
   /**
    * Stream data from a Pack, optionally requesting specific byte ranges.
@@ -91,7 +91,7 @@ export interface PackStoreWriter {
   put(target: MultihashDigest | Path, data: Uint8Array): Promise<void>
 }
 
-export interface PackStoreReader {
+export interface PackStoreReader extends PackStoreStreamer {
   /**
    * Retrieves bytes of a pack file by its multihash digest or Path.
    *
@@ -99,7 +99,9 @@ export interface PackStoreReader {
    * @returns A promise that resolves with the pack file data or null if not found.
    */
   get(target: MultihashDigest | Path): Promise<Uint8Array | null>
+}
 
+export interface PackStoreStreamer {
   stream(
     target: MultihashDigest | Path,
     ranges?: Array<{

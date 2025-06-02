@@ -544,9 +544,7 @@ describe(`trustless ipfs gateway http utils`, () => {
     assert(equals(carMultihash.bytes, packMultihash.bytes))
 
     // Verify the read CAR file agains the one stored in the PackStore
-    const carBytesFromPackStore = await packReader.storeReader.get(
-      packMultihash
-    )
+    const carBytesFromPackStore = await packStore.get(packMultihash)
     assert(carBytesFromPackStore)
     assert(equals(carBytesFromPackStore, bodyBytes))
   })

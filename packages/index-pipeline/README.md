@@ -31,20 +31,27 @@ import {
 } from '@hash-stream/index-pipeline/index'
 import all from 'it-all'
 
+// Example implementations
 import { MemoryFileStore } from '@hash-stream/index-pipeline/file-store/memory'
 import { MemoryIndexScheduler } from '@hash-stream/index-pipeline/index-scheduler/memory'
+import { MemoryPackStore } from '@hash-stream/pack/store/memory'
 
 const fileStore = new MemoryFileStore([...])
 const scheduler = new MemoryIndexScheduler([])
+const packStoreWriter = new MemoryPackStore()
+// See @hash-stream/index package to select a writer
+const indexWriters = [...]
 
 // Schedule all files for indexing
 await all(scheduleStoreFilesForIndexing(fileStore, scheduler))
 
 // Consume and process tasks
 for await (const task of scheduler.drain()) {
-  await processFileForIndexing(fileStore, [...writers], 'unixfs', task.fileReference)
+  await processFileForIndexing(fileStore, packStoreWriter, indexWriters, 'unixfs', task.fileReference)
 }
 ```
+
+It is worth noting that `@hash-stream/utils` package exports a `UnixFsPackReader` implementation, which MAY be the desired implementation of a HashStream server after running this pipeline. This is useful for keeping original raw files in a separate store and UnixFS Dag files in another store.
 
 ---
 
@@ -64,11 +71,19 @@ Returns:
 
 ### `processFileForIndexing(fileStore, indexWriters, indexFormat, fileReference, options?)`
 
-Processes a single file by:
+Scheduler consumer function where a file reference is fetched from the store, processed, and then written
+to the index store. Depending on the index format (for example the DAG in UnixFS) more information may be stored using the `packStoreWriter`.
 
-1. retrieving it from the file store
-2. processing its content into an index (e.g., UnixFS index)
-3. writing the result using provided `indexWriters`
+* `fileStore`: an object implementing `FileStore`
+* `packStoreWriter`: an object implementing `PackStoreWriter`
+* `indexWriters`: an array of objects implementing `IndexWriter`
+* `indexFormat`: string (e.g., `'unixfs'`)
+* `fileReference`: string reference to the file in the file store
+* `options`: optional `ProcessFileForIndexingOptions`
+
+Returns:
+
+* `Promise<MultihashDigest>` containing multihash of the indexed data
 
 ---
 
