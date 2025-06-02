@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/vasco-santos/hash-stream/compare/index-pipeline-v1.0.3...index-pipeline-v1.1.0) (2025-06-02)
+
+
+### Features
+
+* unixfs pack reader ([#132](https://github.com/vasco-santos/hash-stream/issues/132)) ([d4a1c14](https://github.com/vasco-santos/hash-stream/commit/d4a1c14edeb023e088862c55e195307ed429f4a8))
+
 ## [1.0.3](https://github.com/vasco-santos/hash-stream/compare/index-pipeline-v1.0.2...index-pipeline-v1.0.3) (2025-06-02)
 
 
