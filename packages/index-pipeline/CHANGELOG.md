@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/vasco-santos/hash-stream/compare/index-pipeline-v1.0.2...index-pipeline-v1.0.3) (2025-06-02)
+
+
+### Fixes
+
+* index pipeline supports unixfs storing dag ([#125](https://github.com/vasco-santos/hash-stream/issues/125)) ([d91eabd](https://github.com/vasco-santos/hash-stream/commit/d91eabde093fbae3bd0098ba537d77210f2a9bbb))
+
 ## [1.0.2](https://github.com/vasco-santos/hash-stream/compare/index-pipeline-v1.0.1...index-pipeline-v1.0.2) (2025-05-29)
 
 
