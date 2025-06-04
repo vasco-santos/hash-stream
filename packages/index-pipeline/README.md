@@ -22,6 +22,10 @@ This package is ideal for cloud or local workflows that:
 
 ---
 
+## Architecture
+
+![Index Pipeline Architecture](../../diagrams/hash-stream-unixfs-index-pipeline.svg)
+
 ## Usage
 
 ```js

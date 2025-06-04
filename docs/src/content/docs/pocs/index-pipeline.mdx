@@ -1,0 +1,20 @@
+---
+title: AWS Index Pipeline
+description: Bring your own bucket without data transformation to serve content addressable data
+---
+
+Infra deployment PoC for an Index Pipeline for retroactive content addressability on existing data to be served via Hash Stream.
+This PoC ins built on [SST] for AWS deployments.
+
+Repository: [vasco-santos](https://github.com/vasco-santos/hash-stream-index-pipeline-cloud-poc)
+
+## Introduction
+
+This PoC setup relies on the following Index, Pack and FIle stores in a S3 compatible bucket:
+
+- [`@hash-stream/index/store/s3-like`](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/store/s3-like.js)
+- [`@hash-stream/pack/store/s3-like`](https://github.com/vasco-santos/hash-stream/blob/main/packages/pack/src/store/s3-like.js)
+- [`@hash-stream/index-pipeline/file-store/s3-like`](https://github.com/vasco-santos/hash-stream/blob/main/packages/index-pipeline/src/file-store/s3-like.js)
+
+[SST]: https://sst.dev
+[hash-stream]: https://github.com/vasco-santos/hash-stream
