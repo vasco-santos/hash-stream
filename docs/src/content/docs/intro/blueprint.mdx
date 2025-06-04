@@ -287,14 +287,14 @@ One can use Hash Stream whether they already have content-addressable data or no
 - **Own Packs Only (No Indexes)**
   - ✅ Use Hash Stream's indexing toolkit to generate lightweight indexes for your data.
 - **Raw Data**
-  - ✅ Use Pack Toolkit to transform into Packs, and Index Toolkit to generate indexes (they MAY be used together for optimized processing).
-  - ✅ Create Side indexes for retroactive content addressability on existing data.
+  - ✅ Use indexing pipeline to generate indexes that point directly to raw data at rest without data transformation. See [Bring Own Storage Guide](/hash-stream/guides/bring-own-storage/) and the [Index Pipeline PoC](/hash-stream/pocs/index-pipeline/).
+  - As a more expensive alternative, use Pack Toolkit to transform into Packs, and Index Toolkit to generate indexes (they MAY be used together for optimized processing). This 
 
 | Starting Point  | Needed Action             |
 | --------------- | ------------------------- |
 | Packs + Indexes | Deploy Streamer           |
 | Packs Only      | Index with CLI or library |
-| Raw Data        | Pack and/or Index         |
+| Raw Data        | Run Indexing Pipeline     |
 
 Storage backends are **pluggable**—use local filesystem, S3, R2, or build your own!
 
