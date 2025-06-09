@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.3](https://github.com/vasco-santos/hash-stream/compare/index-v1.4.2...index-v1.4.3) (2025-06-09)
+
+
+### Fixes
+
+* index reader only needs store reader implementation ([#144](https://github.com/vasco-santos/hash-stream/issues/144)) ([e3ce349](https://github.com/vasco-santos/hash-stream/commit/e3ce349bcdf48ff313957cd6bcfdef49a086506e))
+
 ## [1.4.2](https://github.com/vasco-santos/hash-stream/compare/index-v1.4.1...index-v1.4.2) (2025-06-02)
 
 

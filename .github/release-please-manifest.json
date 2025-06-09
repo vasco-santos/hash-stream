@@ -1,7 +1,7 @@
 {
   "packages/cli": "1.5.1",
   "packages/streamer": "1.4.0",
-  "packages/index": "1.4.2",
+  "packages/index": "1.4.3",
   "packages/index-pipeline": "1.2.0",
   "packages/pack": "1.6.0",
   "packages/utils": "2.2.1"
