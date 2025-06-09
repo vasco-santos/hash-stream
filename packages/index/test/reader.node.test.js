@@ -33,6 +33,7 @@ describe('Index Reader implementations', () => {
               fs.rmSync(tempDir, { recursive: true, force: true })
             }
           },
+          storeWriter: indexStore,
         })
         return Promise.resolve(destroyableIndexReader)
       },
@@ -52,6 +53,7 @@ describe('Index Reader implementations', () => {
         const indexReader = new IndexReader(indexStore)
         const destroyableIndexReader = Object.assign(indexReader, {
           destroy: () => {},
+          storeWriter: indexStore,
         })
         return Promise.resolve(destroyableIndexReader)
       },

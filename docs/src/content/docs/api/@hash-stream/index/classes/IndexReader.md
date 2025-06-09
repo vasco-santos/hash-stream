@@ -16,7 +16,7 @@ and provides find records to locate blobs, packs nad contains.
 
 ### Constructor
 
-> **new IndexReader**(`store`): `IndexReader`
+> **new IndexReader**(`storeReader`): `IndexReader`
 
 Defined in: [reader.js:15](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/reader.js#L15)
 
@@ -24,7 +24,7 @@ Defined in: [reader.js:15](https://github.com/vasco-santos/hash-stream/blob/main
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `store` | `IndexStore` | The store where the index is maintained. |
+| `storeReader` | `IndexStoreReader` | The store reader where the index is maintained. |
 
 #### Returns
 
@@ -54,8 +54,8 @@ Find the index records of a given multihash.
 
 ## Properties
 
-### store
+### storeReader
 
-> **store**: `IndexStore`
+> **storeReader**: `IndexStoreReader`
 
 Defined in: [reader.js:16](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/reader.js#L16)

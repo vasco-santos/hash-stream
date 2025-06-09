@@ -10,10 +10,10 @@ import { equals } from 'uint8arrays'
  */
 export class IndexReader {
   /**
-   * @param {API.IndexStore} store - The store where the index is maintained.
+   * @param {API.IndexStoreReader} storeReader - The store reader where the index is maintained.
    */
-  constructor(store) {
-    this.store = store
+  constructor(storeReader) {
+    this.storeReader = storeReader
   }
 
   /**
@@ -27,7 +27,7 @@ export class IndexReader {
   async *findRecords(multihash, { containingMultihash } = {}) {
     let found = false
     if (containingMultihash) {
-      for await (const entry of this.store.get(containingMultihash)) {
+      for await (const entry of this.storeReader.get(containingMultihash)) {
         for await (const subRecord of findInSubRecords(
           entry.subRecords,
           multihash
@@ -42,7 +42,7 @@ export class IndexReader {
       return
     }
     // If there is no containing multihash, search for the multihash directly
-    for await (const entry of this.store.get(multihash)) {
+    for await (const entry of this.storeReader.get(multihash)) {
       yield entry
     }
   }
