@@ -18,7 +18,10 @@ import { randomCID } from './helpers/random.js'
  * @typedef {object} Destroyable
  * @property {() => void} destroy
  *
- * @typedef {IndexReader & Destroyable} DestroyableIndexReader
+ * @typedef {object} IndexReaderWithStoreWriter
+ * @property {import('@hash-stream/index/types').IndexStoreWriter} storeWriter
+ *
+ * @typedef {IndexReader & Destroyable & IndexReaderWithStoreWriter} DestroyableIndexReader
  */
 
 /**
@@ -66,7 +69,7 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
         length
       )
 
-      await indexReader.store.add(
+      await indexReader.storeWriter.add(
         (async function* () {
           yield blob
         })(),
@@ -103,7 +106,7 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
         ),
       ])
 
-      await indexReader.store.add(
+      await indexReader.storeWriter.add(
         (async function* () {
           yield record
         })(),
@@ -164,7 +167,7 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
         )
       )
 
-      await indexReader.store.add(
+      await indexReader.storeWriter.add(
         (async function* () {
           yield record
         })(),
@@ -202,7 +205,7 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
       // Add each pack individually
       await Promise.all(
         packCids.map((packCid) => {
-          return indexReader.store.add(
+          return indexReader.storeWriter.add(
             (async function* () {
               yield createFromContaining(content.multihash, [
                 createFromPack(

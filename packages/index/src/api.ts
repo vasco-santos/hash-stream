@@ -21,7 +21,7 @@ export interface IndexWriter {
 // multihashes are stored
 export interface IndexReader {
   // Stores indexed entries
-  store: IndexStore
+  storeReader: IndexStoreReader
 
   // Find the index records related to the requested multihash
   findRecords(
