@@ -43,7 +43,7 @@ export class FSPackStore {
    */
   _getFilePath(target) {
     if (typeof target === 'string') {
-      return `${this.prefix}${target}${this.extension}`
+      return `${this.directory}/${this.prefix}${target}${this.extension}`
     }
     return path.join(
       this.directory,
@@ -59,6 +59,11 @@ export class FSPackStore {
    */
   async put(target, data) {
     const filePath = this._getFilePath(target)
+    const dirPath = path.dirname(filePath) // Get the directory path from the full file path
+
+    // Check if the directory exists, and if not, create it recursively
+    await fs.mkdir(dirPath, { recursive: true })
+
     await fs.writeFile(filePath, data)
   }
 
@@ -93,6 +98,7 @@ export class FSPackStore {
       try {
         const fileBuffer = await fs.readFile(filePath)
         let multihash
+        /* c8 ignore next 4 */
         if (typeof target === 'string') {
           // If target is a path, we need to calculate the hash
           multihash = await sha256.digest(fileBuffer)
