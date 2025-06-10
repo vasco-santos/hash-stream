@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/vasco-santos/hash-stream/compare/pack-v1.6.0...pack-v1.6.1) (2025-06-10)
+
+
+### Fixes
+
+* pack store get with path string should have directory in the path ([#146](https://github.com/vasco-santos/hash-stream/issues/146)) ([2d9d849](https://github.com/vasco-santos/hash-stream/commit/2d9d8498b20a30b8a85fff7c7e51525cd0ba47a1))
+
 ## [1.6.0](https://github.com/vasco-santos/hash-stream/compare/pack-v1.5.1...pack-v1.6.0) (2025-06-02)
 
 
