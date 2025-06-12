@@ -1,0 +1,18 @@
+---
+title: Node.js Index Pipeline to bring own FS
+description: Bring your own FS Directory without data transformation to serve content addressable data
+---
+
+Infra deployment PoC for an Index Pipeline for retroactive content addressability on existing data to be served via Hash Stream.
+
+Repository: [vasco-santos/hash-stream-index-pipeline-server-poc](https://github.com/vasco-santos/hash-stream-index-pipeline-server-poc)
+
+## Introduction
+
+This PoC setup relies on the following Index, Pack and FIle stores in a S3 compatible bucket:
+
+- [`@hash-stream/index/store/fs`](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/store/fs.js)
+- [`@hash-stream/pack/store/fs`](https://github.com/vasco-santos/hash-stream/blob/main/packages/pack/src/store/fs.js)
+- [`@hash-stream/index-pipeline/file-store/fs`](https://github.com/vasco-santos/hash-stream/blob/main/packages/index-pipeline/src/file-store/fs.js)
+
+[hash-stream]: https://github.com/vasco-santos/hash-stream

@@ -5,7 +5,7 @@ description: Learn how to bring your own storage for retroactive content address
 
 Hash Stream demonstrates a scalable and efficient approach to bring-your-own-data content addressing. Its composable building blocks make it easy to deploy across environments—whether you're running local scripts or building on top of cloud-native infrastructure.
 
-One can find the [AWS backed Index Pipeline to bring own bucket store](/hash-stream/pocs/index-pipeline) PoC on an implementation on this.
+One can find an [AWS backed Index Pipeline to bring own bucket store](/hash-stream/pocs/aws-index-pipeline) and a [Node.js Index Pipeline to bring own FS store](/hash-stream/pocs/node.js-index-pipeline) PoC on an implementation on this
 
 ## Introduction
 
@@ -51,7 +51,7 @@ for await (const task of scheduler.drain()) {
 }
 ```
 
-For cloud deployments, see the [AWS-backed Index Pipeline PoC](/hash-stream/pocs/index-pipeline) PoC.
+For cloud deployments, see the [AWS-backed Index Pipeline PoC](/hash-stream/pocs/aws-index-pipeline) PoC.
 
 The `@hash-stream/utils` package provides utility functions for building detached indexes for UnixFS in case one need more low level support to build a building block.
 
@@ -107,4 +107,4 @@ const packReader = new UnixFsPackReader(packStore, pathStore)
 return new HashStreamer(indexReader, packReader)
 ```
 
-For cloud deployments, see the [AWS-backed Index Pipeline PoC](/hash-stream/pocs/index-pipeline) PoC, which also includes for demo purposes a Hash Stream Server.
+For cloud deployments, see the [AWS-backed Index Pipeline PoC](/hash-stream/pocs/aws-index-pipeline) PoC, which also includes for demo purposes a Hash Stream Server.
