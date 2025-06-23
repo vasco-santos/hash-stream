@@ -29,7 +29,7 @@ import { randomCID } from './helpers/random.js'
  * @param {() => Promise<DestroyableIndexStore>} createIndexStore - Function to create the index store.
  */
 export function runIndexStoreTests(storeName, createIndexStore) {
-  describe(`${storeName} IndexIndexStore`, () => {
+  describe(`${storeName} IndexStore`, () => {
     /** @type {DestroyableIndexStore} */
     let store
 
