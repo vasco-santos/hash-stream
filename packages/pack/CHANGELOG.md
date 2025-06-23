@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/vasco-santos/hash-stream/compare/pack-v1.6.1...pack-v1.7.0) (2025-06-23)
+
+
+### Features
+
+* http backed pack store ([#149](https://github.com/vasco-santos/hash-stream/issues/149)) ([3f4841d](https://github.com/vasco-santos/hash-stream/commit/3f4841d168b69a8f1738bdba7cc7415d517b0de0))
+
 ## [1.6.1](https://github.com/vasco-santos/hash-stream/compare/pack-v1.6.0...pack-v1.6.1) (2025-06-10)
 
 
