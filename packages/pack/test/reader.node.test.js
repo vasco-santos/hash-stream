@@ -1,6 +1,12 @@
+import * as API from '../src/api.js'
+
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
+
+// HTTP Store
+import { HTTPPackStore } from '../src/store/http.js'
+import { MemoryIndexStore } from '@hash-stream/index/store/memory'
 
 // FS Stores
 import { FSIndexStore } from '@hash-stream/index/store/fs'
@@ -21,6 +27,7 @@ import {
   createBucket,
   createCloudflareWorkerBucket,
 } from './helpers/resources.js'
+import { createInMemoryHTTPServer } from './helpers/http-server.js'
 ;[
   {
     name: 'FS',
@@ -124,6 +131,49 @@ import {
           await mf.dispose()
         },
       })
+      return Promise.resolve(destroyableIndexStore)
+    },
+  },
+  {
+    name: 'HTTP',
+    /**
+     * @returns {Promise<import('./reader.js').DestroyablePackStore>}
+     */
+    getPackStore: async () => {
+      const httpServer = createInMemoryHTTPServer()
+      const { baseURL, store } = await httpServer.start()
+
+      const packStore = new HTTPPackStore({
+        url: baseURL,
+      })
+      const destroyablePackStore = Object.assign(packStore, {
+        directory: '',
+        /**
+         * Put a pack file in S3.
+         *
+         * @param {API.MultihashDigest | API.Path} target
+         * @param {Uint8Array} data - The pack file bytes.
+         */
+        put: async (target, data) => {
+          const key = packStore._getObjectKey(target)
+          store.set(`/${key}`, data)
+        },
+        destroy: () => {
+          return httpServer.stop()
+        },
+      })
+      return Promise.resolve(destroyablePackStore)
+    },
+    /**
+     * @returns {Promise<import('./reader.js').DestroyableIndexStore>}
+     */
+    getIndexStore: () => {
+      const indexStore = new MemoryIndexStore()
+      const destroyableIndexStore = Object.assign(indexStore, {
+        direntory: '',
+        destroy: () => {},
+      })
+      // @ts-expect-error
       return Promise.resolve(destroyableIndexStore)
     },
   },
