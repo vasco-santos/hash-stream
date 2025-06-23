@@ -35,7 +35,7 @@
     "./store/fs": "./dist/src/store/fs.js",
     "./store/s3-like": "./dist/src/store/s3-like.js",
     "./types": "./dist/src/api.js",
-    "./test": "./dist/test/lib.d.ts"
+    "./test": "./dist/test/lib.js"
   },
   "typesVersions": {
     "*": {
