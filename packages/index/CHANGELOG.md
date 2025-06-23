@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.4](https://github.com/vasco-santos/hash-stream/compare/index-v1.4.3...index-v1.4.4) (2025-06-23)
+
+
+### Fixes
+
+* index test store ([#151](https://github.com/vasco-santos/hash-stream/issues/151)) ([5e426c5](https://github.com/vasco-santos/hash-stream/commit/5e426c5aa9a4dcde849b71a94594162dfe51549c))
+
 ## [1.4.3](https://github.com/vasco-santos/hash-stream/compare/index-v1.4.2...index-v1.4.3) (2025-06-09)
 
 
