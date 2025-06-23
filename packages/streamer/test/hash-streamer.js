@@ -7,6 +7,7 @@ import { recursive as exporter } from 'ipfs-unixfs-exporter'
 import { equals } from 'uint8arrays'
 import { base58btc } from 'multiformats/bases/base58'
 import { CarWriter } from '@ipld/car/writer'
+import { CarIndexer } from '@ipld/car'
 import { CarReader } from '@ipld/car/reader'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { CID } from 'multiformats/cid'
@@ -18,7 +19,12 @@ import {
   MultipleLevelIndexWriter,
   recordType,
 } from '@hash-stream/index/writer/multiple-level'
-import { createFromPack } from '@hash-stream/index/record'
+import {
+  createFromBlob,
+  createFromPack,
+  createFromContaining,
+  createFromInlineBlob,
+} from '@hash-stream/index/record'
 import { PackWriter, PackReader, createPacks } from '@hash-stream/pack'
 
 import { HashStreamer } from '../src/index.js'
@@ -390,6 +396,201 @@ export function runHashStreamTests(
         const computedHash = await sha256.digest(verifiableBlob.bytes)
         assert(equals(verifiableBlob.multihash.bytes, computedHash.bytes))
       }
+    })
+
+    it('reads stream of verifiable blobs from a written inline blob record without pack write', async () => {
+      const byteLength = 5_000_000
+      const bytes = await randomBytes(byteLength)
+      const blobCid = await randomCID({ bytes })
+
+      const offset = 0
+      const length = 100
+
+      const blob = createFromInlineBlob(
+        blobCid.multihash,
+        bytes,
+        offset,
+        length
+      )
+
+      await indexStore.add(
+        (async function* () {
+          yield blob
+        })(),
+        recordType
+      )
+
+      const verifiableBlobs = await all(hashStreamer.stream(blobCid.multihash))
+      assert(verifiableBlobs.length === 1)
+      // Verify hash and compute hash from retrieve bytes for verifiability
+      const verifiableBlob = verifiableBlobs[0]
+      assert(equals(verifiableBlob.multihash.bytes, blobCid.multihash.bytes))
+      const computedHash = await sha256.digest(verifiableBlob.bytes)
+      assert(equals(verifiableBlob.multihash.bytes, computedHash.bytes))
+      // Verify the bytes are the same as the original bytes
+      assert(equals(verifiableBlob.bytes, bytes))
+    })
+
+    it('reads stream of verifiable blobs from written inline blob records and verifies all the blocks', async () => {
+      const byteLength = 5_000_000
+      const bytes = await randomBytes(byteLength)
+      const blob = new Blob([bytes])
+
+      const { packStream, containingPromise } = createPacks(blob, {
+        type: /** @type {'car'} */ ('car'),
+      })
+      const packs = await all(packStream)
+      assert(packs.length === 1)
+      const pack = packs[0]
+
+      // Store created Pack
+      await packStore.put(pack.multihash, pack.bytes)
+
+      // Get containing multihash from the promise
+      const containingMultihash = await containingPromise
+
+      // Go through the Pack, read all the blobs and create index records for them
+      // Root Block Index Record should be inline blob
+      // and all the other blocks should be stored as blobs pointing to the Pack
+      const readerBlobStore = await CarReader.fromBytes(pack.bytes)
+      const blobIterable = await CarIndexer.fromBytes(pack.bytes)
+      const blobIndexRecords = []
+      for await (const blob of blobIterable) {
+        // Root block is inline blob record
+        if (blob.cid.code === dagPbCode) {
+          const block = await readerBlobStore.get(blob.cid)
+          const inlineBlob = createFromInlineBlob(
+            blob.cid.multihash,
+            block.bytes,
+            0,
+            blob.blockLength
+          )
+          blobIndexRecords.push(inlineBlob)
+        } else if (blob.cid.code === RawCode) {
+          // Blob is stored in a Pack, so we store it as a Blob Index Record
+          const inlineBlob = createFromBlob(
+            blob.cid.multihash,
+            pack.multihash,
+            blob.blockOffset,
+            blob.blockLength
+          )
+          blobIndexRecords.push(inlineBlob)
+        } else {
+          throw new Error(`Unexpected blob CID code: ${blob.cid.code}`)
+        }
+      }
+
+      // Create a Pack Index Record that contains all the Blob Index Records
+      const packIndexRecord = createFromPack(
+        pack.multihash,
+        pack.multihash,
+        blobIndexRecords
+      )
+
+      // Create a Containing Index Record that contains the Pack Index Record
+      const containingIndexRecord = createFromContaining(containingMultihash, [
+        packIndexRecord,
+      ])
+
+      // Add the containing index record to the index store
+      await indexStore.add(
+        (async function* () {
+          yield containingIndexRecord
+        })(),
+        recordType
+      )
+
+      // Get verifiable blobs from the containing multihash individually for each blob
+      for (const blobIndexRecord of blobIndexRecords) {
+        const verifiableBlobs = await all(
+          hashStreamer.stream(blobIndexRecord.multihash, {
+            containingMultihash,
+          })
+        )
+        assert(verifiableBlobs.length === 1)
+        // Verify hash and compute hash from retrieve bytes for verifiability
+        const verifiableBlob = verifiableBlobs[0]
+
+        assert(
+          equals(
+            verifiableBlob.multihash.bytes,
+            blobIndexRecord.multihash.bytes
+          )
+        )
+        const computedHash = await sha256.digest(verifiableBlob.bytes)
+        assert(equals(verifiableBlob.multihash.bytes, computedHash.bytes))
+
+        // Check if matches block content read from blockstore
+        const rawCid = CID.createV1(RawCode, blobIndexRecord.multihash)
+        let block = await readerBlobStore.get(rawCid)
+
+        if (!block) {
+          const dagPbCid = CID.createV1(dagPbCode, blobIndexRecord.multihash)
+          block = await readerBlobStore.get(dagPbCid)
+        }
+
+        assert(block)
+        assert(equals(block.bytes, verifiableBlob.bytes))
+      }
+
+      // Create a CAR file to store the containing multihash blobs
+      const { writer: carWriter, out } = await CarWriter.create([
+        CID.createV1(dagPbCode, containingMultihash),
+      ])
+
+      // Collect CAR output into an in-memory Uint8Array
+      /** @type {Uint8Array[]} */
+      const chunks = []
+      const collectChunks = (async () => {
+        for await (const chunk of out) {
+          chunks.push(chunk)
+        }
+      })()
+
+      // Get verifiable blobs from the containing and write them into the CAR
+      for await (const { multihash, bytes } of hashStreamer.stream(
+        containingMultihash
+      )) {
+        let cid
+        if (equals(multihash.bytes, containingMultihash.bytes)) {
+          // containing multihash not raw code
+          cid = CID.createV1(0x70, multihash)
+        } else {
+          cid = CID.createV1(RawCode, multihash)
+        }
+        carWriter.put({ cid, bytes })
+      }
+      await carWriter.close()
+
+      // Wait for chunk collection to complete
+      await collectChunks
+
+      // Read the CAR file generated
+      const writtenCarBytes = getBytesFromChunckedBytes(chunks)
+      const readerBlockStore = await CarReader.fromBytes(writtenCarBytes)
+      const roots = await readerBlockStore.getRoots()
+      assert(roots.length === 1)
+
+      // Reconstruct blob with unixfs exporter
+      const entries = exporter(roots[0], {
+        async get(cid) {
+          const block = await readerBlockStore.get(cid)
+          if (!block) {
+            throw new Error(`Block not found in exported content: ${cid}`)
+          }
+          return block.bytes
+        },
+      })
+
+      const fileEntries = await all(entries)
+      assert(fileEntries.length === 1)
+      const file = fileEntries[0]
+      const collectedFileChunks = await all(file.content())
+      const writtenContentBytes = getBytesFromChunckedBytes(collectedFileChunks)
+
+      // Guarantees read file from pack is exactly the same as written before
+      assert.strictEqual(writtenContentBytes.length, bytes.length)
+      assert(equals(writtenContentBytes, bytes))
     })
   })
 }

@@ -1,5 +1,6 @@
 import * as API from './api.js'
 
+import { identity } from 'multiformats/hashes/identity'
 import { decode as decodeDigest } from 'multiformats/hashes/digest'
 
 /**
@@ -94,10 +95,25 @@ export function createFromBlob(multihash, location, offset, length) {
 }
 
 /**
+ * @param {API.MultihashDigest} multihash
+ * @param {Uint8Array} rawBlob
+ * @param {number} offset
+ * @param {number} length
+ */
+export function createFromInlineBlob(multihash, rawBlob, offset, length) {
+  const digest = identity.digest(rawBlob)
+  return new IndexRecord(multihash, Type.INLINE_BLOB, digest, [], {
+    offset,
+    length,
+  })
+}
+
+/**
  * @enum {API.IndexRecordType}
  */
 export const Type = Object.freeze({
   BLOB: /** @type {API.IndexRecordType} */ (0),
   PACK: /** @type {API.IndexRecordType} */ (1),
   CONTAINING: /** @type {API.IndexRecordType} */ (2),
+  INLINE_BLOB: /** @type {API.IndexRecordType} */ (3),
 })

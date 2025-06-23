@@ -73,13 +73,16 @@ type IndexRecord = {
 }
 
 // Record Type Enum
-type IndexRecordType = BLOB | PACK | CONTAINING
+type IndexRecordType = BLOB | PACK | CONTAINING | INLINE_BLOB
 type BLOB = 0
 type PACK = 1
 type CONTAINING = 2
+type INLINE_BLOB = 3
 
 type Path = string
 ```
+
+It is worth pointing out that when an index record is of type **INLINE_BLOB**, the location is the hash digest of the raw Blob as identity multihash.
 
 ### Index Store Reader
 

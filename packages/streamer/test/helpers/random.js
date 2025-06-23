@@ -20,10 +20,15 @@ export async function randomBytes(size) {
 }
 
 /**
- * @returns {Promise<CID>}
+ * @param {object} options
+ * @param {Uint8Array} [options.bytes] - Bytes to use for the CID, if not provided a random 10 byte value will be used.
+ * @returns {Promise<CID>} A CID with a raw codec and sha256 hash.
  */
-export async function randomCID() {
-  const bytes = await randomBytes(10)
+export async function randomCID(options = {}) {
+  let bytes = options.bytes
+  if (!bytes) {
+    bytes = await randomBytes(10)
+  }
   const hash = await sha256.digest(bytes)
   return CID.create(1, raw.code, hash)
 }

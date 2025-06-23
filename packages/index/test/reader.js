@@ -1,16 +1,18 @@
 import assert from 'assert'
 import { equals } from 'uint8arrays'
 import all from 'it-all'
+import { identity } from 'multiformats/hashes/identity'
 
 import {
   Type,
   createFromBlob,
   createFromPack,
   createFromContaining,
+  createFromInlineBlob,
 } from '../src/record.js'
 import { recordType } from '../src/writer/multiple-level.js'
 
-import { randomCID } from './helpers/random.js'
+import { randomBytes, randomCID } from './helpers/random.js'
 
 /**
  * @typedef {import('@hash-stream/index/types').IndexReader} IndexReader
@@ -83,6 +85,37 @@ export function runIndexReaderTests(indexReaderName, createIndexReader) {
       assert(typeof records[0].location !== 'string')
       assert(equals(records[0].location.digest, packCid.multihash.digest))
       assert(records[0].type === Type.BLOB)
+    })
+
+    it('can find index record for inline stored blob', async () => {
+      const bytes = await randomBytes(100)
+      const blobCid = await randomCID({ bytes })
+      const { digest } = identity.digest(bytes)
+
+      const offset = 0
+      const length = 100
+
+      const blob = createFromInlineBlob(
+        blobCid.multihash,
+        bytes,
+        offset,
+        length
+      )
+
+      await indexReader.storeWriter.add(
+        (async function* () {
+          yield blob
+        })(),
+        recordType
+      )
+
+      const records = await all(indexReader.findRecords(blobCid.multihash))
+      assert(records.length === 1)
+      assert.strictEqual(records[0].offset, offset)
+      assert.strictEqual(records[0].length, length)
+      assert(typeof records[0].location !== 'string')
+      assert(equals(records[0].location.digest, digest))
+      assert(records[0].type === Type.INLINE_BLOB)
     })
 
     it('can retrieve a containing index record with a pack composed by two Blobs', async () => {
