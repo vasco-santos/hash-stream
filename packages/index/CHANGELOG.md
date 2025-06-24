@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/vasco-santos/hash-stream/compare/index-v1.4.5...index-v1.5.0) (2025-06-24)
+
+
+### Features
+
+* add support for inline blob index record ([#155](https://github.com/vasco-santos/hash-stream/issues/155)) ([5df11d1](https://github.com/vasco-santos/hash-stream/commit/5df11d102140ab281d29571cac2dc2cc71dac20b))
+
 ## [1.4.5](https://github.com/vasco-santos/hash-stream/compare/index-v1.4.4...index-v1.4.5) (2025-06-23)
 
 
