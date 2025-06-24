@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/vasco-santos/hash-stream/compare/streamer-v1.4.0...streamer-v1.5.0) (2025-06-24)
+
+
+### Features
+
+* add support for inline blob index record ([#155](https://github.com/vasco-santos/hash-stream/issues/155)) ([5df11d1](https://github.com/vasco-santos/hash-stream/commit/5df11d102140ab281d29571cac2dc2cc71dac20b))
+
 ## [1.4.0](https://github.com/vasco-santos/hash-stream/compare/streamer-v1.3.1...streamer-v1.4.0) (2025-06-02)
 
 
