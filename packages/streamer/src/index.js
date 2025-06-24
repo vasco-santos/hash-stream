@@ -79,6 +79,23 @@ export class HashStreamer {
       } else if (record.type === IndexRecordType.CONTAINING) {
         // CONTAINING
         yield* this.#processIndexRecords(record.subRecords, seenMultihashes)
+      } else if (record.type === IndexRecordType.INLINE_BLOB) {
+        // INLINE_BLOB
+
+        // Skip duplicates
+        /* c8 ignore next 1 */
+        if (seenMultihashes.has(record.multihash)) continue
+        // Skip if location is a string given it would not be a valid inline blob
+        /* c8 ignore next 1 */
+        if (typeof record.location === 'string') continue
+
+        // Yield inline blob directly as location is encoded as identity multihash
+        yield {
+          multihash: record.multihash,
+          bytes: record.location.digest,
+          type: Type.PLAIN,
+        }
+        seenMultihashes.add(record.multihash)
       }
     }
 

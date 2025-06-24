@@ -2,16 +2,18 @@ import assert from 'assert'
 
 import { equals } from 'uint8arrays'
 import all from 'it-all'
+import { identity } from 'multiformats/hashes/identity'
 
 import {
   Type,
   createFromBlob,
   createFromPack,
   createFromContaining,
+  createFromInlineBlob,
 } from '../src/record.js'
 import { recordType } from '../src/writer/multiple-level.js'
 
-import { randomCID } from './helpers/random.js'
+import { randomBytes, randomCID } from './helpers/random.js'
 
 /**
  * @typedef {import('@hash-stream/index/types').IndexStore} IndexStore
@@ -98,6 +100,38 @@ export function runIndexStoreTests(storeName, createIndexStore) {
       const blockCid = await randomCID()
       const retrieved = await all(store.get(blockCid.multihash))
       assert.deepEqual(retrieved, [])
+    })
+
+    it('can store and retrieve inline blob index record', async () => {
+      const bytes = await randomBytes(100)
+      const blobCid = await randomCID({ bytes })
+      const { digest } = identity.digest(bytes)
+
+      const offset = 0
+      const length = 100
+
+      const blob = createFromInlineBlob(
+        blobCid.multihash,
+        bytes,
+        offset,
+        length
+      )
+
+      await store.add(
+        (async function* () {
+          yield blob
+        })(),
+        recordType
+      )
+
+      const records = await all(store.get(blob.multihash))
+      assert(records.length === 1)
+      assert.strictEqual(records[0].offset, offset)
+      assert.strictEqual(records[0].length, length)
+      assert(typeof records[0].location !== 'string')
+      assert(equals(records[0].location.digest, digest))
+      assert(equals(records[0].location.digest, bytes))
+      assert(records[0].type === Type.INLINE_BLOB)
     })
 
     it('can handle large offsets and lengths', async () => {

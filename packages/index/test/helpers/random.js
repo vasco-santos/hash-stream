@@ -71,11 +71,19 @@ export async function randomBlob(size) {
   return { digest, size: blobSize, cid }
 }
 
-// eslint-disable-next-line
-export async function randomCID() {
-  const bytes = await randomBytes(10)
+/**
+ * @param {object} options
+ * @param {Uint8Array} [options.bytes] - Bytes to use for the CID, if not provided a random 10 byte value will be used.
+ * @returns {Promise<CID>} A CID with a raw codec and sha256 hash.
+ */
+export async function randomCID(options = {}) {
+  let bytes = options.bytes
+  if (!bytes) {
+    bytes = await randomBytes(10)
+  }
   const hash = await sha256.digest(bytes)
   return CID.create(1, raw.code, hash)
 }
 
+// eslint-disable-next-line
 export const CarCode = 0x0202

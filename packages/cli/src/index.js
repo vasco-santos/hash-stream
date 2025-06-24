@@ -318,6 +318,7 @@ export const TypeStr = Object.freeze({
   0: 'BLOB',
   1: 'PACK',
   2: 'CONTAINING',
+  3: 'INLINE_BLOB',
 })
 
 /**
