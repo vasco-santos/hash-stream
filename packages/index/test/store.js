@@ -102,7 +102,7 @@ export function runIndexStoreTests(storeName, createIndexStore) {
       assert.deepEqual(retrieved, [])
     })
 
-    it.only('can store and retrieve inline blob index record', async () => {
+    it('can store and retrieve inline blob index record', async () => {
       const bytes = await randomBytes(100)
       const blobCid = await randomCID({ bytes })
       const { digest } = identity.digest(bytes)
