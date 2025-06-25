@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/vasco-santos/hash-stream/compare/pack-v1.7.0...pack-v1.7.1) (2025-06-25)
+
+
+### Fixes
+
+* pack exported modules ([#159](https://github.com/vasco-santos/hash-stream/issues/159)) ([68d3958](https://github.com/vasco-santos/hash-stream/commit/68d3958c541874b0224ee84cc48fbc1ee400c017))
+
 ## [1.7.0](https://github.com/vasco-santos/hash-stream/compare/pack-v1.6.1...pack-v1.7.0) (2025-06-23)
 
 
