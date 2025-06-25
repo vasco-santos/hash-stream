@@ -27,6 +27,7 @@
     ".": "./dist/src/index.js",
     "./store/cf-worker-bucket": "./dist/src/store/cf-worker-bucket.js",
     "./store/fs": "./dist/src/store/fs.js",
+    "./store/http": "./dist/src/store/http.js",
     "./store/memory": "./dist/src/store/memory.js",
     "./store/s3-like": "./dist/src/store/s3-like.js",
     "./reader": "./dist/src/reader.js",
@@ -50,6 +51,9 @@
       ],
       "store/fs": [
         "dist/src/store/fs.d.ts"
+      ],
+      "store/http": [
+        "dist/src/store/http.d.ts"
       ],
       "store/memory": [
         "dist/src/store/memory.d.ts"
