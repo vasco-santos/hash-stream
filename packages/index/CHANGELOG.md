@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/vasco-santos/hash-stream/compare/index-v1.5.0...index-v1.5.1) (2025-06-25)
+
+
+### Fixes
+
+* index reader when finds inline block ([#162](https://github.com/vasco-santos/hash-stream/issues/162)) ([61814d2](https://github.com/vasco-santos/hash-stream/commit/61814d29c31197075345197edd2cb9392b96e505))
+
 ## [1.5.0](https://github.com/vasco-santos/hash-stream/compare/index-v1.4.5...index-v1.5.0) (2025-06-24)
 
 
