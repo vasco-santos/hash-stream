@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.2](https://github.com/vasco-santos/hash-stream/compare/streamer-v1.5.1...streamer-v1.5.2) (2025-06-27)
+
+
+### Fixes
+
+* streamer with debug hooks and with more intelligent car assembly root ([#164](https://github.com/vasco-santos/hash-stream/issues/164)) ([ae2d4b3](https://github.com/vasco-santos/hash-stream/commit/ae2d4b38ac249d8ce49542d66807f94dfb672b34))
+
 ## [1.5.1](https://github.com/vasco-santos/hash-stream/compare/streamer-v1.5.0...streamer-v1.5.1) (2025-06-25)
 
 
