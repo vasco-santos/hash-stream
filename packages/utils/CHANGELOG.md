@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.3](https://github.com/vasco-santos/hash-stream/compare/utils-v2.2.2...utils-v2.2.3) (2025-06-27)
+
+
+### Fixes
+
+* bubble up trustless ipfs gateway streamer options ([9fa9ebd](https://github.com/vasco-santos/hash-stream/commit/9fa9ebd73c43144186f725615fe9303b204e3eb7))
+
 ## [2.2.2](https://github.com/vasco-santos/hash-stream/compare/utils-v2.2.1...utils-v2.2.2) (2025-06-27)
 
 
