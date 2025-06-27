@@ -43,7 +43,13 @@ export async function asCarReadableStream(
   stream,
   options = {}
 ) {
-  const { writer, out } = CarWriter.create(options.roots)
+  /* c8 ignore next 5 */
+  const roots = Array.isArray(options.roots)
+    ? options.roots
+    : options.roots
+    ? [options.roots]
+    : []
+  const { writer, out } = CarWriter.create(roots)
 
   let wroteSomething = false
   /* c8 ignore next 2 */
@@ -65,13 +71,23 @@ export async function asCarReadableStream(
         }
 
         if (equals(multihash.bytes, multihashDigest.bytes)) {
-          await writer.put({
-            cid: CID.createV1(
-              options.targetMultihashCodec || DAGPB_CODE,
-              multihash
-            ),
-            bytes,
-          })
+          const asCurrentRoot = roots.find((r) =>
+            equals(r.multihash.bytes, multihash.bytes)
+          )
+          if (asCurrentRoot) {
+            // If the multihash is one of the roots, we can use it directly
+            await writer.put({ cid: asCurrentRoot, bytes })
+            continue
+            /* c8 ignore next 9 */
+          } else {
+            await writer.put({
+              cid: CID.createV1(
+                options.targetMultihashCodec || DAGPB_CODE,
+                multihash
+              ),
+              bytes,
+            })
+          }
         } else {
           const rawCid = CID.createV1(RawCode, multihash)
           await writer.put({ cid: rawCid, bytes })

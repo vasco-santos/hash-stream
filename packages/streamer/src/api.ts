@@ -15,9 +15,23 @@ export interface HashStreamer {
   // Retrieve a stream of verifiable blobs composing the target multihash
   stream(
     targetMultihash: MultihashDigest,
-    // similar to https://github.com/ipfs/specs/pull/462
-    options?: { containingMultihash?: MultihashDigest }
+    options?: HashStreamerStreamOptions
   ): AsyncIterable<VerifiableBlob>
+}
+
+export interface HashStreamerStreamOptions {
+  // similar to https://github.com/ipfs/specs/pull/462
+  containingMultihash?: MultihashDigest
+
+  // callback for each index record found
+  // useful for debugging or logging purposes
+  onIndexRecord?: (indexRecord: IndexRecord) => void
+
+  // callback for each pack record found
+  // useful for debugging or logging purposes
+  // this is called for each pack record read from the index record
+  // and can be used to track the retrieval of blobs
+  onPackRead?: (multihash: MultihashDigest) => void
 }
 
 export type LocationRecord = {

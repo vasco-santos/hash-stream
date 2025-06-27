@@ -127,6 +127,12 @@ export function runHashStreamTests(
         const verifiableBlobs = await all(
           hashStreamer.stream(blobMultihash, {
             containingMultihash,
+            onIndexRecord: (indexRecord) => {
+              assert(indexRecord)
+            },
+            onPackRead: (packMultihash) => {
+              assert(packMultihash)
+            },
           })
         )
         assert(verifiableBlobs.length === 1)
@@ -505,6 +511,9 @@ export function runHashStreamTests(
         const verifiableBlobs = await all(
           hashStreamer.stream(blobIndexRecord.multihash, {
             containingMultihash,
+            onPackRead: (packMultihash) => {
+              assert(packMultihash)
+            },
           })
         )
         assert(verifiableBlobs.length === 1)

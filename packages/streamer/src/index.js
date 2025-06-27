@@ -22,8 +22,7 @@ export class HashStreamer {
   /**
    *
    * @param {API.MultihashDigest} targetMultihash
-   * @param {object} [options]
-   * @param {API.MultihashDigest} [options.containingMultihash]
+   * @param {API.HashStreamerStreamOptions} [options]
    * @returns {AsyncIterable<API.VerifiableBlob>}
    */
   async *stream(targetMultihash, options) {
@@ -34,16 +33,18 @@ export class HashStreamer {
       options
     )
     for await (const indexRecord of indexRecordsIterator) {
-      yield* this.#processIndexRecords([indexRecord], seenMultihashes)
+      options?.onIndexRecord?.(indexRecord)
+      yield* this.#processIndexRecords([indexRecord], seenMultihashes, options)
     }
   }
 
   /**
    * @param {API.IndexRecord[]} indexRecords
    * @param {Set<API.MultihashDigest>} seenMultihashes - Set of already yielded multihashes
+   * @param {API.HashStreamerStreamOptions} [options]
    * @returns {AsyncIterable<API.VerifiableBlob>}
    */
-  async *#processIndexRecords(indexRecords, seenMultihashes) {
+  async *#processIndexRecords(indexRecords, seenMultihashes, options) {
     /** @type {Map<string, API.LocationRecord[]>} */
     const locationsToRead = new Map() // Map: pack location → [{ offset, length, multihash }]
 
@@ -95,6 +96,7 @@ export class HashStreamer {
           bytes: record.location.digest,
           type: Type.PLAIN,
         }
+        options?.onPackRead?.(record.multihash)
         seenMultihashes.add(record.multihash)
       }
     }
@@ -112,6 +114,7 @@ export class HashStreamer {
           bytes,
           type: Type.PLAIN,
         }
+        options?.onPackRead?.(multihash)
       }
     }
   }
