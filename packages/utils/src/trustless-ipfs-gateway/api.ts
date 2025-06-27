@@ -1,3 +1,5 @@
+import { HashStreamerStreamOptions } from '@hash-stream/streamer/types'
+
 export type ResponseOptions = {
   fileName?: string
 }
@@ -9,3 +11,5 @@ export type CarParams = {
 }
 
 export type CarResponseOptions = ResponseOptions & CarParams
+
+export interface IpfsGetOptions extends HashStreamerStreamOptions {}

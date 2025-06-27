@@ -10,16 +10,17 @@ import * as cidUtils from './cid.js'
  *
  * @param {Request} request - The incoming HTTP request.
  * @param {{ hashStreamer: import('@hash-stream/streamer').HashStreamer }} context - Context object providing the hash streamer.
+ * @param {API.IpfsGetOptions} [options]
  * @returns {Promise<Response>} HTTP Response containing the CAR stream or error.
  */
-export async function ipfsGet(request, context) {
+export async function ipfsGet(request, context, options = {}) {
   const format = resolveRequestedFormat(request)
 
   switch (format) {
     case 'car':
-      return await carGet(request, context)
+      return await carGet(request, context, options)
     case 'raw':
-      return await rawGet(request, context)
+      return await rawGet(request, context, options)
     default:
       return new Response('not acceptable format', { status: 406 })
   }
@@ -30,9 +31,10 @@ export async function ipfsGet(request, context) {
  *
  * @param {Request} request - The incoming HTTP request.
  * @param {{ hashStreamer: import('@hash-stream/streamer').HashStreamer }} context - Context object providing the hash streamer.
+ * @param {API.IpfsGetOptions} [options]
  * @returns {Promise<Response>} HTTP Response containing the CAR stream or error.
  */
-export async function carGet(request, context) {
+export async function carGet(request, context, options) {
   let cid
   let carResponseOptions
 
@@ -58,7 +60,8 @@ export async function carGet(request, context) {
 
   // Get CARv1 ReadableStream for response
   const verifiableBlobsAsyncIterable = context.hashStreamer.stream(
-    cid.multihash
+    cid.multihash,
+    options
   )
   const carReadableStream = await streamer.asCarReadableStream(
     cid.multihash,
@@ -118,9 +121,10 @@ function concatBytes(chunks) {
  *
  * @param {Request} request - The incoming HTTP request.
  * @param {{ hashStreamer: import('@hash-stream/streamer').HashStreamer }} context - Context object providing the hash streamer.
+ * @param {API.IpfsGetOptions} [options]
  * @returns {Promise<Response>} HTTP Response containing the raw content or an error.
  */
-export async function rawGet(request, context) {
+export async function rawGet(request, context, options) {
   /** @type {import('multiformats').CID} */
   let cid
   try {
@@ -140,7 +144,8 @@ export async function rawGet(request, context) {
 
   // Get Raw Uint8Array for response
   const verifiableBlobsAsyncIterable = context.hashStreamer.stream(
-    cid.multihash
+    cid.multihash,
+    options
   )
   const rawUint8Array = await streamer.asRawUint8Array(
     cid.multihash,
