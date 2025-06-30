@@ -111,6 +111,7 @@ This package already exports a few stores compatible with `IndexStore` Interface
 
 - File system store: `store/fs.js`
 - Memory store: `store/memory.js`
+- Singularity backed store: [vasco-santos/hash-stream-singularity-like-index-store](https://github.com/vasco-santos/hash-stream-singularity-like-index-store)
 - S3-like Cloud Object store: `store/s3-like.js`
 - Cloudflare worker bucket like: `store/cf-worker-bucket.js`
 
