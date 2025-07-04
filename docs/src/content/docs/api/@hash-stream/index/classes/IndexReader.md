@@ -5,7 +5,7 @@ prev: true
 title: "IndexReader"
 ---
 
-Defined in: [reader.js:11](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/reader.js#L11)
+Defined in: [reader.js:13](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/reader.js#L13)
 
 MultipleLevelIndex implements the Index Reader interface
 and provides find records to locate blobs, packs nad contains.
@@ -18,7 +18,7 @@ and provides find records to locate blobs, packs nad contains.
 
 > **new IndexReader**(`storeReader`): `IndexReader`
 
-Defined in: [reader.js:15](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/reader.js#L15)
+Defined in: [reader.js:17](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/reader.js#L17)
 
 #### Parameters
 
@@ -36,7 +36,7 @@ Defined in: [reader.js:15](https://github.com/vasco-santos/hash-stream/blob/main
 
 > **findRecords**(`multihash`, `options?`): `AsyncIterable`\<`IndexRecord`, `any`, `any`\>
 
-Defined in: [reader.js:27](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/reader.js#L27)
+Defined in: [reader.js:29](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/reader.js#L29)
 
 Find the index records of a given multihash.
 
@@ -58,4 +58,4 @@ Find the index records of a given multihash.
 
 > **storeReader**: `IndexStoreReader`
 
-Defined in: [reader.js:16](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/reader.js#L16)
+Defined in: [reader.js:18](https://github.com/vasco-santos/hash-stream/blob/main/packages/index/src/reader.js#L18)

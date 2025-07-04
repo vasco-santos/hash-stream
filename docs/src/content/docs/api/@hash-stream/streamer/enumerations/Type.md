@@ -5,7 +5,7 @@ prev: true
 title: "Type"
 ---
 
-Defined in: [index.js:185](https://github.com/vasco-santos/hash-stream/blob/main/packages/streamer/src/index.js#L185)
+Defined in: [index.js:188](https://github.com/vasco-santos/hash-stream/blob/main/packages/streamer/src/index.js#L188)
 
 ## Enumeration Members
 
@@ -13,4 +13,4 @@ Defined in: [index.js:185](https://github.com/vasco-santos/hash-stream/blob/main
 
 > **PLAIN**: `0`
 
-Defined in: [index.js:186](https://github.com/vasco-santos/hash-stream/blob/main/packages/streamer/src/index.js#L186)
+Defined in: [index.js:189](https://github.com/vasco-santos/hash-stream/blob/main/packages/streamer/src/index.js#L189)

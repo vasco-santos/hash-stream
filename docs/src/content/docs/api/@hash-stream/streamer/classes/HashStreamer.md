@@ -36,15 +36,14 @@ Defined in: [index.js:17](https://github.com/vasco-santos/hash-stream/blob/main/
 
 > **stream**(`targetMultihash`, `options?`): `AsyncIterable`\<`VerifiableBlob`, `any`, `any`\>
 
-Defined in: [index.js:29](https://github.com/vasco-santos/hash-stream/blob/main/packages/streamer/src/index.js#L29)
+Defined in: [index.js:28](https://github.com/vasco-santos/hash-stream/blob/main/packages/streamer/src/index.js#L28)
 
 #### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
 | `targetMultihash` | `MultihashDigest`\<`number`\> |
-| `options?` | \{ `containingMultihash?`: `MultihashDigest`\<`number`\>; \} |
-| `options.containingMultihash?` | `MultihashDigest`\<`number`\> |
+| `options?` | `HashStreamerStreamOptions` |
 
 #### Returns
 

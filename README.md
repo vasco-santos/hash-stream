@@ -237,6 +237,7 @@ graph LR
 
 ## Resources
 
+- [Protocol Berg talk](https://watch.protocol.berlin/65a90bf47932ebe436ba9351/watch?session=685555e690bd41297b0e0710)
 - [Hashstream demo video](https://youtu.be/rFjz6n_UGaY)
 
 ## Contributing
